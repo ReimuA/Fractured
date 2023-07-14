@@ -1,0 +1,9 @@
+node_modules
+*.js
+*.js.map
+*.ps1
+*.cmd
+out/
+
+output.frag.glsl
+output-raw.frag.glsl

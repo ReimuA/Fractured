@@ -1,0 +1,7 @@
+{
+    "[javascript]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "mochaExplorer.files": "test/**/*.ts",
+    "mochaExplorer.require": ["ts-node/register"]
+}
