@@ -1,6 +1,5 @@
 import { Complex, cLength, cPow } from "./complex"
-
-type XY = {x: number, y: number}
+import { XY } from "./mathu"
 
 export function MSetiteration(z: Complex, c: Complex): Complex {
 	const n = cPow({i: z.i, r: z.r})
@@ -33,7 +32,15 @@ export function createMSet(iteration: number, resolution: XY, location: XY, zoom
 				x: (2* x - resolution.x) / resolution.y,
 				y: (2* y - resolution.y) / resolution.y
 			}
+
+			st.x *= 1 / zoom
+			st.y *= 1 / zoom
+			
+			st.x += location.x
+			st.y += location.y
+			
 			const uv=st
+
 			let z = {r: 0, i: 0}
 			const c = {r: uv.x, i: uv.y}
 
