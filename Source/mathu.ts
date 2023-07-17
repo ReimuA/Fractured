@@ -4,10 +4,14 @@ export type Color = {r: number, g: number, b: number}
 export type XYZ = XY & {z: number}
 export type Vec3 = XYZ 
 
-export function c01(x: number) {
-	if (x < 0) return 0
-	if (x > 1) return 1
+export function clamp(edgeA: number, edgeB: number, x: number) {
+	if (x < edgeA) return edgeA
+	if (x > edgeB) return edgeB
 	return x
+}
+
+export function c01(x: number) {
+	return clamp(0, 1, x)
 }
 
 export function smoothstep(edge0: number, edge1: number, x: number): number {

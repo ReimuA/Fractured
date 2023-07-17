@@ -1,7 +1,7 @@
 import sharp from "sharp"
 import { IFSTransform, createRandomTransform } from "./IFSTransform"
 import { WeightedVariation, linearVariation, swirlVariation } from "./Variations"
-import { Color, XY, mergeColor } from "./mathu"
+import { Color, XY, clamp, mergeColor } from "./mathu"
 import { readFileSync, writeFileSync } from "fs"
 
 export type Flames = {
@@ -115,7 +115,7 @@ export async function createFlameImage(resolution: XY, flames: Flames) {
 		b: Math.random(),
 	}
 
-	const pixels = new Uint16Array(resolution.x * resolution.y * 3)
+	const pixels = new Uint16Array(resolution.x * resolution.y * 4).map((e, i) => (i+1) % 4 == 0 ? 255 : 0)
 
 	for (let i = 0; i < 2000000; i++) {
 		const currentComponent = randomWeigthedSelection(flames.components)
@@ -135,7 +135,6 @@ export async function createFlameImage(resolution: XY, flames: Flames) {
 
 		p = newP
 
-		
 		color = mergeColor(color, currentComponent.color)
 
 		if (i > 20) {
@@ -145,11 +144,12 @@ export async function createFlameImage(resolution: XY, flames: Flames) {
 			}
 			if (pixel.x > 0 && pixel.x < resolution.x && pixel.y > 0 && pixel.y < resolution.y)
 			{
-				const idx = pixel.y * resolution.x * 3 + pixel.x * 3
+				const idx = pixel.y * resolution.x * 4 + pixel.x * 4
 			
 				pixels[idx+0] = color.r * 255
 				pixels[idx+1] = color.g * 255
 				pixels[idx+2] = color.b * 255
+				pixels[idx+3] = clamp(0, 255, pixels[idx+3] - 4)
 			}
 		}
 	}
@@ -160,7 +160,7 @@ export async function createFlameImage(resolution: XY, flames: Flames) {
 		raw: {
 			width: resolution.x,
 			height: resolution.y,
-			channels: 3,
+			channels: 4,
 		}
 	}).toFile("output.png")
 }
