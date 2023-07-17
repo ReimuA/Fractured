@@ -2,10 +2,10 @@ import sharp from "sharp"
 import { IFSTransform, createRandomTransform } from "./IFSTransform"
 import { WeightedVariation, linearVariation, swirlVariation } from "./Variations"
 import { Color, XY, mergeColor } from "./mathu"
-import { flamesExample } from "./FlamesExamples"
-import { writeFileSync } from "fs"
+import { readFileSync, writeFileSync } from "fs"
 
 export type Flames = {
+	resolution: XY,
 	components: FlamesComponent[]
 }
 
@@ -16,8 +16,9 @@ export type FlamesComponent = {
 	variations: WeightedVariation[]
 }
 
-export function createRandomFlames(): Flames {
+export function createRandomFlames(resolution: XY): Flames {
 	return {
+		resolution,
 		components: createRandomFlamesComponents(2),
 	}
 }
@@ -40,9 +41,9 @@ export function createRandomFlamesComponents(nb: number): FlamesComponent[] {
 		}
 	}
 
-	const step = 0.01
+	const step = 0.05
 
-	for (let i = 0; i < 100; i++) {
+	for (let i = 0; i < 20; i++) {
 		const idx = Math.floor(Math.random() * nb)
 		components[idx].weight += step
 	}
@@ -70,11 +71,6 @@ export function createRandomVariations(nb: number): WeightedVariation[] {
 	return variations
 }
 
-type FlamesHistogram = {
-	Frequency: Uint32Array
-	Coloration: Float64Array
-}
-
 export function randomWeigthedSelection<T>(objs: (T & { weight: number })[]): T {
 	const r = Math.random()
 	let accumulator = 0
@@ -87,14 +83,28 @@ export function randomWeigthedSelection<T>(objs: (T & { weight: number })[]): T 
 	return objs[objs.length - 1]
 }
 
-function createHeatmap(resolution: XY): number[][] {
-	return [...Array(resolution.y)].map(() =>
-		new Array<number>(resolution.x * 3).fill(0) 
-	)
+export async function createRandomFlamesImages(resolution: XY) {
+	await createFlameImage(resolution, createRandomFlames(resolution))
 }
 
-export async function createRandomFlamesImages(resolution: XY) {
-	await createFlameImage(resolution, createRandomFlames())
+// Unsafe typings
+export async function createRandomFlamesFromFile(filename: string) {
+	const buffer = readFileSync(filename)
+	const flames = JSON.parse(buffer.toString())
+
+	for (let i = 0; i < flames.components.length; i++) {
+		const component = flames.components[i] 
+		for (let j = 0; j < component.variations.length; j++) {
+			const variation = component.variations[j] 
+			const name = variation.variation.name 
+			switch (name) {
+			case "Linear": component.variations[j].variation = linearVariation; break 
+			case "Swirl": component.variations[j].variation = swirlVariation; break 
+			}
+		}
+	}
+
+	await createFlameImage(flames.resolution, flames)
 }
 
 export async function createFlameImage(resolution: XY, flames: Flames) {
@@ -105,8 +115,7 @@ export async function createFlameImage(resolution: XY, flames: Flames) {
 		b: Math.random(),
 	}
 
-	const pixels2 = createHeatmap(resolution)
-	const pixels = new Uint16Array(resolution.x * resolution.y * 4)
+	const pixels = new Uint16Array(resolution.x * resolution.y * 3)
 
 	for (let i = 0; i < 2000000; i++) {
 		const currentComponent = randomWeigthedSelection(flames.components)
@@ -136,10 +145,6 @@ export async function createFlameImage(resolution: XY, flames: Flames) {
 			}
 			if (pixel.x > 0 && pixel.x < resolution.x && pixel.y > 0 && pixel.y < resolution.y)
 			{
-				pixels2[pixel.y][pixel.x * 3 + 0] = color.r * 255
-				pixels2[pixel.y][pixel.x * 3 + 1]  = color.g * 255
-				pixels2[pixel.y][pixel.x * 3 + 2] = color.b * 255
-
 				const idx = pixel.y * resolution.x * 3 + pixel.x * 3
 			
 				pixels[idx+0] = color.r * 255

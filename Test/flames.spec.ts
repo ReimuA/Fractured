@@ -38,7 +38,7 @@ describe("Flames", function () {
 
 	describe("Create random flames", function() {
 		it("Expected amount of component", () => {
-			const flames = createRandomFlames()
+			const flames = createRandomFlames({x: 0, y: 0})
 			assert.equal(flames.components.length === 4, true)
 		})
 	})
