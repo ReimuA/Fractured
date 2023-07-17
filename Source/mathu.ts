@@ -1,5 +1,8 @@
 export type XY = {x: number, y: number}
+export type Color = {r: number, g: number, b: number}
 
+export type XYZ = XY & {z: number}
+export type Vec3 = XYZ 
 
 export function c01(x: number) {
 	if (x < 0) return 0
@@ -12,4 +15,21 @@ export function smoothstep(edge0: number, edge1: number, x: number): number {
 
 	x = c01(x)
 	return x * x * (3.0 - 2.0 * x)
+}
+
+export function dot(a: XY, b: XY)
+{
+	return a.x * b.x + a.y * b.y
+}
+
+export function xyLength(p: XY) {
+	return Math.sqrt(p.x * p.x + p.y * p.y)
+}
+
+export function mergeColor(a: Color, b: Color): Color {
+	return {
+		r: (a.r + b.r) / 2,
+		g: (a.g + b.g) / 2,
+		b: (a.b + b.b) / 2,
+	}
 }
