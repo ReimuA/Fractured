@@ -164,7 +164,8 @@ export async function createFlameImage(resolution: XY, flames: Flames, outfile =
 		}
 	}
 
-	pixels = applyAA(resolution, pixels)
+	if (supersample)
+		pixels = applyAA(resolution, pixels)
 	writeFileSync("flames.metadata.json", JSON.stringify(flames, null, 4))
 
 	await sharp(pixels, {
