@@ -1,4 +1,4 @@
-import { XY, xyLength } from "./mathu"
+import { XY, xyLength } from "../mathu"
 
 
 export type Variation = { function: (p: XY) => XY, name: string}

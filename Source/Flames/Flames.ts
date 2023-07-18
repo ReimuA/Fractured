@@ -1,11 +1,12 @@
 import sharp from "sharp"
 import { IFSTransform, createRandomTransform } from "./IFSTransform"
 import { WeightedVariation, linearVariation, swirlVariation } from "./Variations"
-import { Color, XY, clamp, mergeColor } from "./mathu"
+import { Color, XY, clamp, mergeColor } from "../mathu"
 import { readFileSync, writeFileSync } from "fs"
+import { applyAA, superSampleResolution } from "../antialiasing"
 
 export type Flames = {
-	resolution: XY,
+	resolution: XY
 	components: FlamesComponent[]
 }
 
@@ -87,27 +88,37 @@ export async function createRandomFlamesImages(resolution: XY) {
 	await createFlameImage(resolution, createRandomFlames(resolution))
 }
 
-// Unsafe typings
-export async function createRandomFlamesFromFile(filename: string) {
+export function readFlamesMetadataFromFiles(filename: string): Flames {
 	const buffer = readFileSync(filename)
 	const flames = JSON.parse(buffer.toString())
 
 	for (let i = 0; i < flames.components.length; i++) {
-		const component = flames.components[i] 
+		const component = flames.components[i]
 		for (let j = 0; j < component.variations.length; j++) {
-			const variation = component.variations[j] 
-			const name = variation.variation.name 
+			const variation = component.variations[j]
+			const name = variation.variation.name
 			switch (name) {
-			case "Linear": component.variations[j].variation = linearVariation; break 
-			case "Swirl": component.variations[j].variation = swirlVariation; break 
+			case "Linear":
+				component.variations[j].variation = linearVariation
+				break
+			case "Swirl":
+				component.variations[j].variation = swirlVariation
+				break
 			}
 		}
 	}
 
+	return flames
+}
+
+// Unsafe typings
+export async function createFlamesFromFile(filename: string) {
+	const flames = readFlamesMetadataFromFiles(filename)
 	await createFlameImage(flames.resolution, flames)
 }
 
-export async function createFlameImage(resolution: XY, flames: Flames) {
+export async function createFlameImage(resolution: XY, flames: Flames, outfile = "output.png", supersample = false) {
+	const sampleResolution = supersample ? superSampleResolution(resolution) : resolution
 	let p: XY = { x: Math.random() * 2 - 1, y: Math.random() * 2 - 1 }
 	let color = {
 		r: Math.random(),
@@ -115,20 +126,20 @@ export async function createFlameImage(resolution: XY, flames: Flames) {
 		b: Math.random(),
 	}
 
-	const pixels = new Uint16Array(resolution.x * resolution.y * 4).map((e, i) => (i+1) % 4 == 0 ? 255 : 0)
+	let pixels = new Uint16Array(sampleResolution.x * sampleResolution.y * 4).map((e, i) => ((i + 1) % 4 == 0 ? 255 : 0))
 
-	for (let i = 0; i < 2000000; i++) {
+	for (let i = 0; i < 200000; i++) {
 		const currentComponent = randomWeigthedSelection(flames.components)
 		const t = currentComponent.transform
 
 		const newP = { x: 0, y: 0 }
 		const tp = {
-			x: (t.a * p.x + t.b * p.y + t.c),
-			y: (t.d * p.x + t.e * p.y + t.f)
+			x: t.a * p.x + t.b * p.y + t.c,
+			y: t.d * p.x + t.e * p.y + t.f,
 		}
 
 		for (const variation of currentComponent.variations) {
-			const vp =variation.variation.function(tp)
+			const vp = variation.variation.function(tp)
 			newP.x += vp.x * variation.weight
 			newP.y += vp.y * variation.weight
 		}
@@ -139,21 +150,21 @@ export async function createFlameImage(resolution: XY, flames: Flames) {
 
 		if (i > 20) {
 			const pixel = {
-				x: Math.round((p.x + 2 * (resolution.x / resolution.y)) * ((resolution.y) / 4)),
-				y: Math.round((p.y + 2) * ((resolution.y) / 4)),
+				x: Math.round((p.x + 2 * (sampleResolution.x / sampleResolution.y)) * (sampleResolution.y / 4)),
+				y: Math.round((p.y + 2) * (sampleResolution.y / 4)),
 			}
-			if (pixel.x > 0 && pixel.x < resolution.x && pixel.y > 0 && pixel.y < resolution.y)
-			{
-				const idx = pixel.y * resolution.x * 4 + pixel.x * 4
-			
-				pixels[idx+0] = color.r * 255
-				pixels[idx+1] = color.g * 255
-				pixels[idx+2] = color.b * 255
-				pixels[idx+3] = clamp(0, 255, pixels[idx+3] - 4)
+			if (pixel.x > 0 && pixel.x < sampleResolution.x && pixel.y > 0 && pixel.y < sampleResolution.y) {
+				const idx = pixel.y * sampleResolution.x * 4 + pixel.x * 4
+
+				pixels[idx + 0] = color.r * 255
+				pixels[idx + 1] = color.g * 255
+				pixels[idx + 2] = color.b * 255
+				pixels[idx + 3] = clamp(0, 255, pixels[idx + 3] - 4)
 			}
 		}
 	}
- 
+
+	pixels = applyAA(resolution, pixels)
 	writeFileSync("flames.metadata.json", JSON.stringify(flames, null, 4))
 
 	await sharp(pixels, {
@@ -161,6 +172,6 @@ export async function createFlameImage(resolution: XY, flames: Flames) {
 			width: resolution.x,
 			height: resolution.y,
 			channels: 4,
-		}
-	}).toFile("output.png")
+		},
+	}).toFile(outfile)
 }
