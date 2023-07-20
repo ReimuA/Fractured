@@ -1,5 +1,5 @@
 import * as assert from "assert"
-import { createRandomFlames, createRandomFlamesComponents, createRandomVariations } from "../Source/Flames/Flames"
+import { createRandomFlames, createRandomFlamesComponents, createRandomVariations } from "../Source/Flames/random"
 
 describe("Flames", function () {
 	describe("Create random weighted variations", function () {

@@ -1,7 +1,4 @@
-import { createFlamesPixelBuffer, createRandomFlames, createRandomFlamesImages, readFlamesMetadataFromFiles } from "./Source/Flames/Flames"
-import { deviate } from "./Source/Flames/deviation"
-import { mix } from "./Source/mathu"
-import sharp from "sharp"
+import { createRandomFlamesImages } from "./Source/Flames/image"
 
 console.log("OUH")
 
