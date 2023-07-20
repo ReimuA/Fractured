@@ -1,5 +1,4 @@
 import * as assert from "assert"
-import {  MSetiteration } from "../Source/mandelbrot"
 import { createRandomFlames, createRandomFlamesComponents, createRandomVariations } from "../Source/Flames/Flames"
 
 describe("Flames", function () {

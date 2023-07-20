@@ -1,10 +1,7 @@
 import * as assert from "assert"
-import {  MSetiteration } from "../Source/mandelbrot"
-import { createRandomFlames, createRandomFlamesComponents, createRandomVariations } from "../Source/Flames/Flames"
 import { applyAA, superSampleResolution } from "../Source/antialiasing"
 
 describe("Anti aliasing", function () {
-	
 
 	describe("Super sampled resolution", function() {
 		it("expect a 9 higher resolution, as a", () => {
