@@ -13,34 +13,36 @@ export function createRandomTransform(): IFSTransform {
 export function createRandomFlames(resolution: XY): Flames {
 	return {
 		resolution,
+		final: createRandomFlamesComponent(),
 		components: createRandomFlamesComponents(4),
+	}
+}
+
+function createRandomFlamesComponent(): FlamesComponent {
+	const weight = Math.random()
+	const transform = createRandomTransform()
+	const color = { r: Math.random(), g: Math.random(), b: Math.random() }
+
+	const variations = createRandomVariations(5)
+
+	return {
+		weight,
+		color,
+		transform,
+		variations,
 	}
 }
 
 export function createRandomFlamesComponents(nb: number): FlamesComponent[] {
 	const components = new Array<FlamesComponent>(nb)
 
-	for (let i = 0; i < nb; i++) {
-		const weight = 0
-		const transform = createRandomTransform()
-		const color = { r: Math.random(), g: Math.random(), b: Math.random() }
+	for (let i = 0; i < nb; i++) 
+		components[i] = createRandomFlamesComponent()
 
-		const variations = createRandomVariations(5)
+	const totalWeight = components.reduce((total, v ) => total + v.weight, 0)
 
-		components[i] = {
-			weight,
-			color,
-			transform,
-			variations,
-		}
-	}
-
-	const step = 0.05
-
-	for (let i = 0; i < 20; i++) {
-		const idx = Math.floor(Math.random() * nb)
-		components[idx].weight += step
-	}
+	for (const c of components)
+		c.weight /= totalWeight
 
 	return components
 }

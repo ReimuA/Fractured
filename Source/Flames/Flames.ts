@@ -5,6 +5,7 @@ import { readFileSync } from "fs"
 
 export type Flames = {
 	resolution: XY
+	final: FlamesComponent
 	components: FlamesComponent[]
 }
 
@@ -14,7 +15,6 @@ export type FlamesComponent = {
 	transform: IFSTransform
 	variations: WeightedVariation[]
 }
-
 
 export function readFlamesMetadataFromFiles(filename: string): Flames {
 	const buffer = readFileSync(filename)
@@ -37,4 +37,29 @@ export function readFlamesMetadataFromFiles(filename: string): Flames {
 	}
 
 	return flames
+}
+
+function applyTransformAndVariation(p: XY, component: FlamesComponent): XY {
+	const newP = { x: 0, y: 0 }
+	const t = component.transform
+	const tp = {
+		x: t.a * p.x + t.b * p.y + t.c,
+		y: t.d * p.x + t.e * p.y + t.f,
+	}
+
+	for (const variation of component.variations) {
+		const vp = variation.variation.function(tp)
+		newP.x += vp.x * variation.weight
+		newP.y += vp.y * variation.weight
+	}
+
+	return newP
+}
+
+export function applyFlames(flames: Flames, componentIdx: number, p: XY): XY {
+	const component = flames.components[componentIdx]
+
+	const newP = applyTransformAndVariation(p, component)
+
+	return applyTransformAndVariation(newP, flames.final)
 }

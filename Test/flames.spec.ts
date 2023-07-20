@@ -24,7 +24,7 @@ describe("Flames", function () {
 
 		it("check variations length", () => {
 			const flamesParts = createRandomFlamesComponents(1)
-			assert.equal(flamesParts[0].variations.length === 2, true)
+			assert.equal(flamesParts[0].variations.length === 5, true)
 		})
 
 		it("check weight", () => {
@@ -38,7 +38,7 @@ describe("Flames", function () {
 	describe("Create random flames", function() {
 		it("Expected amount of component", () => {
 			const flames = createRandomFlames({x: 0, y: 0})
-			assert.equal(flames.components.length === 2, true)
+			assert.equal(flames.components.length === 4, true)
 		})
 	})
 })

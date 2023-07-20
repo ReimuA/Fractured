@@ -1,11 +1,9 @@
 import { writeFileSync } from "fs"
 import sharp from "sharp"
 import { XY, clamp, mergeColor } from "../mathu"
-import { Flames,  readFlamesMetadataFromFiles } from "./Flames"
+import { Flames,  applyFlames,  readFlamesMetadataFromFiles } from "./Flames"
 import { createRandomFlames, randomWeigthedSelection } from "./random"
 import { superSampleResolution, applyAA } from "../antialiasing"
-
-
 
 export function createFlamesPixelBuffer(resolution: XY, flames: Flames, supersample: boolean): Uint16Array {
 	const sampleResolution = supersample ? superSampleResolution(resolution) : resolution
@@ -20,23 +18,10 @@ export function createFlamesPixelBuffer(resolution: XY, flames: Flames, supersam
 
 	for (let i = 0; i < 2000000; i++) {
 		const currentComponent = randomWeigthedSelection(flames.components)
-		const t = currentComponent.transform
+	
+		p = applyFlames(flames, flames.components.indexOf(currentComponent), p )
 
-		const newP = { x: 0, y: 0 }
-		const tp = {
-			x: t.a * p.x + t.b * p.y + t.c,
-			y: t.d * p.x + t.e * p.y + t.f,
-		}
-
-		for (const variation of currentComponent.variations) {
-			const vp = variation.variation.function(tp)
-			newP.x += vp.x * variation.weight
-			newP.y += vp.y * variation.weight
-		}
-
-		p = newP
-
-		color = mergeColor(color, currentComponent.color)
+		color = mergeColor(color, mergeColor(currentComponent.color, flames.final.color))
 
 		if (i > 20) {
 			const pixel = {
