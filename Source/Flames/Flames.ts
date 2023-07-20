@@ -20,7 +20,7 @@ export type FlamesComponent = {
 export function createRandomFlames(resolution: XY): Flames {
 	return {
 		resolution,
-		components: createRandomFlamesComponents(2),
+		components: createRandomFlamesComponents(4),
 	}
 }
 
@@ -32,7 +32,7 @@ export function createRandomFlamesComponents(nb: number): FlamesComponent[] {
 		const transform = createRandomTransform()
 		const color = { r: Math.random(), g: Math.random(), b: Math.random() }
 
-		const variations = createRandomVariations(2)
+		const variations = createRandomVariations(5)
 
 		components[i] = {
 			weight,
@@ -57,17 +57,16 @@ export function createRandomVariations(nb: number): WeightedVariation[] {
 
 	for (let i = 0; i < nb; i++) {
 		const r = Math.random()
+		const weight = Math.random()
 
-		if (r < 0.5) variations[i] = { weight: 0, variation: linearVariation }
-		else variations[i] = { weight: 0, variation: swirlVariation }
+		if (r < 0.5) variations[i] = { weight, variation: linearVariation }
+		else variations[i] = { weight, variation: swirlVariation }
 	}
 
-	const step = 0.01
+	const totalWeight = variations.reduce((total, v ) => total + v.weight, 0)
 
-	for (let i = 0; i < 100; i++) {
-		const idx = Math.floor(Math.random() * nb)
-		variations[idx].weight += step
-	}
+	for (const v of variations)
+		v.weight /= totalWeight
 
 	return variations
 }
@@ -85,7 +84,7 @@ export function randomWeigthedSelection<T>(objs: (T & { weight: number })[]): T 
 }
 
 export async function createRandomFlamesImages(resolution: XY) {
-	await createFlameImage(resolution, createRandomFlames(resolution))
+	await createFlameImage(resolution, createRandomFlames(resolution), `output/random-${Date.now()}.png`, true)
 }
 
 export function readFlamesMetadataFromFiles(filename: string): Flames {
@@ -117,7 +116,7 @@ export async function createFlamesFromFile(filename: string) {
 	await createFlameImage(flames.resolution, flames)
 }
 
-export async function createFlameImage(resolution: XY, flames: Flames, outfile = "output.png", supersample = false) {
+export function createFlamesPixelBuffer(resolution: XY, flames: Flames, supersample: boolean): Uint16Array {
 	const sampleResolution = supersample ? superSampleResolution(resolution) : resolution
 	let p: XY = { x: Math.random() * 2 - 1, y: Math.random() * 2 - 1 }
 	let color = {
@@ -128,7 +127,7 @@ export async function createFlameImage(resolution: XY, flames: Flames, outfile =
 
 	let pixels = new Uint16Array(sampleResolution.x * sampleResolution.y * 4).map((e, i) => ((i + 1) % 4 == 0 ? 255 : 0))
 
-	for (let i = 0; i < 200000; i++) {
+	for (let i = 0; i < 2000000; i++) {
 		const currentComponent = randomWeigthedSelection(flames.components)
 		const t = currentComponent.transform
 
@@ -166,7 +165,13 @@ export async function createFlameImage(resolution: XY, flames: Flames, outfile =
 
 	if (supersample)
 		pixels = applyAA(resolution, pixels)
-	writeFileSync("flames.metadata.json", JSON.stringify(flames, null, 4))
+
+	return pixels
+}
+
+export async function createFlameImage(resolution: XY, flames: Flames, outfile = "output.png", supersample = false) {
+	const pixels = createFlamesPixelBuffer(resolution, flames, supersample)
+	writeFileSync(outfile.replace(".png", ".metadata.json"), JSON.stringify(flames, null, 4))
 
 	await sharp(pixels, {
 		raw: {

@@ -14,6 +14,18 @@ export function c01(x: number) {
 	return clamp(0, 1, x)
 }
 
+export function mixColor(a: Color, b: Color, c: number): Color {
+	return {
+		r: a.r*(1-c)+b.r*c,
+		g: a.g*(1-c)+b.g*c,
+		b: a.b*(1-c)+b.b*c,
+	}
+}
+
+export function mix(a: number, b: number, c: number): number {
+	return a*(1-c)+b*c
+}
+
 export function smoothstep(edge0: number, edge1: number, x: number): number {
 	x = (x - edge0) / (edge1 - edge0)
 
