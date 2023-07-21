@@ -44,7 +44,7 @@ function applyTransformAndVariation(p: XY, component: FlamesComponent): XY {
 	}
 
 	for (const variation of component.variations) {
-		const vp = variation.variation.function(tp)
+		const vp = variation.variation.function(tp, component.transform)
 		newP.x += vp.x * variation.weight
 		newP.y += vp.y * variation.weight
 	}

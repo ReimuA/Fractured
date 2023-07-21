@@ -52,7 +52,7 @@ function createDensityArray(resolution: XY, flames: Flames, densityFactor: numbe
 
 	let maxDensity = 0
 
-	for (let i = 0; i < 2e7; i++) {
+	for (let i = 0; i < 2e9; i++) {
 		const currentComponent = randomWeigthedSelection(flames.components)
 	
 		p = applyFlames(flames, flames.components.indexOf(currentComponent), p )
@@ -81,7 +81,7 @@ export function createFlamesPixelBufferFromDensity(resolution: XY, heatmap: numb
 	for (let i = 0; i < heatmap.length; i++)
 	{
 		pixels[i * 4 + 3] = 255
-		if (heatmap[i] < 5) continue
+		if (heatmap[i] < 1) continue
 
 		const density = Math.log(100 + heatmap[i] * densityFactor)
 		const c = palette(density / 10)
@@ -97,7 +97,7 @@ export function createFlamesPixelBufferFromDensity(resolution: XY, heatmap: numb
 
 
 export async function createRandomFlamesImages(resolution: XY) {
-	await createFlameImage(resolution, createRandomFlames(resolution), `output/random-${Date.now()}.png`, true)
+	await createFlameImage(resolution, createRandomFlames(resolution), `output/random-${Date.now()}.png`, true, true)
 }
 
 export async function createFlameImage(resolution: XY, flames: Flames, outfile = "output.png", supersample = false, log = false) {
@@ -112,7 +112,7 @@ export async function createFlameImage(resolution: XY, flames: Flames, outfile =
 		pixels = applyAA(resolution, pixels)
 	
 	if (log) {
-		writeFileSync(outfile.replace(".png", ".heapmap.json"), JSON.stringify(heatMap, null, 4))
+		writeFileSync(outfile.replace(".png", ".heatmap.json"), JSON.stringify(heatMap))
 		writeFileSync(outfile.replace(".png", ".metadata.json"), JSON.stringify(flames, null, 4))
 	}
 

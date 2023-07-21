@@ -1,8 +1,8 @@
-export type XY = {x: number, y: number}
-export type Color = {r: number, g: number, b: number}
+export type XY = { x: number; y: number }
+export type Color = { r: number; g: number; b: number }
 
-export type XYZ = XY & {z: number}
-export type Vec3 = XYZ 
+export type XYZ = XY & { z: number }
+export type Vec3 = XYZ
 
 export function palette(t: number): Color {
 	const a: XYZ={x: 0.500,y: 0.500,z:0.500}
@@ -15,7 +15,6 @@ export function palette(t: number): Color {
 		b: a.z+b.z*Math.cos(6.28318*(c.z*t+d.z)),
 	}
 }
-
 export function clamp(edgeA: number, edgeB: number, x: number) {
 	if (x < edgeA) return edgeA
 	if (x > edgeB) return edgeB
@@ -28,14 +27,14 @@ export function c01(x: number) {
 
 export function mixColor(a: Color, b: Color, c: number): Color {
 	return {
-		r: a.r*(1-c)+b.r*c,
-		g: a.g*(1-c)+b.g*c,
-		b: a.b*(1-c)+b.b*c,
+		r: a.r * (1 - c) + b.r * c,
+		g: a.g * (1 - c) + b.g * c,
+		b: a.b * (1 - c) + b.b * c,
 	}
 }
 
 export function mix(a: number, b: number, c: number): number {
-	return a*(1-c)+b*c
+	return a * (1 - c) + b * c
 }
 
 export function smoothstep(edge0: number, edge1: number, x: number): number {
@@ -45,8 +44,7 @@ export function smoothstep(edge0: number, edge1: number, x: number): number {
 	return x * x * (3.0 - 2.0 * x)
 }
 
-export function dot(a: XY, b: XY)
-{
+export function dot(a: XY, b: XY) {
 	return a.x * b.x + a.y * b.y
 }
 

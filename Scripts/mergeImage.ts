@@ -1,4 +1,5 @@
 import sharp from "sharp"
+import { clamp } from "../Source/mathu"
 
 async function mergeImage(pathA: string, pathB: string) {
 	console.log(pathA, pathB)
@@ -10,7 +11,7 @@ async function mergeImage(pathA: string, pathB: string) {
 
 	for (let i = 0; i < a.length; i++) {
 		if ((i + 1) % 4 != 0)
-			newBuffer[i] = (a[i] + b[i] / 2)
+			newBuffer[i] = clamp(0, 255, (a[i] + b[i] / 4))
 		else
 			newBuffer[i] =a[i]
 	}

@@ -1,7 +1,7 @@
 import { XY } from "../mathu"
 import { Flames, FlamesComponent } from "./Flames"
 import { IFSTransform, createTransform } from "./IFSTransform"
-import { WeightedVariation, linearVariation, swirlVariation } from "./Variations"
+import { WeightedVariation, fanVariation, linearVariation, quinVariation, swirlVariation } from "./Variations"
 
 
 export function createRandomTransform(): IFSTransform {
@@ -54,7 +54,8 @@ export function createRandomVariations(nb: number): WeightedVariation[] {
 		const r = Math.random()
 		const weight = Math.random()
 
-		if (r < 0.5) variations[i] = { weight, variation: linearVariation }
+		if (r < 0.33) variations[i] = { weight, variation: linearVariation }
+		else if (r < 0.66) variations[i] = { weight, variation: fanVariation }
 		else variations[i] = { weight, variation: swirlVariation }
 	}
 
