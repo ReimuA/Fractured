@@ -4,6 +4,18 @@ export type Color = {r: number, g: number, b: number}
 export type XYZ = XY & {z: number}
 export type Vec3 = XYZ 
 
+export function palette(t: number): Color {
+	const a: XYZ={x: 0.500,y: 0.500,z:0.500}
+	const b: XYZ={x: 0.500,y: 0.500,z:0.500}
+	const c: XYZ={x: 1.000,y: 1.000,z:1.000}
+	const d: XYZ={x: 0.000,y: 0.333,z:0.667}
+	return { 
+		r: a.x+b.x*Math.cos(6.28318*(c.x*t+d.x)),
+		g: a.y+b.y*Math.cos(6.28318*(c.y*t+d.y)),
+		b: a.z+b.z*Math.cos(6.28318*(c.z*t+d.z)),
+	}
+}
+
 export function clamp(edgeA: number, edgeB: number, x: number) {
 	if (x < edgeA) return edgeA
 	if (x > edgeB) return edgeB

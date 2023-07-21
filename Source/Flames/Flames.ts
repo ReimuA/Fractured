@@ -1,5 +1,5 @@
 import { IFSTransform } from "./IFSTransform"
-import { WeightedVariation, linearVariation, swirlVariation } from "./Variations"
+import { WeightedVariation, getVariationFromName } from "./Variations"
 import { Color, XY,  } from "../mathu"
 import { readFileSync } from "fs"
 
@@ -25,16 +25,12 @@ export function readFlamesMetadataFromFiles(filename: string): Flames {
 		for (let j = 0; j < component.variations.length; j++) {
 			const variation = component.variations[j]
 			const name = variation.variation.name
-			switch (name) {
-			case "Linear":
-				component.variations[j].variation = linearVariation
-				break
-			case "Swirl":
-				component.variations[j].variation = swirlVariation
-				break
-			}
+			component.variations[j].variation = getVariationFromName(name)
 		}
 	}
+
+	for (let i = 0; i < flames.final.variations.length; i++)
+		flames.final.variations[i].variation = getVariationFromName(flames.final.variations[i].variation.name)
 
 	return flames
 }

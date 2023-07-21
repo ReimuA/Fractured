@@ -21,6 +21,17 @@ export const swirlVariation: Variation = {
 	} 
 }
 
+export function getVariationFromName(name: string): Variation | undefined {
+	switch (name) {
+	case "Linear":
+		return linearVariation
+	case "Swirl":
+		return swirlVariation
+	default: console.log("wtf")
+		return undefined
+	}
+}
+
 export type WeightedVariation = {
     weight: number
     variation: Variation
