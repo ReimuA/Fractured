@@ -32,7 +32,6 @@ export const fanVariation: Variation = {
 		const theta = Math.atan2(p.y, p.x)
 		const t = Math.PI * transform.c * transform.c
 		const f = transform.f
-		const x = r * Math.cos(theta - t / 2)
 
 		if (modn(theta + f, t) > t / 2)
 			return {

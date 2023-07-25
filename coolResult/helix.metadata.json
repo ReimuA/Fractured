@@ -18,7 +18,7 @@
             "e": -0.9180855478736698,
             "f": 0.8450567287204027
         },
-        "variations": [
+        "weightedVariations": [
             {
                 "weight": 0.21669323920390457,
                 "variation": {
@@ -67,7 +67,7 @@
                 "e": 1.3247457258094562,
                 "f": -0.8440992958897375
             },
-            "variations": [
+            "weightedVariations": [
                 {
                     "weight": 0.02125903597069732,
                     "variation": {
@@ -115,7 +115,7 @@
                 "e": 0.6208856628229613,
                 "f": 1.379644051348758
             },
-            "variations": [
+            "weightedVariations": [
                 {
                     "weight": 0.10158086207222723,
                     "variation": {
@@ -163,7 +163,7 @@
                 "e": -0.2919039628435738,
                 "f": -0.8370864847688595
             },
-            "variations": [
+            "weightedVariations": [
                 {
                     "weight": 0.10577354520351379,
                     "variation": {
@@ -211,7 +211,7 @@
                 "e": -1.3757702166398675,
                 "f": 0.6429553937842929
             },
-            "variations": [
+            "weightedVariations": [
                 {
                     "weight": 0.13763827708992396,
                     "variation": {

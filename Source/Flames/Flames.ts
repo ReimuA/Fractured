@@ -13,7 +13,7 @@ export type FlamesComponent = {
 	weight: number
 	color: Color
 	transform: IFSTransform
-	variations: WeightedVariation[]
+	weightedVariations: WeightedVariation[]
 }
 
 export function readFlamesMetadataFromFiles(filename: string): Flames {
@@ -43,7 +43,7 @@ function applyTransformAndVariation(p: XY, component: FlamesComponent): XY {
 		y: t.d * p.x + t.e * p.y + t.f,
 	}
 
-	for (const variation of component.variations) {
+	for (const variation of component.weightedVariations) {
 		const vp = variation.variation.function(tp, component.transform)
 		newP.x += vp.x * variation.weight
 		newP.y += vp.y * variation.weight

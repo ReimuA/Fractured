@@ -19,7 +19,7 @@
                 "e": -0.6592333086573523,
                 "f": -0.52032899093833
             },
-            "variations": [
+            "weightedVariations": [
                 {
                     "weight": 0.18012191556411777,
                     "variation": {
@@ -67,7 +67,7 @@
                 "e": 0.950824826750952,
                 "f": -0.3072828379397725
             },
-            "variations": [
+            "weightedVariations": [
                 {
                     "weight": 0.11380999098068599,
                     "variation": {
@@ -115,7 +115,7 @@
                 "e": -1.2035287156615107,
                 "f": 0.4488240763587006
             },
-            "variations": [
+            "weightedVariations": [
                 {
                     "weight": 0.11966630680321654,
                     "variation": {
@@ -163,7 +163,7 @@
                 "e": 0.26070172365975885,
                 "f": 0.3797577981050142
             },
-            "variations": [
+            "weightedVariations": [
                 {
                     "weight": 0.47036523370681366,
                     "variation": {

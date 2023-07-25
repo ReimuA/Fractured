@@ -12,68 +12,68 @@
 using json = nlohmann::json;
 
 typedef struct IFSTransform {
-    float a;
-    float b;
-    float c;
-    float d;
-    float e;
-    float f;
+    double a;
+    double b;
+    double c;
+    double d;
+    double e;
+    double f;
 }   IFSTransform;
 
 typedef struct WeightedVariation {
     char name[42];
-    float weight;
+    double weight;
 } WeightedVariation;
 
 typedef struct FlamesComponent {
-    float weight;
+    double weight;
     IFSTransform transform;
     WeightedVariation weightedVariations[5];
 } FlamesComponent;
 
 typedef struct Flames {
-    int ResolutionX;
-    int ResolutionY;
+    double ResolutionX;
+    double ResolutionY;
     FlamesComponent finalComponent;
     FlamesComponent components[4];
 }   Flames;
 
 __device__
-float modn(float a, float b)
+double modn(double a, double b)
 {
   int tmp = (int)(a / b);
-  return a - ((float) tmp * b);
+  return a - ((double) tmp * b);
 }				
 
 __device__
-void processFlamesComponent(float* x, float* y, FlamesComponent* component) {
-    float newX = 0;
-    float newY = 0;
+void processFlamesComponent(double* x, double* y, FlamesComponent* component) {
+    double newX = 0;
+    double newY = 0;
     auto t = component->transform;
-    float tpx = t.a * (*x) + t.b * (*y) + t.c;
-    float tpy = t.d * (*x) + t.e * (*y) + t.f;
+    double tpx = t.a * (*x) + t.b * (*y) + t.c;
+    double tpy = t.d * (*x) + t.e * (*y) + t.f;
 
     for (auto i = 0; i < 5; i++) {
         auto variation = component->weightedVariations[i];
         auto name = variation.name;
-        float vpx = 0;
-        float vpy = 0;
+        double vpx = 0;
+        double vpy = 0;
 
-        float length = sqrt(tpx * tpx + tpy * tpy);
-        float l2 = length * length;
+        double length = sqrt(tpx * tpx + tpy * tpy);
+        double l2 = length * length;
 
 
         if (name[0] == 'S') {
-            float cosine = cos(l2);
-            float sine = sin(l2);
+            double cosine = cos(l2);
+            double sine = sin(l2);
             vpx = tpx * sine - tpy * cosine;
             vpy = tpx * cosine + tpy * sine;
         }
 
         if (name[0] == 'F') {
-            float theta = atan2(py, px);
-            float tc2 = PI * t.c * t.c;
-            float d = modn(theta + t.f, tc2);
+            double theta = atan2(tpy, tpx);
+            double tc2 = PI * t.c * t.c;
+            double d = modn(theta + t.f, tc2);
 
             if (d > 0.5) {
 				vpx = length * cos(theta - tc2 / 2);
@@ -102,13 +102,13 @@ void processFlames(int* heatmap, Flames* flames)
 {
     curandState state;
 
-    curand_init(clock() + threadIdx.x, 0, 0, &state);
-    float y = curand_uniform(&state) * 2 - 1;
-    float x = curand_uniform(&state) * 2 - 1;
+    curand_init(clock64(), 0, 0, &state);
+    double y = curand_uniform(&state) * 2 - 1;
+    double x = curand_uniform(&state) * 2 - 1;
 
-    for (int i = 0; i < 1e7; i++) {
-        float r = curand_uniform(&state);
-        float accumulator = 0;
+    for (int i = 0; i < 1e6; i++) {
+        double r = curand_uniform(&state);
+        double accumulator = 0;
 
         FlamesComponent component = flames->components[0];
         for (auto j = 0; j < 4; j++) {
@@ -122,12 +122,13 @@ void processFlames(int* heatmap, Flames* flames)
         processFlamesComponent(&x, &y, &component);
 
         if (i > 20) {
-            auto px = round((x + 2 * (flames->ResolutionX / flames->ResolutionY)) * (flames->ResolutionY / 4));
-            auto py = round((y + 2) * (flames->ResolutionY / 4));
+            
+				int px = round((x + 2 * (flames->ResolutionX / flames->ResolutionY)) * (flames->ResolutionY / 4.0));
+				int py = round((y + 2) * (flames->ResolutionY / 4.0));
 
-            if (px >= 0 && px < flames->ResolutionX && py >= 0 && py < flames->ResolutionY) {
-                int idx = py * flames->ResolutionX + px;
-                atomicAdd(&heatmap[idx], 1);
+			if (px > 0 && px < flames->ResolutionX && py > 0 && py < flames->ResolutionY) {
+				int idx = py * (flames->ResolutionX) + px;
+				atomicAdd(heatmap + idx, 1);
             }
         }
     }
@@ -185,9 +186,8 @@ void flamesComponentFromJObject(FlamesComponent* component, json obj) {
     }
 }
 
-void readFlames(Flames* flames, char* s) {
-    std::string filename(s);
-    std::ifstream input(s);
+void readFlames(Flames* flames, std::string filename) {
+    std::ifstream input(filename);
     json data = json::parse(input);
 
     flames->ResolutionX = data["resolution"]["x"] * 2;
@@ -199,8 +199,8 @@ void readFlames(Flames* flames, char* s) {
 
     flamesComponentFromJObject(&flames->finalComponent, data["final"]);
 
-    std::cout << data["resolution"]["x"] << std::endl;
-    std::cout << data["resolution"]["y"] << std::endl;
+    std::cout << flames->ResolutionX << std::endl;
+    std::cout << flames->ResolutionY << std::endl;
 }
 
 
@@ -211,10 +211,11 @@ int main(int argc, char** argv)
     if (argc != 2) {
         std::cout << "Usage : ./a.exe flamePath" << std::endl;
         return 1;
-    }
-    else {
-        readFlames(&flames, argv[1]);
-    }
+    } 
+    
+    std::string flamesMetadata(argv[1]);
+
+    readFlames(&flames, argv[1]);
 
 
     int* heatmap;

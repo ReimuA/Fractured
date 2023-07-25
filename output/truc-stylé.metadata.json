@@ -15,7 +15,7 @@
                 "e": 0.4383243593507442,
                 "f": -0.6762989289135113
             },
-            "variations": [
+            "weightedVariations": [
                 {
                     "weight": 0.5000000000000002,
                     "variation": {
@@ -45,7 +45,7 @@
                 "e": -0.45843240269593855,
                 "f": -0.9767196033688965
             },
-            "variations": [
+            "weightedVariations": [
                 {
                     "weight": 0.48000000000000026,
                     "variation": {

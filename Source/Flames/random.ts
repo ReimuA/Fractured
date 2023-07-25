@@ -29,7 +29,7 @@ function createRandomFlamesComponent(): FlamesComponent {
 		weight,
 		color,
 		transform,
-		variations,
+		weightedVariations: variations,
 	}
 }
 

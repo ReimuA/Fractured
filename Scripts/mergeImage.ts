@@ -1,7 +1,8 @@
 import sharp from "sharp"
 import { clamp } from "../Source/mathu"
+import { argv, exit } from "process"
 
-async function mergeImage(pathA: string, pathB: string) {
+async function mergeImage(pathA: string, pathB: string, outfile: string) {
 	console.log(pathA, pathB)
 
 	const a = await sharp(pathA).raw().toBuffer()
@@ -15,14 +16,19 @@ async function mergeImage(pathA: string, pathB: string) {
 		else
 			newBuffer[i] =a[i]
 	}
+	
 	await sharp(newBuffer, {
 		raw: {
 			width: 1920,
 			height: 1080,
 			channels: 4,
 		},
-	}).toFile("res.png")
-
+	}).toFile(outfile)
 }
 
-mergeImage(process.argv[2], process.argv[3])
+if (argv.length != 5) {
+	console.error("usage: ./mergeImage.ts 1.png 2.png out.png")
+	exit(1)
+}
+
+mergeImage(process.argv[2], process.argv[3], process.argv[4])

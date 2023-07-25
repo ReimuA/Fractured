@@ -52,7 +52,7 @@ function createDensityArray(resolution: XY, flames: Flames, densityFactor: numbe
 
 	let maxDensity = 0
 
-	for (let i = 0; i < 2e9; i++) {
+	for (let i = 0; i < 2e7; i++) {
 		const currentComponent = randomWeigthedSelection(flames.components)
 	
 		p = applyFlames(flames, flames.components.indexOf(currentComponent), p )
@@ -77,14 +77,20 @@ function createDensityArray(resolution: XY, flames: Flames, densityFactor: numbe
 
 export function createFlamesPixelBufferFromDensity(resolution: XY, heatmap: number[], densityFactor: number): Uint16Array {
 	const pixels = new Uint16Array(resolution.x * resolution.y * 4).fill(0)
+	let max = 0;
 
+	for (let i = 0; i < heatmap.length; i++)
+		if (heatmap[i] > max)
+			max = heatmap[i]
+
+	const maxDensity = Math.log(max * densityFactor)
 	for (let i = 0; i < heatmap.length; i++)
 	{
 		pixels[i * 4 + 3] = 255
 		if (heatmap[i] < 1) continue
 
-		const density = Math.log(100 + heatmap[i] * densityFactor)
-		const c = palette(density / 10)
+		const density = Math.log(heatmap[i] * densityFactor)
+		const c = palette(density / maxDensity)
 
 		pixels[i * 4 + 0] = c.r * 255
 		pixels[i * 4 + 1] = c.g * 255
