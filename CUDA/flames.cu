@@ -102,11 +102,11 @@ void processFlames(int* heatmap, Flames* flames)
 {
     curandState state;
 
-    curand_init(clock64(), 0, 0, &state);
+    curand_init(clock64() + threadIdx.x, 0, 0, &state);
     double y = curand_uniform(&state) * 2 - 1;
     double x = curand_uniform(&state) * 2 - 1;
 
-    for (int i = 0; i < 1e6; i++) {
+    for (int i = 0; i < 1e6 / 32; i++) {
         double r = curand_uniform(&state);
         double accumulator = 0;
 
@@ -134,8 +134,10 @@ void processFlames(int* heatmap, Flames* flames)
     }
 }
 
-void writeResult(int* heatmap, int length) {
-    std::ofstream f("res.json");
+void writeResult(int* heatmap, int length, char *outPath) {
+    std::string path(outPath);
+    std::ofstream f(path);
+
     if (f.is_open())
     {
         f << "[";
@@ -208,8 +210,8 @@ int main(int argc, char** argv)
 {
     Flames flames;
     
-    if (argc != 2) {
-        std::cout << "Usage : ./a.exe flamePath" << std::endl;
+    if (argc != 3) {
+        std::cout << "Usage : ./a.exe flamePath outPath" << std::endl;
         return 1;
     } 
     
@@ -233,13 +235,13 @@ int main(int argc, char** argv)
     cudaMemcpy(flamesPtr, &flames, sizeof(Flames), cudaMemcpyHostToDevice);
     printf("\n Error msg: %s", cudaGetErrorString(cudaGetLastError()));
 
-    processFlames << <1024, 1 >> > (heatmap, flamesPtr);
+    processFlames << <1024, 128 >> > (heatmap, flamesPtr);
 
     // Wait for GPU to finish before accessing on host
     cudaDeviceSynchronize();
 
     printf("\n Error msg: %s", cudaGetErrorString(cudaGetLastError()));
-    writeResult(heatmap, heatmapLength);
+    writeResult(heatmap, heatmapLength, argv[2]);
 
     cudaFree(heatmap);
     cudaFree(flamesPtr);

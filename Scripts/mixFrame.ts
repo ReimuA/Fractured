@@ -16,7 +16,7 @@ async function mixFrame(idx: number) {
 			height: 1080,
 			channels: 4,
 		},
-	}).toFile(idx+"-mix.png")
+	}).toFile((idx+1)+".png")
 }
 
 

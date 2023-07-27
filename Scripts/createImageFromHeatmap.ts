@@ -45,7 +45,7 @@ if (args.values.input === undefined || args.values.output === undefined) {
 const input = args.values.input as string
 const output = args.values.output as string
 
-if (args.values.batch === null)
+if (args.values.batch === undefined)
 	createImageFromHeatmap(input, output)
 else {
 	const batch = parseInt(args.values.batch as string)
