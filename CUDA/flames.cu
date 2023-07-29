@@ -169,22 +169,22 @@ void flamesComponentFromJObject(FlamesComponent* component, json obj) {
     component->transform.d = obj["transform"]["d"];
     component->transform.e = obj["transform"]["e"];
     component->transform.f = obj["transform"]["f"];
-
+/* 
 
     std::cout << component->transform.a << std::endl;
     std::cout << component->transform.b << std::endl;
     std::cout << component->transform.c << std::endl;
     std::cout << component->transform.d << std::endl;
     std::cout << component->transform.e << std::endl;
-    std::cout << component->transform.f << std::endl;
+    std::cout << component->transform.f << std::endl; */
 
     component->weight = obj["weight"];
 
     for (int i = 0; i < 5; i++) {
         variationFromJObject(&component->weightedVariations[i], obj["weightedVariations"].at(i));
-
+/* 
         std::cout << component->weightedVariations[i].weight << std::endl;
-        std::cout << component->weightedVariations[i].name << std::endl;
+        std::cout << component->weightedVariations[i].name << std::endl; */
     }
 }
 
@@ -200,9 +200,9 @@ void readFlames(Flames* flames, std::string filename) {
     }
 
     flamesComponentFromJObject(&flames->finalComponent, data["final"]);
-
+/* 
     std::cout << flames->ResolutionX << std::endl;
-    std::cout << flames->ResolutionY << std::endl;
+    std::cout << flames->ResolutionY << std::endl; */
 }
 
 
@@ -227,22 +227,22 @@ int main(int argc, char** argv)
     // Allocate Unified Memory – accessible from CPU or GPU
     cudaMallocManaged(&flamesPtr, sizeof(Flames));
 
-    printf("\n Error msg: %s", cudaGetErrorString(cudaGetLastError()));
+    // printf("\n Error msg: %s", cudaGetErrorString(cudaGetLastError()));
     cudaMallocManaged(&heatmap, sizeof(int) * heatmapLength);
-    printf("\n Error msg: %s", cudaGetErrorString(cudaGetLastError()));
+    // printf("\n Error msg: %s", cudaGetErrorString(cudaGetLastError()));
     cudaMemset(heatmap, 0, heatmapLength * sizeof(int));
-    printf("\n Error msg: %s", cudaGetErrorString(cudaGetLastError()));
+    // printf("\n Error msg: %s", cudaGetErrorString(cudaGetLastError()));
     cudaMemcpy(flamesPtr, &flames, sizeof(Flames), cudaMemcpyHostToDevice);
-    printf("\n Error msg: %s", cudaGetErrorString(cudaGetLastError()));
+    // printf("\n Error msg: %s", cudaGetErrorString(cudaGetLastError()));
 
     processFlames << <1024, 128 >> > (heatmap, flamesPtr);
 
     // Wait for GPU to finish before accessing on host
     cudaDeviceSynchronize();
 
-    printf("\n Error msg: %s", cudaGetErrorString(cudaGetLastError()));
+    // printf("\n Error msg: %s", cudaGetErrorString(cudaGetLastError()));
     writeResult(heatmap, heatmapLength, argv[2]);
-
+    std::cout << argv[1] << " -> " << argv[2] << std::endl;
     cudaFree(heatmap);
     cudaFree(flamesPtr);
     return 0;

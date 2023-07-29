@@ -4,6 +4,12 @@ node_modules
 *.ps1
 *.cmd
 out/
+output/
+video/
 
 output.frag.glsl
 output-raw.frag.glsl
+
+a.exe
+a.exp
+a.lib
