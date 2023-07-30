@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { allVariations, type Variation } from './Variations';
+	import { allVariations, type Variation } from './FlamesUtils/Variations';
 	import { version } from '$app/environment';
 	import { variationsPools } from './stores';
 	// import '../app.css';
