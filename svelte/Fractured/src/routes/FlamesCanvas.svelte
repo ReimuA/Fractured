@@ -7,6 +7,8 @@
 	import type { XY } from './mathu';
 	import { applyAA, superSampleResolution } from './FlamesUtils/antialiasing';
 	import type { Flames } from './FlamesUtils//Flames';
+	import { variationsPools } from './stores';
+	import { allVariations, type Variation } from './FlamesUtils/Variations';
 
 	let canvas: HTMLCanvasElement;
 	let flames: Flames;
@@ -18,11 +20,17 @@
 	let heatmap = new Array<number>(resolution.x * resolution.y).fill(0);
 	let pixels = new Uint8ClampedArray(resolution.x * resolution.y * 4).fill(0);
 
-	function resetCanvasData() {
+	// New variations pools, we reset the canvas
+	variationsPools.subscribe((v) => {
+		if (canvas && v.length != 0)
+			resetCanvasData(v)
+	})
+
+	function resetCanvasData(variation: Variation[]) {
 		p = { x: Math.random() * 2 - 1, y: Math.random() * 2 - 1 };
 		baseResolution = { x: canvas.width, y: canvas.height };
 		resolution = superSampleResolution(baseResolution);
-		flames = createRandomFlames(resolution);
+		flames = createRandomFlames(resolution, variation);
 		heatmap = new Array<number>(resolution.x * resolution.y).fill(0);
 		pixels = new Uint8ClampedArray(resolution.x * resolution.y * 4).fill(0);
 		nbIteration = 0;
@@ -30,18 +38,19 @@
 	}
 
 	function updateCanvas(ctx: CanvasRenderingContext2D) {
-		const iter = updateDensityArray(resolution, flames, heatmap, p, 5000, 5000 * nbIteration++);
-		p = iter.p;
-		heatmap = iter.heatmap;
+		({heatmap, p} = updateDensityArray(resolution, flames, heatmap, p, 5000, 5000 * nbIteration++));
 		updatePixelsBuffer(pixels, heatmap, palette, 10);
-		let img = new ImageData(applyAA(baseResolution, pixels), resolution.x / 2, resolution.y / 2);
-		ctx.putImageData(img, 0, 0);
+		ctx.putImageData(
+			new ImageData(applyAA(baseResolution, pixels), baseResolution.x, baseResolution.y),
+			0,
+			0
+		);
 	}
 
 	onMount(() => {
 		const ctx = canvas.getContext('2d');
 
-		resetCanvasData();
+		resetCanvasData(allVariations);
 		let frame = requestAnimationFrame(flamesIteration);
 
 		function flamesIteration(t: number) {

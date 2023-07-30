@@ -1,7 +1,7 @@
 import type { XY } from "./mathu"
 import type { Flames, FlamesComponent } from "./Flames"
 import { type IFSTransform, createTransform } from "./IFSTransform"
-import { type WeightedVariation, allVariations } from "./Variations"
+import type { WeightedVariation, Variation } from "./Variations"
 
 
 export function createRandomTransform(): IFSTransform {
@@ -10,34 +10,32 @@ export function createRandomTransform(): IFSTransform {
 	return createTransform(r(), r(), r(), r(), r(), r())
 }
 
-export function createRandomFlames(resolution: XY): Flames {
+export function createRandomFlames(resolution: XY, variationsPools: Variation[]): Flames {
 	return {
 		resolution,
-		final: createRandomFlamesComponent(),
-		components: createRandomFlamesComponents(4),
+		final: createRandomFlamesComponent(variationsPools),
+		components: createRandomFlamesComponents(4, variationsPools),
 	}
 }
 
-function createRandomFlamesComponent(): FlamesComponent {
+function createRandomFlamesComponent(variationsPools: Variation[]): FlamesComponent {
 	const weight = Math.random()
 	const transform = createRandomTransform()
-	const color = { r: Math.random(), g: Math.random(), b: Math.random() }
 
-	const variations = createRandomVariations(5)
+	const variations = createRandomVariations(5, variationsPools)
 
 	return {
 		weight,
-		color,
 		transform,
 		weightedVariations: variations,
 	}
 }
 
-export function createRandomFlamesComponents(nb: number): FlamesComponent[] {
+export function createRandomFlamesComponents(nb: number, variationsPools: Variation[]): FlamesComponent[] {
 	const components = new Array<FlamesComponent>(nb)
 
 	for (let i = 0; i < nb; i++) 
-		components[i] = createRandomFlamesComponent()
+		components[i] = createRandomFlamesComponent(variationsPools)
 
 	const totalWeight = components.reduce((total, v ) => total + v.weight, 0)
 
@@ -47,14 +45,14 @@ export function createRandomFlamesComponents(nb: number): FlamesComponent[] {
 	return components
 }
 
-export function createRandomVariations(nb: number): WeightedVariation[] {
+export function createRandomVariations(nb: number, variationsPools: Variation[]): WeightedVariation[] {
 	const variations = new Array<WeightedVariation>(nb)
 
 	for (let i = 0; i < nb; i++) {
 		const r = Math.random()
 		const weight = Math.random()
 
-		 variations[i] = { weight, variation: allVariations[Math.floor(r * allVariations.length)] }
+		 variations[i] = { weight, variation: variationsPools[Math.floor(r * variationsPools.length)] }
 	}
 
 	const totalWeight = variations.reduce((total, v ) => total + v.weight, 0)

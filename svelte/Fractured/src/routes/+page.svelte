@@ -3,5 +3,5 @@
 	import VariationSelector from "./VariationSelector.svelte";
 </script>
 
-<VariationSelector/>
 <FlamesCanvas/>
+<VariationSelector/>
