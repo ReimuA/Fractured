@@ -1,5 +1,7 @@
 <script>
-	import Canvas from "./Canvas.svelte";
+	import FlamesCanvas from "./FlamesCanvas.svelte";
+	import VariationSelector from "./VariationSelector.svelte";
 </script>
 
-<Canvas/>
+<VariationSelector/>
+<FlamesCanvas/>

@@ -75,7 +75,6 @@ export function getVariationFromName(name: string): Variation | undefined {
 	case "Fan":
 		return fanVariation
 	default:
-		console.log("wtf")
 		return undefined
 	}
 }
