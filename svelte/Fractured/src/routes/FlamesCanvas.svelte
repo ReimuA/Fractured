@@ -4,10 +4,10 @@
 	import { createRandomFlames } from './FlamesUtils/random';
 	import { updateDensityArray, updatePixelsBuffer } from './FlamesUtils/image';
 	import { getRandomColorPalette, yellowRed } from './FlamesUtils//palette';
-	import type { XY } from './mathu';
+	import type { XY } from './FlamesUtils/mathu';
 	import { applyAA, superSampleResolution } from './FlamesUtils/antialiasing';
 	import type { Flames } from './FlamesUtils//Flames';
-	import { variationsPools } from './stores';
+	import { canvasRef, flamesMetadata, variationsPools } from './stores';
 	import { allVariations, type Variation } from './FlamesUtils/Variations';
 
 	let canvas: HTMLCanvasElement;
@@ -16,7 +16,6 @@
 	let resolution: XY = { x: 0, y: 0 };
 	let baseResolution: XY = { x: 0, y: 0 };
 	let nbIteration: number = 0;
-	let palette = getRandomColorPalette();
 	let heatmap = new Array<number>(resolution.x * resolution.y).fill(0);
 	let pixels = new Uint8ClampedArray(resolution.x * resolution.y * 4).fill(0);
 
@@ -34,12 +33,12 @@
 		heatmap = new Array<number>(resolution.x * resolution.y).fill(0);
 		pixels = new Uint8ClampedArray(resolution.x * resolution.y * 4).fill(0);
 		nbIteration = 0;
-		palette = getRandomColorPalette();
+		flamesMetadata.set(flames)
 	}
 
 	function updateCanvas(ctx: CanvasRenderingContext2D) {
 		({heatmap, p} = updateDensityArray(resolution, flames, heatmap, p, 5000, 5000 * nbIteration++));
-		updatePixelsBuffer(pixels, heatmap, palette, 10);
+		updatePixelsBuffer(pixels, heatmap, flames.palette, 10);
 		ctx.putImageData(
 			new ImageData(applyAA(baseResolution, pixels), baseResolution.x, baseResolution.y),
 			0,
@@ -49,6 +48,7 @@
 
 	onMount(() => {
 		const ctx = canvas.getContext('2d');
+		canvasRef.set(canvas)
 
 		resetCanvasData(allVariations);
 		let frame = requestAnimationFrame(flamesIteration);

@@ -1,12 +1,13 @@
 node_modules
-*.js
-*.js.map
+./node/**/*.js
+./node/**/*.js.map
 *.ps1
 *.cmd
 out/
 output/
 video/
 
+svelte/SvelteSample
 output.frag.glsl
 output-raw.frag.glsl
 

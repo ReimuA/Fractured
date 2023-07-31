@@ -1,9 +1,11 @@
 import type { IFSTransform } from "./IFSTransform"
 import type {  WeightedVariation} from "./Variations"
 import type { Color, XY,  } from "./mathu"
+import type { ColorPalette } from "./palette"
 
 export type Flames = {
 	resolution: XY
+	palette: ColorPalette
 	final: FlamesComponent
 	components: FlamesComponent[]
 }

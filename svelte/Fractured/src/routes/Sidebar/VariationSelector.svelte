@@ -1,9 +1,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { allVariations, type Variation } from './FlamesUtils/Variations';
+	import { allVariations, type Variation } from '../FlamesUtils/Variations';
 	import { version } from '$app/environment';
-	import { variationsPools } from './stores';
-	// import '../app.css';
+	import { variationsPools } from '../stores';
 
 	let variations = allVariations.map((v) => {
 		return {
@@ -17,15 +16,15 @@
 	}
 </script>
 
-<div class="absolute left-0 top-0 h-screen bg-slate-800/25 w-52">
+<div class="">
 	{#each variations as v}
 		<button
-			class="block w-full"
+			class="block pl-12"
 			on:click={() => {
 				v.selected = !v.selected;
 			}}
 		>
-			<p class="py-1 text-center" class:text-white={v.selected} class:text-slate-600={!v.selected}>
+			<p class="" class:text-white={v.selected} class:text-slate-600={!v.selected}>
 				{v.variation.name}
 			</p>
 		</button>

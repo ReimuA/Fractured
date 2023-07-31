@@ -2,6 +2,7 @@ import type { XY } from "./mathu"
 import type { Flames, FlamesComponent } from "./Flames"
 import { type IFSTransform, createTransform } from "./IFSTransform"
 import type { WeightedVariation, Variation } from "./Variations"
+import { getRandomColorPalette } from "./palette"
 
 
 export function createRandomTransform(): IFSTransform {
@@ -13,6 +14,7 @@ export function createRandomTransform(): IFSTransform {
 export function createRandomFlames(resolution: XY, variationsPools: Variation[]): Flames {
 	return {
 		resolution,
+		palette: getRandomColorPalette(),
 		final: createRandomFlamesComponent(variationsPools),
 		components: createRandomFlamesComponents(4, variationsPools),
 	}
