@@ -3,11 +3,11 @@
 	// import '../app.css';
 	import { createRandomFlames } from './FlamesUtils/random';
 	import { updateDensityArray, updatePixelsBuffer } from './FlamesUtils/image';
-	import { getRandomColorPalette, yellowRed } from './FlamesUtils//palette';
+	import type { ColorPalette } from './FlamesUtils//palette';
 	import type { XY } from './FlamesUtils/mathu';
 	import { applyAA, superSampleResolution } from './FlamesUtils/antialiasing';
 	import type { Flames } from './FlamesUtils//Flames';
-	import { canvasRef, flamesMetadata, variationsPools } from './stores';
+	import { canvasRef, colorPaletteStore, flamesMetadata, variationsPools } from './stores';
 	import { allVariations, type Variation } from './FlamesUtils/Variations';
 
 	let canvas: HTMLCanvasElement;
@@ -16,6 +16,7 @@
 	let resolution: XY = { x: 0, y: 0 };
 	let baseResolution: XY = { x: 0, y: 0 };
 	let nbIteration: number = 0;
+	let currentPalette: ColorPalette | undefined
 	let heatmap = new Array<number>(resolution.x * resolution.y).fill(0);
 	let pixels = new Uint8ClampedArray(resolution.x * resolution.y * 4).fill(0);
 
@@ -25,11 +26,18 @@
 			resetCanvasData(v)
 	})
 
+	colorPaletteStore.subscribe((c) => {
+		if (flames != null) flames.palette = c
+		currentPalette = c
+	})
+
 	function resetCanvasData(variation: Variation[]) {
 		p = { x: Math.random() * 2 - 1, y: Math.random() * 2 - 1 };
 		baseResolution = { x: canvas.width, y: canvas.height };
 		resolution = superSampleResolution(baseResolution);
 		flames = createRandomFlames(resolution, variation);
+		if (currentPalette)
+			flames.palette = currentPalette
 		heatmap = new Array<number>(resolution.x * resolution.y).fill(0);
 		pixels = new Uint8ClampedArray(resolution.x * resolution.y * 4).fill(0);
 		nbIteration = 0;

@@ -105,39 +105,44 @@ export const yellowRed =
     d: { x: 0.000, y: 0.000, z: 0.000 },
 }
 
-const defaultPalettes: ColorPalette[] = [
-    rainbow1,
-    rainbow2,
-    rainbow3,
-    rainbow4,
-    blueCyan,
-    greenCyan,
-    greenMagenta,
-    greenRed,
-    orangeBlue,
-    redBlue,
-    yellowMagentaCyan,
-    yellowRed,
+export type NamedColorPalette = {
+    palette: ColorPalette
+    name: string
+}
+
+export const namedPalettesList: NamedColorPalette[] = [
+    { name: "Rainbow 1", palette: rainbow1 },
+    { name: "Rainbow 2", palette: rainbow2 },
+    { name: "Rainbow 3", palette: rainbow3 },
+    { name: "Rainbow 4", palette: rainbow4 },
+    { name: "Blue-Cyan", palette: blueCyan },
+    { name: "Green-Cyan", palette: greenCyan },
+    { name: "Green-Magenta", palette: greenMagenta },
+    { name: "Green-Red", palette: greenRed },
+    { name: "Orange-Blue", palette: orangeBlue },
+    { name: "Red-Blue", palette: redBlue },
+    { name: "Yellow-Magenta-Cyan", palette: yellowMagentaCyan },
+    { name: "Yellow-Red", palette: yellowRed },
 ]
 
-export const getRandomColorPalette = () => defaultPalettes[Math.floor(Math.random() * defaultPalettes.length)]
+export const getRandomColorPalette = () => namedPalettesList[Math.floor(Math.random() * namedPalettesList.length)].palette
 
 export function colorFromPalette(p: ColorPalette, t: number): Color {
-	return {
-	  r: c01(p.a.x+p.b.x*Math.cos(6.28318*(p.c.x*t+p.d.x))),
-	  g: c01(p.a.y+p.b.y*Math.cos(6.28318*(p.c.y*t+p.d.y))),
-	  b: c01(p.a.z+p.b.z*Math.cos(6.28318*(p.c.z*t+p.d.z))),
-	}
+    return {
+        r: c01(p.a.x + p.b.x * Math.cos(6.28318 * (p.c.x * t + p.d.x))),
+        g: c01(p.a.y + p.b.y * Math.cos(6.28318 * (p.c.y * t + p.d.y))),
+        b: c01(p.a.z + p.b.z * Math.cos(6.28318 * (p.c.z * t + p.d.z))),
+    }
 }
 
 export function defaultPalette(t: number): Color {
-	const a: XYZ={x:0.158,y:0.248,z:0.788}
-	const b: XYZ={x:0.898,y:0.758,z:0.498}
-	const c: XYZ={x:0.468,y:-0.512,z:-0.512}
-	const d: XYZ={x:-2.512,y:-1.482,z:0.500}
-	return {
-	  r: c01(a.x+b.x*Math.cos(6.28318*(c.x*t+d.x))),
-	  g: c01(a.y+b.y*Math.cos(6.28318*(c.y*t+d.y))),
-	  b: c01(a.z+b.z*Math.cos(6.28318*(c.z*t+d.z))),
-	}
+    const a: XYZ = { x: 0.158, y: 0.248, z: 0.788 }
+    const b: XYZ = { x: 0.898, y: 0.758, z: 0.498 }
+    const c: XYZ = { x: 0.468, y: -0.512, z: -0.512 }
+    const d: XYZ = { x: -2.512, y: -1.482, z: 0.500 }
+    return {
+        r: c01(a.x + b.x * Math.cos(6.28318 * (c.x * t + d.x))),
+        g: c01(a.y + b.y * Math.cos(6.28318 * (c.y * t + d.y))),
+        b: c01(a.z + b.z * Math.cos(6.28318 * (c.z * t + d.z))),
+    }
 }

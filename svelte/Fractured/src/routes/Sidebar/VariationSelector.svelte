@@ -16,6 +16,7 @@
 	}
 </script>
 
+<p class="pt-8 pl-6 text-white">Enable variations</p>
 <div class="">
 	{#each variations as v}
 		<button

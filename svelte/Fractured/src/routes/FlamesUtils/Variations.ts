@@ -7,9 +7,13 @@ function modn(n: number, m: number) {
 	return ((n % m) + m) % m
 }
 
+// See https://flam3.com/flame_draves.pdf - Appendix: Catalog of Variations
 const _theta = (p: XY) => Math.atan2(p.y, p.x)
 const _phi = (p: XY) => Math.atan2(p.x, p.y)
 const _r = (p: XY) => xyLength(p)
+const _omega = () => Math.random() < .5 ? 0 : Math.PI
+const _lambda = () => Math.random() < .5 ? -1 : 1
+const _psi = () => Math.random()
 
 export const linearVariation: Variation = {
 	name: "Linear",
@@ -17,8 +21,6 @@ export const linearVariation: Variation = {
 		return { x: p.x, y: p.y }
 	},
 }
-
-
 
 export const sinusoidalVariation: Variation = {
 	name: "Sinusoidal",
@@ -94,6 +96,55 @@ export const heartVariation: Variation = {
 	}
 }
 
+export const discVariation: Variation = {
+	name: "Disc",
+	function: (p: XY) => {
+		const r = _r(p)
+		const theta = _theta(p)
+		const f = theta / Math.PI
+		return {
+			x: f * Math.sin(Math.PI * r),
+			y: f * Math.cos(Math.PI * r)
+		}
+	}
+}
+
+export const spiralVariation: Variation = {
+	name: "Spiral",
+	function: (p: XY) => {
+		const r = _r(p)
+		const theta = _theta(p)
+		const invR = 1 / r
+		return {
+			x: invR * (Math.cos(theta) + Math.sin(r)),
+			y: invR * (Math.sin(theta) - Math.cos(r))
+		}
+	}
+}
+
+export const hyperbolicVariation: Variation = {
+	name: "Hyperbolic",
+	function: (p: XY) => {
+		const r = _r(p)
+		const theta = _theta(p)
+		return {
+			x: Math.sin(theta) / r,
+			y: r * Math.cos(theta)
+		}
+	}
+}
+
+export const diamondVariation: Variation = {
+	name: "Diamond",
+	function: (p: XY) => {
+		const r = _r(p)
+		const theta = _theta(p)
+		return {
+			x: Math.sin(theta) * Math.cos(r),
+			y: Math.sin(r) * Math.cos(theta)
+		}
+	}
+}
 
 export const fanVariation: Variation = {
 	name: "Fan",
@@ -134,7 +185,15 @@ export function getVariationFromName(name: string): Variation | undefined {
 		case "Handkerchief":
 			return handkerchieVariation
 		case "Heart":
-				return heartVariation
+			return heartVariation
+		case "Disc":
+			return discVariation
+		case "Spiral":
+			return spiralVariation
+		case "Hyperbolic":
+			return hyperbolicVariation
+		case "Diamond":
+			return diamondVariation
 		case "Fan":
 			return fanVariation
 		default:
@@ -151,6 +210,10 @@ export const allVariations: Variation[] = [
 	polarVariation,
 	handkerchieVariation,
 	heartVariation,
+	discVariation,
+	spiralVariation,
+	hyperbolicVariation,
+	diamondVariation,
 	fanVariation,
 ]
 
