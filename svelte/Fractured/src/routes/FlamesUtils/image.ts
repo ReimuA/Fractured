@@ -49,22 +49,23 @@ export function updateDensityArray(resolution: XY, flames: Flames, heatmap: numb
 	return { heatmap, p }
 }
 
+// Density factor can be used to provide faster visible result
 export function updatePixelsBufferForStructuralColoring(pixels: Uint8ClampedArray, heatmap: HeatmapCell[], p: ColorPalette, densityFactor: number) {
 	for (let i = 0; i < heatmap.length; i++) {
 		pixels[i * 4 + 3] = 255
 		if (heatmap[i].accumulator < 1) continue
 
 		const c = colorFromPalette(p, heatmap[i].color)
-		const aChan = Math.log(heatmap[i].accumulator) / heatmap[i].accumulator;
+		const aChan = Math.log(heatmap[i].accumulator * densityFactor) / heatmap[i].accumulator;
 		
-		pixels[i * 4 + 0] = 255 * Math.pow(c.r  * aChan, 0.45454)
-		pixels[i * 4 + 1] = 255 * Math.pow(c.g  * aChan, 0.45454)
-		pixels[i * 4 + 2] = 255 * Math.pow(c.b  * aChan, 0.45454)
+		pixels[i * 4 + 0] = mix(pixels[i * 4 + 0], 255 * Math.pow(c.r  * aChan, 0.45454), .1)
+		pixels[i * 4 + 1] = mix(pixels[i * 4 + 1], 255 * Math.pow(c.g  * aChan, 0.45454), .1)
+		pixels[i * 4 + 2] = mix(pixels[i * 4 + 2], 255 * Math.pow(c.b  * aChan, 0.45454), .1)
 	}
 	return pixels
 }
 
-// Non structural coloring : provide faster visual result by only using the accumulator
+// Density factor can be used to provide faster visible result
 export function updatePixelsBuffer(pixels: Uint8ClampedArray, heatmap: HeatmapCell[], p: ColorPalette, densityFactor: number) {
 	let max = 0;
 	for (let i = 0; i < heatmap.length; i++)

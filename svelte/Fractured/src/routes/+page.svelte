@@ -1,6 +1,6 @@
 <script>
 	import ExternalLinks from "./ExternalLinks.svelte";
-import FlamesCanvas from "./FlamesCanvas.svelte";
+	import FlamesCanvas from "./FlamesCanvas.svelte";
 	import Hamburger from "./Sidebar/Hamburger.svelte";
 	import Sidebar from "./Sidebar/Sidebar.svelte";
 
