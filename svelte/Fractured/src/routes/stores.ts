@@ -7,4 +7,6 @@ export const variationsPools = writable<Variation[]>([]);
 
 export const flamesMetadata = writable<Flames>()
 
+export const colorModeStore = writable<{structuralColoring: boolean}>({structuralColoring: false})
+
 export const canvasRef = writable<HTMLCanvasElement>()

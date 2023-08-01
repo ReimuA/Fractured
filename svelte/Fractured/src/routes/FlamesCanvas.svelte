@@ -7,7 +7,7 @@
 	import type { XY } from './FlamesUtils/mathu';
 	import { applyAA, superSampleResolution } from './FlamesUtils/antialiasing';
 	import type { Flames } from './FlamesUtils//Flames';
-	import { canvasRef, flamesMetadata, variationsPools } from './stores';
+	import { canvasRef, colorModeStore, flamesMetadata, variationsPools } from './stores';
 	import { allVariations, type Variation } from './FlamesUtils/Variations';
 
 	let canvas: HTMLCanvasElement;
@@ -50,7 +50,10 @@
 		if (!pixels || !heatmap) return
 
 		({heatmap, p} = updateDensityArrayForStructuralColoring(resolution, flames, heatmap, p, 5000, 5000 * nbIteration++));
-		updatePixelsBufferForStructuralColoring(pixels, heatmap, flames.palette, 10);
+		if (($colorModeStore).structuralColoring)
+			updatePixelsBufferForStructuralColoring(pixels, heatmap, flames.palette, 10);
+		else
+			updatePixelsBuffer(pixels, heatmap, flames.palette, 10);
 		ctx.putImageData(
 			new ImageData(applyAA(baseResolution, pixels), baseResolution.x, baseResolution.y),
 			0,

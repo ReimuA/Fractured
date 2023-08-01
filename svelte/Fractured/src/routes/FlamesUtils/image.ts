@@ -57,9 +57,9 @@ export function updatePixelsBufferForStructuralColoring(pixels: Uint8ClampedArra
 		const c = colorFromPalette(p, heatmap[i].color)
 		const aChan = Math.log(heatmap[i].accumulator) / heatmap[i].accumulator;
 		
-		pixels[i * 4 + 0] = 255 * Math.pow(c.r , 0.45454)
-		pixels[i * 4 + 1] = 255 * Math.pow(c.g , 0.45454)
-		pixels[i * 4 + 2] = 255 * Math.pow(c.b , 0.45454)
+		pixels[i * 4 + 0] = 255 * Math.pow(c.r  * aChan, 0.45454)
+		pixels[i * 4 + 1] = 255 * Math.pow(c.g  * aChan, 0.45454)
+		pixels[i * 4 + 2] = 255 * Math.pow(c.b  * aChan, 0.45454)
 	}
 	return pixels
 }
