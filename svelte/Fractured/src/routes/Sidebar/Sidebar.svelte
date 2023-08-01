@@ -21,7 +21,6 @@
 		const blob = new Blob([metadata], { type: 'application/json' });
 		metadataLink.href = URL.createObjectURL(blob);
 		metadataLink.download = 'flames.metadata.json';
-		console.log(metadataLink);
 	});
 
 	function downloadImage() {

@@ -11,6 +11,7 @@ export type Flames = {
 }
 
 export type FlamesComponent = {
+	color: number
 	weight: number
 	transform: IFSTransform
 	weightedVariations: WeightedVariation[]

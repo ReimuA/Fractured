@@ -1,8 +1,8 @@
-import type { XY } from "./mathu"
+import type { Color, XY } from "./mathu"
 import type { Flames, FlamesComponent } from "./Flames"
 import { type IFSTransform, createTransform } from "./IFSTransform"
 import type { WeightedVariation, Variation } from "./Variations"
-import { getRandomColorPalette } from "./palette"
+import type { ColorPalette } from "./palette"
 
 
 export function createRandomTransform(): IFSTransform {
@@ -11,33 +11,33 @@ export function createRandomTransform(): IFSTransform {
 	return createTransform(r(), r(), r(), r(), r(), r())
 }
 
-export function createRandomFlames(resolution: XY, variationsPools: Variation[]): Flames {
+export function createRandomFlames(resolution: XY, palette: ColorPalette, variationsPools: Variation[]): Flames {
 	return {
 		resolution,
-		palette: getRandomColorPalette(),
-		final: createRandomFlamesComponent(variationsPools),
-		components: createRandomFlamesComponents(4, variationsPools),
+		palette: palette,
+		final: createRandomFlamesComponent(palette, variationsPools),
+		components: createRandomFlamesComponents(4, palette, variationsPools),
 	}
 }
 
-function createRandomFlamesComponent(variationsPools: Variation[]): FlamesComponent {
+function createRandomFlamesComponent(palette: ColorPalette, variationsPools: Variation[]): FlamesComponent {
 	const weight = Math.random()
 	const transform = createRandomTransform()
-
 	const variations = createRandomVariations(5, variationsPools)
 
 	return {
+		color: Math.random(),
 		weight,
 		transform,
 		weightedVariations: variations,
 	}
 }
 
-export function createRandomFlamesComponents(nb: number, variationsPools: Variation[]): FlamesComponent[] {
+export function createRandomFlamesComponents(nb: number, palette: ColorPalette, variationsPools: Variation[]): FlamesComponent[] {
 	const components = new Array<FlamesComponent>(nb)
 
 	for (let i = 0; i < nb; i++) 
-		components[i] = createRandomFlamesComponent(variationsPools)
+		components[i] = createRandomFlamesComponent(palette, variationsPools)
 
 	const totalWeight = components.reduce((total, v ) => total + v.weight, 0)
 

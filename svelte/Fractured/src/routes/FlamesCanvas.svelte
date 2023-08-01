@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	// import '../app.css';
 	import { createRandomFlames } from './FlamesUtils/random';
-	import { updateDensityArray, updatePixelsBuffer } from './FlamesUtils/image';
+	import { updateDensityArray, updateDensityArrayForStructuralColoring, updatePixelsBuffer, type HeatmapCell, updatePixelsBufferForStructuralColoring } from './FlamesUtils/image';
 	import { namedPalettesList, type ColorPalette } from './FlamesUtils//palette';
 	import type { XY } from './FlamesUtils/mathu';
 	import { applyAA, superSampleResolution } from './FlamesUtils/antialiasing';
@@ -16,8 +16,8 @@
 	let resolution: XY = { x: 0, y: 0 };
 	let baseResolution: XY = { x: 0, y: 0 };
 	let nbIteration: number = 0;
-	let heatmap = new Array<number>(resolution.x * resolution.y).fill(0);
-	let pixels = new Uint8ClampedArray(resolution.x * resolution.y * 4).fill(0);
+	let heatmap: number[]
+	let pixels: Uint8ClampedArray | undefined
 
 	// New variations pools, we reset the canvas
 	variationsPools.subscribe((v) => {
@@ -27,19 +27,29 @@
 
 	function resetCanvasData(variation: Variation[]) {
 		let currentPalette = flames?.palette ?? namedPalettesList[0].palette
-		
+
 		p = { x: Math.random() * 2 - 1, y: Math.random() * 2 - 1 };
 		baseResolution = { x: canvas.width, y: canvas.height };
 		resolution = superSampleResolution(baseResolution);
-		flames = createRandomFlames(resolution, variation);
-		flames.palette = currentPalette
-		heatmap = new Array<number>(resolution.x * resolution.y).fill(0);
-		pixels = new Uint8ClampedArray(resolution.x * resolution.y * 4).fill(0);
+		flames = createRandomFlames(resolution, currentPalette, variation);
+		heatmap ??= new Array<number>(resolution.x * resolution.y);
+		heatmap.fill(0)
+			/* for (let i = 0; i < heatmap.length; i++) {
+			heatmap[i] = {
+				color: 0,
+				accumulator: 0
+			}
+		} */
+
+		pixels ??= new Uint8ClampedArray(resolution.x * resolution.y * 4);
+		pixels.fill(0)
 		nbIteration = 0;
 		flamesMetadata.set(flames)
 	}
 
 	function updateCanvas(ctx: CanvasRenderingContext2D) {
+		if (!pixels || !heatmap) return
+
 		({heatmap, p} = updateDensityArray(resolution, flames, heatmap, p, 5000, 5000 * nbIteration++));
 		updatePixelsBuffer(pixels, heatmap, flames.palette, 10);
 		ctx.putImageData(
