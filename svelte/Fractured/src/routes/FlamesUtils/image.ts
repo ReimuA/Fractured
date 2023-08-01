@@ -57,26 +57,26 @@ export function updatePixelsBufferForStructuralColoring(pixels: Uint8ClampedArra
 		const c = colorFromPalette(p, heatmap[i].color)
 		const aChan = Math.log(heatmap[i].accumulator) / heatmap[i].accumulator;
 		
-		pixels[i * 4 + 0] = 255 * Math.pow(c.r  * aChan, 0.45454)
-		pixels[i * 4 + 1] = 255 * Math.pow(c.g  * aChan, 0.45454)
-		pixels[i * 4 + 2] = 255 * Math.pow(c.b  * aChan, 0.45454)
+		pixels[i * 4 + 0] = 255 * Math.pow(c.r , 0.45454)
+		pixels[i * 4 + 1] = 255 * Math.pow(c.g , 0.45454)
+		pixels[i * 4 + 2] = 255 * Math.pow(c.b , 0.45454)
 	}
 	return pixels
 }
 
 // Non structural coloring : provide faster visual result by only using the accumulator
-export function updatePixelsBuffer(pixels: Uint8ClampedArray, heatmap: number[], p: ColorPalette, densityFactor: number) {
+export function updatePixelsBuffer(pixels: Uint8ClampedArray, heatmap: HeatmapCell[], p: ColorPalette, densityFactor: number) {
 	let max = 0;
 	for (let i = 0; i < heatmap.length; i++)
-		if (heatmap[i] > max)
-			max = heatmap[i]
+		if (heatmap[i].accumulator > max)
+			max = heatmap[i].accumulator
 
 	const maxDensity = Math.log(max * densityFactor)
 	for (let i = 0; i < heatmap.length; i++) {
 		pixels[i * 4 + 3] = 255
-		if (heatmap[i] < 1) continue
+		if (heatmap[i].accumulator < 1) continue
 
-		const density = Math.log(heatmap[i] * densityFactor)
+		const density = Math.log(heatmap[i].accumulator * densityFactor)
 		const c = colorFromPalette(p, density / maxDensity)
 
 		

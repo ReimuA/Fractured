@@ -16,7 +16,7 @@
 	let resolution: XY = { x: 0, y: 0 };
 	let baseResolution: XY = { x: 0, y: 0 };
 	let nbIteration: number = 0;
-	let heatmap: number[]
+	let heatmap: HeatmapCell[]
 	let pixels: Uint8ClampedArray | undefined
 
 	// New variations pools, we reset the canvas
@@ -32,14 +32,13 @@
 		baseResolution = { x: canvas.width, y: canvas.height };
 		resolution = superSampleResolution(baseResolution);
 		flames = createRandomFlames(resolution, currentPalette, variation);
-		heatmap ??= new Array<number>(resolution.x * resolution.y);
-		heatmap.fill(0)
-			/* for (let i = 0; i < heatmap.length; i++) {
+		heatmap ??= new Array<HeatmapCell>(resolution.x * resolution.y);
+		for (let i = 0; i < heatmap.length; i++) {
 			heatmap[i] = {
 				color: 0,
 				accumulator: 0
 			}
-		} */
+		}
 
 		pixels ??= new Uint8ClampedArray(resolution.x * resolution.y * 4);
 		pixels.fill(0)
@@ -50,8 +49,8 @@
 	function updateCanvas(ctx: CanvasRenderingContext2D) {
 		if (!pixels || !heatmap) return
 
-		({heatmap, p} = updateDensityArray(resolution, flames, heatmap, p, 5000, 5000 * nbIteration++));
-		updatePixelsBuffer(pixels, heatmap, flames.palette, 10);
+		({heatmap, p} = updateDensityArrayForStructuralColoring(resolution, flames, heatmap, p, 5000, 5000 * nbIteration++));
+		updatePixelsBufferForStructuralColoring(pixels, heatmap, flames.palette, 10);
 		ctx.putImageData(
 			new ImageData(applyAA(baseResolution, pixels), baseResolution.x, baseResolution.y),
 			0,
