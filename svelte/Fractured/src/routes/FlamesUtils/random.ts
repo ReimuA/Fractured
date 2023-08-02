@@ -2,7 +2,7 @@ import type { Color, XY } from "./mathu"
 import type { Flames, FlamesComponent } from "./Flames"
 import { type IFSTransform, createTransform } from "./IFSTransform"
 import type { WeightedVariation, Variation } from "./Variations"
-import type { ColorPalette } from "./palette"
+import type {  ColorPalette } from "./palette"
 
 
 export function createRandomTransform(): IFSTransform {

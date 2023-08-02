@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	// import '../app.css';
 	import { createRandomFlames } from './FlamesUtils/random';
-	import { updateDensityArray, updateDensityArrayForStructuralColoring, updatePixelsBuffer, type HeatmapCell, updatePixelsBufferForStructuralColoring } from './FlamesUtils/image';
+	import {  updateRenderData, updatePixelsBuffer, type HeatmapCell, type RenderData, createRenderData, paletteStructuralColoring, colorStructuralColoring, resetRenderData } from './FlamesUtils/image';
 	import { namedPalettesList, type ColorPalette } from './FlamesUtils//palette';
 	import type { XY } from './FlamesUtils/mathu';
 	import { applyAA, superSampleResolution } from './FlamesUtils/antialiasing';
@@ -16,7 +16,8 @@
 	let resolution: XY = { x: 0, y: 0 };
 	let baseResolution: XY = { x: 0, y: 0 };
 	let nbIteration: number = 0;
-	let heatmap: HeatmapCell[]
+	let renderData: RenderData | undefined
+
 	let pixels: Uint8ClampedArray | undefined
 
 	// New variations pools, we reset the canvas
@@ -32,28 +33,23 @@
 		baseResolution = { x: canvas.width, y: canvas.height };
 		resolution = superSampleResolution(baseResolution);
 		flames = createRandomFlames(resolution, currentPalette, variation);
-		heatmap ??= new Array<HeatmapCell>(resolution.x * resolution.y);
-		for (let i = 0; i < heatmap.length; i++) {
-			heatmap[i] = {
-				color: 0,
-				accumulator: 0
-			}
-		}
-
 		pixels ??= new Uint8ClampedArray(resolution.x * resolution.y * 4);
+		renderData ??= createRenderData(resolution.x * resolution.y)
+		resetRenderData(renderData)
 		pixels.fill(0)
+		
 		nbIteration = 0;
 		flamesMetadata.set(flames)
 	}
 
 	function updateCanvas(ctx: CanvasRenderingContext2D) {
-		if (!pixels || !heatmap) return
+		if (!pixels || !renderData) return
 
-		({heatmap, p} = updateDensityArrayForStructuralColoring(resolution, flames, heatmap, p, 5000, 5000 * nbIteration++));
+		p = updateRenderData(resolution, flames, renderData, p, 5000, 5000 * nbIteration++);
 		if (($colorModeStore).structuralColoring)
-			updatePixelsBufferForStructuralColoring(pixels, heatmap, flames.palette, 10);
+			paletteStructuralColoring(pixels, renderData.heatmap, renderData.paletteAccumulator, flames.palette, 10);
 		else
-			updatePixelsBuffer(pixels, heatmap, flames.palette, 10);
+			colorStructuralColoring(pixels, renderData.heatmap, renderData.colorAccumulator, flames.palette, 10);
 		ctx.putImageData(
 			new ImageData(applyAA(baseResolution, pixels), baseResolution.x, baseResolution.y),
 			0,
