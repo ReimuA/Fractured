@@ -2,12 +2,12 @@
 	import { onMount } from 'svelte';
 	// import '../app.css';
 	import { createRandomFlames } from './FlamesUtils/random';
-	import {  updateRenderData, updatePixelsBuffer, type HeatmapCell, type RenderData, createRenderData, paletteStructuralColoring, colorStructuralColoring, resetRenderData } from './FlamesUtils/image';
-	import { namedPalettesList, type ColorPalette } from './FlamesUtils//palette';
+	import {  updateRenderData, type RenderData, createRenderData, paletteStructuralColoring, colorStructuralColoring, resetRenderData, defaultRenderMode, structuralPaletteRenderMode, structularColorRenderMode, updatePixelsBuffer } from './FlamesUtils/render';
+	import { namedPalettesList } from './FlamesUtils//palette';
 	import type { XY } from './FlamesUtils/mathu';
 	import { applyAA, superSampleResolution } from './FlamesUtils/antialiasing';
 	import type { Flames } from './FlamesUtils//Flames';
-	import { canvasRef, colorModeStore, flamesMetadata, variationsPools } from './stores';
+	import { canvasRef, renderModeStore, flamesMetadata, variationsPools } from './stores';
 	import { allVariations, type Variation } from './FlamesUtils/Variations';
 
 	let canvas: HTMLCanvasElement;
@@ -46,7 +46,9 @@
 		if (!pixels || !renderData) return
 
 		p = updateRenderData(resolution, flames, renderData, p, 5000, 5000 * nbIteration++);
-		if (($colorModeStore).structuralColoring)
+		if (($renderModeStore) === defaultRenderMode)
+			updatePixelsBuffer(pixels, renderData.heatmap, flames.palette, 10)
+		else if (($renderModeStore) === structuralPaletteRenderMode)
 			paletteStructuralColoring(pixels, renderData.heatmap, renderData.paletteAccumulator, flames.palette, 10);
 		else
 			colorStructuralColoring(pixels, renderData.heatmap, renderData.colorAccumulator, flames.palette, 10);

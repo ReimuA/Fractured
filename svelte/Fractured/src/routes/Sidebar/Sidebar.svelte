@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { canvasRef, flamesMetadata } from '../stores';
 	import VariationSelector from './VariationSelector.svelte';
-	import PaletteSelector from './PaletteSelector.svelte';
+	import ColorationOptions from './ColorationOptions.svelte';
 
 	export let open = false;
 
@@ -38,7 +38,7 @@
 		<a bind:this={metadataLink} class=" text-white block" href="#metadata">Metadata</a>
 		<button class="text-white block" on:click={() => downloadImage()}>Image</button>
 	</nav>
-	<PaletteSelector />
+	<ColorationOptions />
 	<VariationSelector />
 </aside>
 

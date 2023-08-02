@@ -1,0 +1,68 @@
+<script lang="ts">
+	import { namedPalettesList, type ColorPalette } from '../FlamesUtils/palette';
+	import { defaultRenderMode, renderModeList, type renderMode } from '../FlamesUtils/render';
+	import { renderModeStore, flamesMetadata } from '../stores';
+
+	let selectedPalette: ColorPalette = namedPalettesList[0].palette;
+	let renderMode: renderMode = defaultRenderMode;
+
+	let selectClasses = "round-r-4 bg-slate-900 ml-12 p-1 mt-2 text-white border-slate-300 border-2 rounded w-48"
+
+	renderModeStore.subscribe((mode) => (renderMode = mode));
+
+	function updateFlame() {
+		if (selectedPalette)
+			flamesMetadata.update((fm) => {
+				fm.palette = selectedPalette;
+				return fm;
+			});
+	}
+
+	function updateRenderMode() {
+		renderModeStore.set(renderMode)
+	}
+</script>
+
+<div>
+	<p class="pt-8 pl-6 text-white">Color</p>
+	<select
+		class={selectClasses}
+		bind:value={selectedPalette}
+		on:change={() => updateFlame()}
+	>
+		{#each namedPalettesList as namedPalette}
+			<option class="text-white bg-slate-900" value={namedPalette.palette}
+				>{namedPalette.name}</option
+			>
+		{/each}
+	</select>
+
+	<p class="pt-8 pl-6 text-white">Color render mode</p>
+
+	<select
+		class={selectClasses}
+		bind:value={renderMode}
+		on:change={() => updateRenderMode()}
+	>
+		{#each renderModeList as renderMode}
+			<option class="text-white bg-slate-900" value={renderMode}
+				>{renderMode}</option
+			>
+		{/each}
+	</select>
+	<!-- <button
+		class="block ml-12 mt-4"
+		on:click={() => {
+			renderModeStore.set({structuralColoring: !structuralColoring})
+		}}
+	>
+		<p class="" class:text-white={structuralColoring} class:text-slate-600={!structuralColoring}>
+			Structural coloring
+		</p> 
+	</button> -->
+</div>
+
+<style lang="postcss">
+	:global(html) {
+	}
+</style>
