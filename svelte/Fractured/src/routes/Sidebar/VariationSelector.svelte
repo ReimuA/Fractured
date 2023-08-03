@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { allVariations, type Variation } from '../FlamesUtils/Variations';
+	import { allVariations } from '$lib/FlamesUtils/Variations';
 	import { variationsPools } from '../stores';
 
 	let variations = allVariations.map((v) => {

@@ -1,6 +1,6 @@
-import type { Variation } from "./FlamesUtils/Variations"
-import type { ColorPalette } from "./FlamesUtils/palette"
-import type { RenderMode } from "./FlamesUtils/render"
+import type { Variation } from "../lib/FlamesUtils/Variations"
+import type { ColorPalette } from "../lib/FlamesUtils/palette"
+import type { RenderMode } from "../lib/FlamesUtils/render"
 
 type Reset = "FlamesReset"
 type Init = "FlamesInit"

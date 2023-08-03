@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import type { RenderData } from './FlamesUtils/render';
-	import type { XY } from './FlamesUtils/mathu';
-	import type { Flames } from './FlamesUtils//Flames';
+	import type { RenderData } from '$lib/FlamesUtils/render';
+	import type { XY } from '$lib/FlamesUtils/mathu';
+	import type { Flames } from '$lib/FlamesUtils/Flames';
 	import { renderModeStore, variationsPools, colorPaletteStore, flamesJsonMetadata, canvasRef } from './stores';
 	import type { InitMessage, PaletteChangeMessage } from './messageType';
 

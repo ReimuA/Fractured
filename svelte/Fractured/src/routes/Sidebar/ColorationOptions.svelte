@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { namedPalettesList, type ColorPalette } from '../FlamesUtils/palette';
-	import { defaultRenderMode, renderModeList, type RenderMode } from '../FlamesUtils/render';
+	import { namedPalettesList, type ColorPalette } from '$lib/FlamesUtils/palette';
+	import { defaultRenderMode, renderModeList, type RenderMode } from '$lib/FlamesUtils/render';
 	import { renderModeStore, flamesJsonMetadata, colorPaletteStore } from '../stores';
 
 	let selectedPalette: ColorPalette = namedPalettesList[0].palette;
@@ -37,16 +37,6 @@
 			<option class="text-white bg-slate-900" value={renderMode}>{renderMode}</option>
 		{/each}
 	</select>
-	<!-- <button
-		class="block ml-12 mt-4"
-		on:click={() => {
-			renderModeStore.set({structuralColoring: !structuralColoring})
-		}}
-	>
-		<p class="" class:text-white={structuralColoring} class:text-slate-600={!structuralColoring}>
-			Structural coloring
-		</p> 
-	</button> -->
 </div>
 
 <style lang="postcss">

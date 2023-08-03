@@ -1,10 +1,10 @@
-import type { Flames } from "./FlamesUtils/Flames";
-import { allVariations } from "./FlamesUtils/Variations";
-import { applyAA, superSampleResolution } from "./FlamesUtils/antialiasing";
-import type { XY } from "./FlamesUtils/mathu";
-import { namedPalettesList, type ColorPalette } from "./FlamesUtils/palette";
-import { createRandomFlames } from "./FlamesUtils/random";
-import { createRenderData, updateRenderData, type RenderData, type RenderMode, updatePixelsBuffer, paletteStructuralColoring, colorStructuralColoring, defaultRenderMode, structuralPaletteRenderMode, resetRenderData } from "./FlamesUtils/render";
+import type { Flames } from "../lib/FlamesUtils/Flames";
+import { allVariations } from "../lib/FlamesUtils/Variations";
+import { applyAA, superSampleResolution } from "../lib/FlamesUtils/antialiasing";
+import type { XY } from "../lib/FlamesUtils/mathu";
+import { namedPalettesList, type ColorPalette } from "../lib/FlamesUtils/palette";
+import { createRandomFlames } from "../lib/FlamesUtils/random";
+import { createRenderData, updateRenderData, type RenderData, type RenderMode, updatePixelsBuffer, paletteStructuralColoring, colorStructuralColoring, defaultRenderMode, structuralPaletteRenderMode, resetRenderData } from "../lib/FlamesUtils/render";
 import type { FlamesMessage } from "./messageType";
 
 let flames: Flames;
