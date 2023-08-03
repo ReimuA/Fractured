@@ -4,7 +4,6 @@
 
 <header>
 	<div class="corner">
-
 	</div>
 
 	<nav>
@@ -17,7 +16,9 @@
 				aria-current={$page.url.pathname === '/' ? 'page' : undefined}>
 				<a href="/">Home</a>
 			</li>
-			<li aria-current={$page.url.pathname === '/gallery' ? 'page' : undefined}>
+			<li 
+				class="hover:text-red-500"
+				aria-current={$page.url.pathname === '/gallery' ? 'page' : undefined}>
 				<a href="/gallery">Gallery</a>
 			</li>
 		</ul>

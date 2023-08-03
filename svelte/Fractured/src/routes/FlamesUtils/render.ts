@@ -69,9 +69,9 @@ export function paletteStructuralColoring(pixels: Uint8ClampedArray, heatmap: Ui
 		const c = colorFromPalette(p, paletteAccumulator[i])
 		const aChan = Math.log(heatmap[i] * densityFactor) / heatmap[i];
 		
-		pixels[i * 4 + 0] = mix(pixels[i * 4 + 0], 255 * Math.pow(c.r  * aChan, 0.45454), .1)
-		pixels[i * 4 + 1] = mix(pixels[i * 4 + 1], 255 * Math.pow(c.g  * aChan, 0.45454), .1)
-		pixels[i * 4 + 2] = mix(pixels[i * 4 + 2], 255 * Math.pow(c.b  * aChan, 0.45454), .1)
+		pixels[i * 4 + 0] = mix(pixels[i * 4 + 0], 255 * Math.pow(c.r  * aChan, 0.45454), .25)
+		pixels[i * 4 + 1] = mix(pixels[i * 4 + 1], 255 * Math.pow(c.g  * aChan, 0.45454), .25)
+		pixels[i * 4 + 2] = mix(pixels[i * 4 + 2], 255 * Math.pow(c.b  * aChan, 0.45454), .25)
 	}
 	return pixels
 }
@@ -87,9 +87,9 @@ export function colorStructuralColoring(pixels: Uint8ClampedArray, heatmap: Uint
 		const b = colorAccumulator[i * 3 + 2]
 		const aChan = Math.log(heatmap[i] * densityFactor) / heatmap[i];
 		
-		pixels[i * 4 + 0] = mix(pixels[i * 4 + 0], 255 * Math.pow(r  * aChan, 0.45454), .1)
-		pixels[i * 4 + 1] = mix(pixels[i * 4 + 1], 255 * Math.pow(g  * aChan, 0.45454), .1)
-		pixels[i * 4 + 2] = mix(pixels[i * 4 + 2], 255 * Math.pow(b  * aChan, 0.45454), .1)
+		pixels[i * 4 + 0] = mix(pixels[i * 4 + 0], 255 * Math.pow(r  * aChan, 0.45454), .25)
+		pixels[i * 4 + 1] = mix(pixels[i * 4 + 1], 255 * Math.pow(g  * aChan, 0.45454), .25)
+		pixels[i * 4 + 2] = mix(pixels[i * 4 + 2], 255 * Math.pow(b  * aChan, 0.45454), .25)
 	}
 	return pixels
 }
@@ -110,9 +110,9 @@ export function updatePixelsBuffer(pixels: Uint8ClampedArray, heatmap: Uint32Arr
 		const c = colorFromPalette(p, density / maxDensity)
 
 		
-		pixels[i * 4 + 0] = mix(pixels[i * 4 + 0], c.r * 255, .1)
-		pixels[i * 4 + 1] = mix(pixels[i * 4 + 1], c.g * 255, .1)
-		pixels[i * 4 + 2] = mix(pixels[i * 4 + 2], c.b * 255, .1)
+		pixels[i * 4 + 0] = mix(pixels[i * 4 + 0], c.r * 255, .25)
+		pixels[i * 4 + 1] = mix(pixels[i * 4 + 1], c.g * 255, .25)
+		pixels[i * 4 + 2] = mix(pixels[i * 4 + 2], c.b * 255, .25)
 	}
 	return pixels
 }

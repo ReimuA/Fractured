@@ -56,7 +56,7 @@ function init(canvas: OffscreenCanvas) {
 
     function flamesIteration(t: number) {
         updateCanvas(ctx!);
-        setTimeout(() => (frame = requestAnimationFrame(flamesIteration)), 10);
+        setTimeout(() => (frame = requestAnimationFrame(flamesIteration)), 1000 / 60);
     }
 }
 
