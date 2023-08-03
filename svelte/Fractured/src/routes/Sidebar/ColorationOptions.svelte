@@ -1,35 +1,28 @@
 <script lang="ts">
 	import { namedPalettesList, type ColorPalette } from '../FlamesUtils/palette';
-	import { defaultRenderMode, renderModeList, type renderMode } from '../FlamesUtils/render';
-	import { renderModeStore, flamesMetadata } from '../stores';
+	import { defaultRenderMode, renderModeList, type RenderMode } from '../FlamesUtils/render';
+	import { renderModeStore, flamesJsonMetadata, colorPaletteStore } from '../stores';
 
 	let selectedPalette: ColorPalette = namedPalettesList[0].palette;
-	let renderMode: renderMode = defaultRenderMode;
+	let renderMode: RenderMode = defaultRenderMode;
 
-	let selectClasses = "round-r-4 bg-slate-900 ml-12 p-1 mt-2 text-white border-slate-300 border-2 rounded w-48"
+	let selectClasses =
+		'round-r-4 bg-slate-900 ml-12 p-1 mt-2 text-white border-slate-300 border-2 rounded w-48';
 
 	renderModeStore.subscribe((mode) => (renderMode = mode));
 
-	function updateFlame() {
-		if (selectedPalette)
-			flamesMetadata.update((fm) => {
-				fm.palette = selectedPalette;
-				return fm;
-			});
+	function updatePalette() {
+		colorPaletteStore.set(selectedPalette);
 	}
 
 	function updateRenderMode() {
-		renderModeStore.set(renderMode)
+		renderModeStore.set(renderMode);
 	}
 </script>
 
 <div>
 	<p class="pt-8 pl-6 text-white">Color</p>
-	<select
-		class={selectClasses}
-		bind:value={selectedPalette}
-		on:change={() => updateFlame()}
-	>
+	<select class={selectClasses} bind:value={selectedPalette} on:change={() => updatePalette()}>
 		{#each namedPalettesList as namedPalette}
 			<option class="text-white bg-slate-900" value={namedPalette.palette}
 				>{namedPalette.name}</option
@@ -39,15 +32,9 @@
 
 	<p class="pt-8 pl-6 text-white">Color render mode</p>
 
-	<select
-		class={selectClasses}
-		bind:value={renderMode}
-		on:change={() => updateRenderMode()}
-	>
+	<select class={selectClasses} bind:value={renderMode} on:change={() => updateRenderMode()}>
 		{#each renderModeList as renderMode}
-			<option class="text-white bg-slate-900" value={renderMode}
-				>{renderMode}</option
-			>
+			<option class="text-white bg-slate-900" value={renderMode}>{renderMode}</option>
 		{/each}
 	</select>
 	<!-- <button

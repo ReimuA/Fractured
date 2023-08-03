@@ -6,10 +6,10 @@ import { type ColorPalette, colorFromPalette } from "./palette"
 
 export type HeatmapCell = {color: number, accumulator: number}
 
-export type renderMode = "Default" | "Structural (Palette)" | "Structural (Color)"
-export const defaultRenderMode: renderMode = "Default"
-export const structularColorRenderMode: renderMode = "Structural (Color)"
-export const structuralPaletteRenderMode: renderMode = "Structural (Palette)"
+export type RenderMode = "Default" | "Structural (Palette)" | "Structural (Color)"
+export const defaultRenderMode: RenderMode = "Default"
+export const structularColorRenderMode: RenderMode = "Structural (Color)"
+export const structuralPaletteRenderMode: RenderMode = "Structural (Palette)"
 export const renderModeList = [defaultRenderMode, structularColorRenderMode, structuralPaletteRenderMode]
 
 export type RenderData = {

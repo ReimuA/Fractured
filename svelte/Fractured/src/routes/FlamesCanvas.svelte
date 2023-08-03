@@ -1,80 +1,47 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	// import '../app.css';
-	import { createRandomFlames } from './FlamesUtils/random';
-	import {  updateRenderData, type RenderData, createRenderData, paletteStructuralColoring, colorStructuralColoring, resetRenderData, defaultRenderMode, structuralPaletteRenderMode, structularColorRenderMode, updatePixelsBuffer } from './FlamesUtils/render';
-	import { namedPalettesList } from './FlamesUtils//palette';
+	import type { RenderData } from './FlamesUtils/render';
 	import type { XY } from './FlamesUtils/mathu';
-	import { applyAA, superSampleResolution } from './FlamesUtils/antialiasing';
 	import type { Flames } from './FlamesUtils//Flames';
-	import { canvasRef, renderModeStore, flamesMetadata, variationsPools } from './stores';
-	import { allVariations, type Variation } from './FlamesUtils/Variations';
+	import { renderModeStore, variationsPools, colorPaletteStore, flamesJsonMetadata, canvasRef } from './stores';
+	import type { InitMessage, PaletteChangeMessage } from './messageType';
 
 	let canvas: HTMLCanvasElement;
-	let flames: Flames;
-	let p: XY = { x: 0, y: 0 };
-	let resolution: XY = { x: 0, y: 0 };
-	let baseResolution: XY = { x: 0, y: 0 };
-	let nbIteration: number = 0;
-	let renderData: RenderData | undefined
+	let syncWorker: Worker | undefined;
 
-	let pixels: Uint8ClampedArray | undefined
-
-	// New variations pools, we reset the canvas
+	// New variations pools, reset the canvas
 	variationsPools.subscribe((v) => {
-		if (canvas && v.length != 0)
-			resetCanvasData(v)
-	})
+		if (!(canvas && v.length != 0)) return;
 
-	function resetCanvasData(variation: Variation[]) {
-		let currentPalette = flames?.palette ?? namedPalettesList[0].palette
+		const resetMsg = { type: 'FlamesReset', variationsPools: v.map((e) => e.name) };
+		syncWorker?.postMessage(resetMsg);
+	});
 
-		p = { x: Math.random() * 2 - 1, y: Math.random() * 2 - 1 };
-		baseResolution = { x: canvas.width, y: canvas.height };
-		resolution = superSampleResolution(baseResolution);
-		flames = createRandomFlames(resolution, currentPalette, variation);
-		pixels ??= new Uint8ClampedArray(resolution.x * resolution.y * 4);
-		renderData ??= createRenderData(resolution.x * resolution.y)
-		resetRenderData(renderData)
-		pixels.fill(0)
-		
-		nbIteration = 0;
-		flamesMetadata.set(flames)
-	}
+	colorPaletteStore.subscribe((palette) => {
+		const msg: PaletteChangeMessage = { type: 'FlamesPaletteChange', palette };
+		syncWorker?.postMessage(msg);
+	});
 
-	function updateCanvas(ctx: CanvasRenderingContext2D) {
-		if (!pixels || !renderData) return
+	renderModeStore.subscribe((renderMode) =>
+		syncWorker?.postMessage({ type: 'FlamesRenderModeChange', renderMode })
+	);
 
-		p = updateRenderData(resolution, flames, renderData, p, 5000, 5000 * nbIteration++);
-		if (($renderModeStore) === defaultRenderMode)
-			updatePixelsBuffer(pixels, renderData.heatmap, flames.palette, 10)
-		else if (($renderModeStore) === structuralPaletteRenderMode)
-			paletteStructuralColoring(pixels, renderData.heatmap, renderData.paletteAccumulator, flames.palette, 10);
-		else
-			colorStructuralColoring(pixels, renderData.heatmap, renderData.colorAccumulator, flames.palette, 10);
-		ctx.putImageData(
-			new ImageData(applyAA(baseResolution, pixels), baseResolution.x, baseResolution.y),
-			0,
-			0
-		);
-	}
+	const loadWorker = async () => {
+		const canvasContext = canvas.transferControlToOffscreen();
+		const SyncWorker = await import('./flamesWorker?worker');
+
+		syncWorker = new SyncWorker.default();
+		syncWorker.onmessage = ({data}) => $flamesJsonMetadata = data.flames;
+		syncWorker.onerror = console.error;
+		syncWorker.onmessageerror = console.error;
+
+		const initMsg: InitMessage = { type: 'FlamesInit', canvasContext: canvasContext };
+		syncWorker.postMessage(initMsg, [canvasContext]);
+	};
 
 	onMount(() => {
-		const ctx = canvas.getContext('2d');
-		canvasRef.set(canvas)
-
-		resetCanvasData(allVariations);
-		let frame = requestAnimationFrame(flamesIteration);
-
-		function flamesIteration(t: number) {
-			if (ctx === null) return;
-			updateCanvas(ctx);
-			setTimeout(() => (frame = requestAnimationFrame(flamesIteration)), 10);
-		}
-
-		return () => {
-			cancelAnimationFrame(frame);
-		};
+		loadWorker();
+		$canvasRef = canvas
 	});
 </script>
 

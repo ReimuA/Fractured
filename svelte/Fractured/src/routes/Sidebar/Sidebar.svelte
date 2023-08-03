@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { canvasRef, flamesMetadata } from '../stores';
+	import { canvasRef, flamesJsonMetadata } from '../stores';
 	import VariationSelector from './VariationSelector.svelte';
 	import ColorationOptions from './ColorationOptions.svelte';
 
@@ -15,9 +15,8 @@
 
 	canvasRef.subscribe((canvas) => (flamesCanvas = canvas));
 
-	flamesMetadata.subscribe((flames) => {
+	flamesJsonMetadata.subscribe((metadata) => {
 		if (!metadataLink) return;
-		const metadata = JSON.stringify(flames, null, 4);
 		const blob = new Blob([metadata], { type: 'application/json' });
 		metadataLink.href = URL.createObjectURL(blob);
 		metadataLink.download = 'flames.metadata.json';
