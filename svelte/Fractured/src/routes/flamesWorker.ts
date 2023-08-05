@@ -63,6 +63,7 @@ function init(canvas: OffscreenCanvas) {
 function reset(vNames: string[]) {
     const variationsPools = mapToVariations(vNames)
 
+    p = { x: 0, y: 0 };
     flames = createRandomFlames(flames.resolution, flames.palette, variationsPools)
     resetRenderData(renderData!)
     pixels?.fill(0)
