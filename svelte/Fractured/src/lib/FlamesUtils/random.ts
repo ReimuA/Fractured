@@ -48,13 +48,14 @@ export function createRandomFlamesComponents(nb: number, palette: ColorPalette, 
 }
 
 export function createRandomVariations(nb: number, variationsPools: Variation[]): WeightedVariation[] {
-	const variations = new Array<WeightedVariation>(nb)
+	const variations: WeightedVariation[] = []
 
 	for (let i = 0; i < nb; i++) {
-		const r = Math.random()
 		const weight = Math.random()
+		const randomVariation = variationsPools[Math.floor(Math.random() * variationsPools.length)]
 
-		 variations[i] = { weight, variation: variationsPools[Math.floor(r * variationsPools.length)] }
+		if (!variations.some(e => e.variation.name === randomVariation.name))
+			variations.push({ weight, variation: randomVariation })
 	}
 
 	const totalWeight = variations.reduce((total, v ) => total + v.weight, 0)

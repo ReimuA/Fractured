@@ -146,6 +146,59 @@ export const diamondVariation: Variation = {
 	}
 }
 
+export const ExVariation: Variation = {
+	name: "Ex",
+	function: (p: XY) => {
+		const r = _r(p)
+		const theta = _theta(p)
+		const p0 = Math.sin(theta + r)
+		const p1 = Math.cos(theta - r)
+		const p03 = p0 * p0 * p0
+		const p13 = p1 * p1 * p1
+
+		return {
+			x: r * (p03 + p13),
+			y: r * (p03 - p13)
+		}
+	}
+}
+
+export const JuliaVariation: Variation = {
+	name: "Julia",
+	function: (p: XY) => {
+		const r = _r(p)
+		const theta = _theta(p)
+		const omega = _omega()
+		const rSqrt = Math.sqrt(r)
+
+		return {
+			x: rSqrt * Math.cos(theta / 2 + omega),
+			y: rSqrt * Math.sin(theta / 2 + omega)
+		}
+	}
+}
+
+export const BentVariation: Variation = {
+	name: "Bent",
+	function: (p: XY) => {
+		if (p.x >= 0 && p.y >= 0) return p
+		if (p.x < 0 && p.y >= 0) return { x: 2 * p.x, y: p.y }
+		if (p.x >= 0 && p.y < 0) return { x: p.x, y: p.y / 2 }
+		return { x: 2 * p.x, y: p.y / 2 }
+	}
+}
+
+export const WavesVariation: Variation = {
+	name: "Waves",
+	function: (p: XY, transform: IFSTransform) => {
+		return {
+			x: p.x * transform.b * Math.sin(p.y / (transform.c * transform.c)),
+			y: p.y + transform.e * Math.sin(p.x / (transform.f * transform.f))
+		}
+	}
+}
+
+
 export const fanVariation: Variation = {
 	name: "Fan",
 	function: (p: XY, transform: IFSTransform) => {
@@ -194,6 +247,14 @@ export function getVariationFromName(name: string): Variation | undefined {
 			return hyperbolicVariation
 		case "Diamond":
 			return diamondVariation
+		case "Ex":
+			return ExVariation
+		case "Julia":
+			return JuliaVariation
+		case "Bent":
+			return BentVariation
+		case "Waves":
+			return WavesVariation
 		case "Fan":
 			return fanVariation
 		default:
@@ -214,6 +275,10 @@ export const allVariations: Variation[] = [
 	spiralVariation,
 	hyperbolicVariation,
 	diamondVariation,
+	ExVariation,
+	JuliaVariation,
+	BentVariation,
+	WavesVariation,
 	fanVariation,
 ]
 
