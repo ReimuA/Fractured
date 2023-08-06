@@ -30,7 +30,7 @@
 	}
 </script>
 
-<aside class="absolute top-0 w-64 h-full bg-slate-700/25 shadow-lg" class:open>
+<aside class="absolute top-0 w-72 h-full bg-slate-700/25 shadow-lg scroll-smooth overflow-y-auto" class:open>
 	<p class="pt-12 pl-6 text-white">Download</p>
 	<nav class="pl-12 pt-2 text-l">
 		<a bind:this={metadataLink} class=" text-white block" href="#metadata">Metadata</a>
