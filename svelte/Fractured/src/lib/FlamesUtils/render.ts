@@ -14,6 +14,7 @@ export const renderModeList = [defaultRenderMode, structularColorRenderMode, str
 
 export type RenderData = {
 	heatmap: Uint32Array
+	heatmapMax: number
 	paletteAccumulator: Float64Array
 	colorAccumulator: Float64Array
 }
@@ -21,18 +22,18 @@ export type RenderData = {
 export function createRenderData(length: number): RenderData {
 	return {
 		heatmap: new Uint32Array(length),
+		heatmapMax: 0,
 		colorAccumulator: new Float64Array(length * 3),
 		paletteAccumulator: new Float64Array(length)
 	}
 }
 
 export function resetRenderData(renderData: RenderData) {
+	renderData.heatmapMax = 0
 	renderData.heatmap.fill(0)
 	renderData.colorAccumulator.fill(0)
 	renderData.paletteAccumulator.fill(0)
 }
-
-let rotation = 0
 
 export function updateRenderData(resolution: XY, flames: Flames, renderData: RenderData, p: XY, rotate: boolean, rotation: number, iteration: number, totalIteration: number) {
 
@@ -58,6 +59,9 @@ export function updateRenderData(resolution: XY, flames: Flames, renderData: Ren
 			renderData.paletteAccumulator[idx] = (renderData.paletteAccumulator[idx] + currentComponent.color) / 2
 			renderData.heatmap[idx]++
 
+			if (renderData.heatmapMax < renderData.heatmap[idx])
+				renderData.heatmapMax = renderData.heatmap[idx]
+
 			const colorIdx = idx * 3
 			const color = colorFromPalette(flames.palette, currentComponent.color)
 			renderData.colorAccumulator[colorIdx] = (renderData.colorAccumulator[colorIdx] + color.r) / 2
@@ -69,18 +73,20 @@ export function updateRenderData(resolution: XY, flames: Flames, renderData: Ren
 	return p
 }
 
+const gamma = 1 / 3.4
+
 // Density factor can be used to provide faster visible result
 export function paletteStructuralColoring(pixels: Uint8ClampedArray, heatmap: Uint32Array, paletteAccumulator: Float64Array, p: ColorPalette, densityFactor: number) {
 	for (let i = 0; i < heatmap.length; i++) {
-		pixels[i * 4 + 3] = 255
 		if (heatmap[i] < 1) continue
 
 		const c = colorFromPalette(p, paletteAccumulator[i])
-		const aChan = Math.log(heatmap[i] * densityFactor) / heatmap[i];
+		const aChan = Math.log10(heatmap[i] * densityFactor) / heatmap[i];
 		
-		pixels[i * 4 + 0] = mix(pixels[i * 4 + 0], 255 * Math.pow(c.r  * aChan, 0.45454), .25)
-		pixels[i * 4 + 1] = mix(pixels[i * 4 + 1], 255 * Math.pow(c.g  * aChan, 0.45454), .25)
-		pixels[i * 4 + 2] = mix(pixels[i * 4 + 2], 255 * Math.pow(c.b  * aChan, 0.45454), .25)
+		pixels[i * 4 + 0] = mix(pixels[i * 4 + 0], 255 * Math.pow(c.r  * aChan, gamma), .25)
+		pixels[i * 4 + 1] = mix(pixels[i * 4 + 1], 255 * Math.pow(c.g  * aChan, gamma), .25)
+		pixels[i * 4 + 2] = mix(pixels[i * 4 + 2], 255 * Math.pow(c.b  * aChan, gamma), .25)
+		pixels[i * 4 + 3] = mix(pixels[i * 4 + 1], 255 * aChan, .25)
 	}
 	return pixels
 }
@@ -88,40 +94,39 @@ export function paletteStructuralColoring(pixels: Uint8ClampedArray, heatmap: Ui
 // Density factor can be used to provide faster visible result
 export function colorStructuralColoring(pixels: Uint8ClampedArray, heatmap: Uint32Array, colorAccumulator: Float64Array, p: ColorPalette, densityFactor: number) {
 	for (let i = 0; i < heatmap.length; i++) {
-		pixels[i * 4 + 3] = 255
 		if (heatmap[i] < 1) continue
 
 		const r = colorAccumulator[i * 3]
 		const g = colorAccumulator[i * 3 + 1]
 		const b = colorAccumulator[i * 3 + 2]
-		const aChan = Math.log(heatmap[i] * densityFactor) / heatmap[i];
+		const aChan = Math.log10(heatmap[i] * densityFactor) / heatmap[i];
 		
-		pixels[i * 4 + 0] = mix(pixels[i * 4 + 0], 255 * Math.pow(r  * aChan, 0.45454), .25)
-		pixels[i * 4 + 1] = mix(pixels[i * 4 + 1], 255 * Math.pow(g  * aChan, 0.45454), .25)
-		pixels[i * 4 + 2] = mix(pixels[i * 4 + 2], 255 * Math.pow(b  * aChan, 0.45454), .25)
+		pixels[i * 4 + 0] = mix(pixels[i * 4 + 0], 255 * Math.pow(r  * aChan, gamma), .25)
+		pixels[i * 4 + 1] = mix(pixels[i * 4 + 1], 255 * Math.pow(g  * aChan, gamma), .25)
+		pixels[i * 4 + 2] = mix(pixels[i * 4 + 2], 255 * Math.pow(b  * aChan, gamma), .25)
+		pixels[i * 4 + 3] = mix(pixels[i * 4 + 1], 255 * aChan, .25)
 	}
 	return pixels
 }
 
 // Density factor can be used to provide faster visible result
-export function updatePixelsBuffer(pixels: Uint8ClampedArray, heatmap: Uint32Array, p: ColorPalette, densityFactor: number) {
-	let max = 0;
-	for (let i = 0; i < heatmap.length; i++)
-		if (heatmap[i] > max)
-			max = heatmap[i]
+export function updatePixelsBuffer(pixels: Uint8ClampedArray, renderData: RenderData, p: ColorPalette, densityFactor: number) {
+	const max = renderData.heatmapMax
+	const heatmap = renderData.heatmap
 
-	const maxDensity = Math.log(max * densityFactor)
+
+	const maxDensity = Math.log10(max)
 	for (let i = 0; i < heatmap.length; i++) {
 		pixels[i * 4 + 3] = 255
 		if (heatmap[i] < 1) continue
 
-		const density = Math.log(heatmap[i] * densityFactor)
+		const density = Math.log10(heatmap[i])
 		const c = colorFromPalette(p, density / maxDensity)
 
 		
-		pixels[i * 4 + 0] = mix(pixels[i * 4 + 0], c.r * 255, .25)
-		pixels[i * 4 + 1] = mix(pixels[i * 4 + 1], c.g * 255, .25)
-		pixels[i * 4 + 2] = mix(pixels[i * 4 + 2], c.b * 255, .25)
+		pixels[i * 4 + 0] = mix(pixels[i * 4 + 0], 255 * Math.pow(c.r, gamma), .25)
+		pixels[i * 4 + 1] = mix(pixels[i * 4 + 1], 255 * Math.pow(c.g, gamma), .25)
+		pixels[i * 4 + 2] = mix(pixels[i * 4 + 2], 255 * Math.pow(c.b, gamma), .25)
 	}
 	return pixels
 }

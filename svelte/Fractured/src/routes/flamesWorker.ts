@@ -29,7 +29,7 @@ function updateCanvas(ctx: OffscreenCanvasRenderingContext2D) {
         rotation = ( rotation + ( 2 * Math.PI / rotationalSymmetry ) ) % ( 2 * Math.PI );
 
     if (renderMode === defaultRenderMode)
-        updatePixelsBuffer(pixels, renderData.heatmap, flames.palette, 10)
+        updatePixelsBuffer(pixels, renderData, flames.palette, 10)
     else if (renderMode === structuralPaletteRenderMode)
         paletteStructuralColoring(pixels, renderData.heatmap, renderData.paletteAccumulator, flames.palette, 10);
     else
