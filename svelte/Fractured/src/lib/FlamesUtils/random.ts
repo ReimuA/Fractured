@@ -2,7 +2,7 @@ import type { Color, XY } from "./mathu"
 import type { Flames, FlamesComponent } from "./Flames"
 import { type IFSTransform, createTransform } from "./IFSTransform"
 import type { WeightedVariation, Variation } from "./Variations"
-import type {  ColorPalette } from "./palette"
+import type { ColorPalette } from "./palette"
 
 
 export function createRandomTransform(): IFSTransform {
@@ -14,6 +14,11 @@ export function createRandomTransform(): IFSTransform {
 export function createRandomFlames(resolution: XY, palette: ColorPalette, variationsPools: Variation[]): Flames {
 	return {
 		resolution,
+		spaceWarp: {
+			rotationalSymmetry: 1,
+			mirrorX: false,
+			mirrorY: false
+		},
 		palette: palette,
 		final: createRandomFlamesComponent(palette, variationsPools),
 		components: createRandomFlamesComponents(4, palette, variationsPools),
@@ -36,10 +41,10 @@ function createRandomFlamesComponent(palette: ColorPalette, variationsPools: Var
 export function createRandomFlamesComponents(nb: number, palette: ColorPalette, variationsPools: Variation[]): FlamesComponent[] {
 	const components = new Array<FlamesComponent>(nb)
 
-	for (let i = 0; i < nb; i++) 
+	for (let i = 0; i < nb; i++)
 		components[i] = createRandomFlamesComponent(palette, variationsPools)
 
-	const totalWeight = components.reduce((total, v ) => total + v.weight, 0)
+	const totalWeight = components.reduce((total, v) => total + v.weight, 0)
 
 	for (const c of components)
 		c.weight /= totalWeight
@@ -58,7 +63,7 @@ export function createRandomVariations(nb: number, variationsPools: Variation[])
 			variations.push({ weight, variation: randomVariation })
 	}
 
-	const totalWeight = variations.reduce((total, v ) => total + v.weight, 0)
+	const totalWeight = variations.reduce((total, v) => total + v.weight, 0)
 
 	for (const v of variations)
 		v.weight /= totalWeight

@@ -12,7 +12,6 @@ let p: XY = { x: 0, y: 0 };
 let resolution: XY = { x: 0, y: 0 };
 let baseResolution: XY = { x: 0, y: 0 };
 let nbIteration: number = 0;
-let rotationalSymmetry = 1
 let rotation = 0
 let renderData: RenderData | undefined
 let renderMode: RenderMode = defaultRenderMode
@@ -24,9 +23,9 @@ const mapToVariations = (vNames: string[]) => vNames.map(e => allVariations.find
 function updateCanvas(ctx: OffscreenCanvasRenderingContext2D) {
     if (!pixels || !renderData) return
 
-    p = updateRenderData(resolution, flames, renderData, p, rotationalSymmetry > 1, rotation,  5000, 5000 * nbIteration++);
-    if (rotationalSymmetry > 1)
-        rotation = ( rotation + ( 2 * Math.PI / rotationalSymmetry ) ) % ( 2 * Math.PI );
+    p = updateRenderData(resolution, flames, renderData, p, rotation,  5000, 5000 * nbIteration++);
+    if (flames.spaceWarp.rotationalSymmetry > 1)
+        rotation = ( rotation + ( 2 * Math.PI / flames.spaceWarp.rotationalSymmetry ) ) % ( 2 * Math.PI );
 
     if (renderMode === defaultRenderMode)
         updatePixelsBuffer(pixels, renderData, flames.palette, 10)
@@ -77,7 +76,9 @@ function reset(vNames: string[]) {
 function softreset(msg: SoftResetMessage) {
     pixels?.fill(0)
     p = { x: 0, y: 0 };
-    rotationalSymmetry = msg.rotationalSymmetry
+    flames.spaceWarp.rotationalSymmetry = msg.spaceWarping.rotationalSymmetry
+    flames.spaceWarp.mirrorX = msg.spaceWarping.mirrorX
+    flames.spaceWarp.mirrorY = msg.spaceWarping.mirrorY
     rotation = 0
     resetRenderData(renderData!)
 }

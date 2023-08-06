@@ -1,7 +1,8 @@
 <script lang="ts">
-	import { canvasRef, flamesJsonMetadata, rotationalSymmetryStore } from '../stores';
+	import { canvasRef, flamesJsonMetadata, spaceWarpingStore } from '../stores';
 	import VariationSelector from './VariationSelector.svelte';
 	import ColorationOptions from './ColorationOptions.svelte';
+	import SpaceWarping from './SpaceWarping.svelte';
 
 	export let open = false;
 
@@ -36,8 +37,7 @@
 		<a bind:this={metadataLink} class=" text-white block" href="#metadata">Metadata</a>
 		<button class="text-white block" on:click={() => downloadImage()}>Image</button>
 	</nav>
-	<p class="pt-12 pl-6 text-white">Rotational symmetry</p>
-	<input type="number" bind:value={$rotationalSymmetryStore} min="1" class="round-r-4 bg-slate-900 ml-12 p-1 mt-2 text-white border-slate-300 border-2 rounded w-48" >
+	<SpaceWarping />
 	<ColorationOptions />
 	<VariationSelector />
 </aside>

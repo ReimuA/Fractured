@@ -3,8 +3,15 @@ import type {  WeightedVariation} from "./Variations"
 import type { Color, XY,  } from "./mathu"
 import type { ColorPalette } from "./palette"
 
+export type SpaceWarp = {
+	rotationalSymmetry: number
+	mirrorX: boolean
+	mirrorY: boolean
+}
+
 export type Flames = {
 	resolution: XY
+	spaceWarp: SpaceWarp
 	palette: ColorPalette
 	final: FlamesComponent
 	components: FlamesComponent[]

@@ -3,7 +3,7 @@
 	import type { RenderData } from '$lib/FlamesUtils/render';
 	import type { XY } from '$lib/FlamesUtils/mathu';
 	import type { Flames } from '$lib/FlamesUtils/Flames';
-	import { renderModeStore, variationsPools, colorPaletteStore, flamesJsonMetadata, canvasRef, rotationalSymmetryStore } from './stores';
+	import { renderModeStore, variationsPools, colorPaletteStore, flamesJsonMetadata, canvasRef, spaceWarpingStore } from './stores';
 	import type { InitMessage, PaletteChangeMessage, ResetMessage, SoftResetMessage } from './messageType';
 
 	let canvas: HTMLCanvasElement;
@@ -18,8 +18,8 @@
 	});
 
 	// New rotation symetry
-	rotationalSymmetryStore.subscribe((n) => {
-		const softResetMsg: SoftResetMessage = { type: 'FlamesSoftReset',  rotationalSymmetry: n };
+	spaceWarpingStore.subscribe((n) => {
+		const softResetMsg: SoftResetMessage = { type: 'FlamesSoftReset',  spaceWarping: n };
 		syncWorker?.postMessage(softResetMsg);
 	});
 

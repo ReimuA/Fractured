@@ -1,3 +1,4 @@
+import type { SpaceWarp } from "$lib/FlamesUtils/Flames"
 import type { Variation } from "../lib/FlamesUtils/Variations"
 import type { ColorPalette } from "../lib/FlamesUtils/palette"
 import type { RenderMode } from "../lib/FlamesUtils/render"
@@ -18,7 +19,7 @@ export type ResetMessage = {
 
 export type SoftResetMessage = {
     type: SoftReset,
-    rotationalSymmetry: number
+    spaceWarping: SpaceWarp
 }
 
 
