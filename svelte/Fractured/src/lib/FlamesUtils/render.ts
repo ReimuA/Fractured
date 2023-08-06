@@ -1,4 +1,4 @@
-import { mix, type Color, type XY } from "./mathu"
+import { mix, type Color, type XY, rotate2d } from "./mathu"
 import { type Flames, applyFlames } from "./Flames"
 import { createRandomFlames, randomWeigthedSelection } from "./random"
 // import { superSampleResolution, applyAA } from "../antialiasing"
@@ -32,16 +32,25 @@ export function resetRenderData(renderData: RenderData) {
 	renderData.paletteAccumulator.fill(0)
 }
 
-export function updateRenderData(resolution: XY, flames: Flames, renderData: RenderData, p: XY, iteration: number, totalIteration: number) {
+let rotation = 0
+
+export function updateRenderData(resolution: XY, flames: Flames, renderData: RenderData, p: XY, rotate: boolean, rotation: number, iteration: number, totalIteration: number) {
 
 	for (let i = 0; i < iteration; i++) {
 		const currentComponent = randomWeigthedSelection(flames.components)
 
 		p = applyFlames(flames, flames.components.indexOf(currentComponent), p)
 
-		const pixel = {
-			x: Math.round((p.x + 2 * (resolution.x / resolution.y)) * (resolution.y / 4)),
-			y: Math.round((p.y + 2) * (resolution.y / 4)),
+		let pixel = {
+			x: ((p.x + 2 * (resolution.x / resolution.y)) * (resolution.y / 4)),
+			y: ((p.y + 2) * (resolution.y / 4)),
+		}
+
+		if (rotate) {
+			const rPixel = rotate2d(pixel, {x: flames.resolution.x /2, y: flames.resolution.y /2}, rotation)
+			pixel = {x: Math.round(rPixel.x), y: Math.round(rPixel.y)}
+		} else {
+			pixel = {x: Math.round(pixel.x), y: Math.round(pixel.y)}
 		}
 
 		if (i + totalIteration > 20 && pixel.x > 0 && pixel.x < resolution.x && pixel.y > 0 && pixel.y < resolution.y) {

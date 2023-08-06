@@ -6,6 +6,8 @@ import { defaultRenderMode, type RenderMode } from '$lib/FlamesUtils/render';
 
 export const variationsPools = writable<Variation[]>([]);
 
+export const rotationalSymmetryStore = writable<number>(1)
+
 export const flamesJsonMetadata = writable<string>("{}")
 
 export const colorPaletteStore = writable<ColorPalette>(namedPalettesList[0].palette)

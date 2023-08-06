@@ -5,13 +5,15 @@ import type { XY } from "../lib/FlamesUtils/mathu";
 import { namedPalettesList, type ColorPalette } from "../lib/FlamesUtils/palette";
 import { createRandomFlames } from "../lib/FlamesUtils/random";
 import { createRenderData, updateRenderData, type RenderData, type RenderMode, updatePixelsBuffer, paletteStructuralColoring, colorStructuralColoring, defaultRenderMode, structuralPaletteRenderMode, resetRenderData } from "../lib/FlamesUtils/render";
-import type { FlamesMessage } from "./messageType";
+import type { FlamesMessage, SoftResetMessage } from "./messageType";
 
 let flames: Flames;
 let p: XY = { x: 0, y: 0 };
 let resolution: XY = { x: 0, y: 0 };
 let baseResolution: XY = { x: 0, y: 0 };
 let nbIteration: number = 0;
+let rotationalSymmetry = 1
+let rotation = 0
 let renderData: RenderData | undefined
 let renderMode: RenderMode = defaultRenderMode
 
@@ -22,7 +24,10 @@ const mapToVariations = (vNames: string[]) => vNames.map(e => allVariations.find
 function updateCanvas(ctx: OffscreenCanvasRenderingContext2D) {
     if (!pixels || !renderData) return
 
-    p = updateRenderData(resolution, flames, renderData, p, 5000, 5000 * nbIteration++);
+    p = updateRenderData(resolution, flames, renderData, p, rotationalSymmetry > 1, rotation,  5000, 5000 * nbIteration++);
+    if (rotationalSymmetry > 1)
+        rotation = ( rotation + ( 2 * Math.PI / rotationalSymmetry ) ) % ( 2 * Math.PI );
+
     if (renderMode === defaultRenderMode)
         updatePixelsBuffer(pixels, renderData.heatmap, flames.palette, 10)
     else if (renderMode === structuralPaletteRenderMode)
@@ -69,6 +74,14 @@ function reset(vNames: string[]) {
     pixels?.fill(0)
 }
 
+function softreset(msg: SoftResetMessage) {
+    pixels?.fill(0)
+    p = { x: 0, y: 0 };
+    rotationalSymmetry = msg.rotationalSymmetry
+    rotation = 0
+    resetRenderData(renderData!)
+}
+
 function paletteChange(palette: ColorPalette) {
     flames.palette = palette
     console.log(palette)
@@ -82,6 +95,9 @@ onmessage = ({data}: MessageEvent<FlamesMessage>) => {
     switch (data.type) {
         case "FlamesReset":
             reset(data.variationsPools)
+            break
+        case "FlamesSoftReset":
+            softreset(data)
             break
         case "FlamesInit":
             init(data.canvasContext)

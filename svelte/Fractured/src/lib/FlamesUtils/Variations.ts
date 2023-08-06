@@ -198,6 +198,45 @@ export const WavesVariation: Variation = {
 	}
 }
 
+export const FisheyeVariation: Variation = {
+	name: "Fishe eye",
+	function: (p: XY) => {
+		const r = _r(p)
+		const f = 2 / (r + 1)
+		return {
+			x: f * p.x,
+			y: f * p.y
+		}
+	}
+}
+
+// TODO: V17 Popconr
+
+export const exponentialVariation: Variation = {
+	name: "Exponential",
+	function: (p: XY) => {
+		const f = Math.exp(p.x - 1)
+		return {
+			x: f * Math.cos(Math.PI * p.y),
+			y: f * Math.sin(Math.PI * p.y)
+		}
+	}
+}
+
+export const powerVariation: Variation = {
+	name: "Power",
+	function: (p: XY) => {
+		const r = _r(p)
+		const theta = _theta(p)
+		const f = Math.pow(r, Math.sin(theta))
+		return {
+			x: f * Math.cos(theta),
+			y: f * Math.sin(theta)
+		}
+	}
+}
+
+// TODO: Variation 20 Cosine
 
 export const fanVariation: Variation = {
 	name: "Fan",
@@ -220,48 +259,6 @@ export const fanVariation: Variation = {
 	},
 }
 
-
-export function getVariationFromName(name: string): Variation | undefined {
-	switch (name) {
-		case "Linear":
-			return linearVariation
-		case "Sinusoidal":
-			return sinusoidalVariation
-		case "Spherical":
-			return sphericalVariation
-		case "Swirl":
-			return swirlVariation
-		case "Horseshoe":
-			return horseshoeVariation
-		case "Polar":
-			return polarVariation
-		case "Handkerchief":
-			return handkerchieVariation
-		case "Heart":
-			return heartVariation
-		case "Disc":
-			return discVariation
-		case "Spiral":
-			return spiralVariation
-		case "Hyperbolic":
-			return hyperbolicVariation
-		case "Diamond":
-			return diamondVariation
-		case "Ex":
-			return ExVariation
-		case "Julia":
-			return JuliaVariation
-		case "Bent":
-			return BentVariation
-		case "Waves":
-			return WavesVariation
-		case "Fan":
-			return fanVariation
-		default:
-			return undefined
-	}
-}
-
 export const allVariations: Variation[] = [
 	linearVariation,
 	sinusoidalVariation,
@@ -279,6 +276,11 @@ export const allVariations: Variation[] = [
 	JuliaVariation,
 	BentVariation,
 	WavesVariation,
+	FisheyeVariation,
+	// TODO: V17 Popconr
+	exponentialVariation,
+	powerVariation,
+	// TODO: Variation 20 Cosine
 	fanVariation,
 ]
 

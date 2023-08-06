@@ -3,8 +3,8 @@
 	import type { RenderData } from '$lib/FlamesUtils/render';
 	import type { XY } from '$lib/FlamesUtils/mathu';
 	import type { Flames } from '$lib/FlamesUtils/Flames';
-	import { renderModeStore, variationsPools, colorPaletteStore, flamesJsonMetadata, canvasRef } from './stores';
-	import type { InitMessage, PaletteChangeMessage } from './messageType';
+	import { renderModeStore, variationsPools, colorPaletteStore, flamesJsonMetadata, canvasRef, rotationalSymmetryStore } from './stores';
+	import type { InitMessage, PaletteChangeMessage, ResetMessage, SoftResetMessage } from './messageType';
 
 	let canvas: HTMLCanvasElement;
 	let syncWorker: Worker | undefined;
@@ -13,8 +13,14 @@
 	variationsPools.subscribe((v) => {
 		if (!(canvas && v.length != 0)) return;
 
-		const resetMsg = { type: 'FlamesReset', variationsPools: v.map((e) => e.name) };
+		const resetMsg: ResetMessage = { type: 'FlamesReset', variationsPools: v.map((e) => e.name) };
 		syncWorker?.postMessage(resetMsg);
+	});
+
+	// New rotation symetry
+	rotationalSymmetryStore.subscribe((n) => {
+		const softResetMsg: SoftResetMessage = { type: 'FlamesSoftReset',  rotationalSymmetry: n };
+		syncWorker?.postMessage(softResetMsg);
 	});
 
 	colorPaletteStore.subscribe((palette) => {
