@@ -41,6 +41,19 @@ export function xyLength(p: XY) {
 	return Math.sqrt(p.x * p.x + p.y * p.y)
 }
 
+export function rotate2d(p: XY, offset: XY, angle: number): XY {
+	const x = (p.x - offset.x)
+	const y = (p.y - offset.y)
+
+	const sin = Math.sin(angle)
+	const cos = Math.cos(angle)
+
+	return {
+		x:  x *  cos - sin * y + offset.x,
+		y:  x *  sin + cos * y + offset.y
+	}
+}
+
 export function mergeColor(a: Color, b: Color): Color {
 	return {
 		r: (a.r + b.r) / 2,
