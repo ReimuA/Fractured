@@ -1,6 +1,6 @@
 import type { Flames } from "../lib/FlamesUtils/Flames";
 import { allVariations } from "../lib/FlamesUtils/Variations";
-import { applyAA, superSampleResolution } from "../lib/FlamesUtils/antialiasing";
+import { applyAA, applyAA3x, superSampleResolution } from "../lib/FlamesUtils/antialiasing";
 import type { XY } from "../lib/FlamesUtils/mathu";
 import { namedPalettesList, type ColorPalette } from "../lib/FlamesUtils/palette";
 import { createRandomFlames } from "../lib/FlamesUtils/random";
@@ -17,11 +17,12 @@ let renderData: RenderData | undefined
 let renderMode: RenderMode = defaultRenderMode
 
 let pixels: Uint8ClampedArray | undefined
+let canvasContent: Uint8ClampedArray | undefined
 
 const mapToVariations = (vNames: string[]) => vNames.map(e => allVariations.find(v => v.name == e)!)
 
 function updateCanvas(ctx: OffscreenCanvasRenderingContext2D) {
-    if (!pixels || !renderData) return
+    if (!pixels || !renderData ||!canvasContent) return
 
     p = updateRenderData(resolution, flames, renderData, p, rotation,  5000, 5000 * nbIteration++);
     if (flames.spaceWarp.rotationalSymmetry > 1)
@@ -33,8 +34,9 @@ function updateCanvas(ctx: OffscreenCanvasRenderingContext2D) {
         paletteStructuralColoring(pixels, renderData, flames.palette);
     else
         colorStructuralColoring(pixels, renderData, flames.palette);
+    applyAA3x(baseResolution, pixels, canvasContent)
     ctx.putImageData(
-        new ImageData(applyAA(baseResolution, pixels), baseResolution.x, baseResolution.y),
+        new ImageData(canvasContent, baseResolution.x, baseResolution.y),
         0,
         0
     );
@@ -52,6 +54,7 @@ function init(canvas: OffscreenCanvas) {
     resolution = superSampleResolution(baseResolution)
     
     pixels ??= new Uint8ClampedArray(resolution.x * resolution.y * 4);
+    canvasContent ??= new Uint8ClampedArray(baseResolution.x * baseResolution.y * 4);
     renderData ??= createRenderData(resolution.x * resolution.y)
 
     flames = createRandomFlames(resolution, namedPalettesList[0].palette, allVariations)

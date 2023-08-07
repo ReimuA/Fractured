@@ -116,6 +116,7 @@ export function colorStructuralColoring(pixels: Uint8ClampedArray, renderData: R
 	const heatmap = renderData.heatmap
 	const colorAccumulator = renderData.colorAccumulator
 	for (let i = 0; i < heatmap.length; i++) {
+		pixels[i * 4 + 3] = mix(pixels[i * 4 + 3], 255, .25)
 		if (heatmap[i] < 1) continue
 
 		let r = colorAccumulator[i * 3]
