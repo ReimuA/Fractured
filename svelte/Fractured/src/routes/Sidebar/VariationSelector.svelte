@@ -29,7 +29,7 @@
 		</button>
 	{/each}
 
-	<div class="flex justify-center w-full mt-6 ">
+	<div class="flex justify-center w-full my-6 ">
 		<button class="block " on:click={() => updateVariationPools()}>
 			<p class="bg-slate-700 text-white py-1 px-4 rounded">NEW</p>
 		</button>
