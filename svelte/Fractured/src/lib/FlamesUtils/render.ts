@@ -94,7 +94,9 @@ export function updateRenderData(resolution: XY, flames: Flames, renderData: Ren
 }
 
 // Density factor can be used to provide faster visible result
-export function paletteStructuralColoring(pixels: Uint8ClampedArray, heatmap: Uint32Array, paletteAccumulator: Float64Array, p: ColorPalette, densityFactor: number) {
+export function paletteStructuralColoring(pixels: Uint8ClampedArray, renderData: RenderData, p: ColorPalette) {
+	const heatmap = renderData.heatmap
+	const paletteAccumulator = renderData.paletteAccumulator
 	for (let i = 0; i < heatmap.length; i++) {
 		pixels[i * 4 + 3] = mix(pixels[i * 4 + 3], 255, .25)
 
@@ -112,7 +114,9 @@ export function paletteStructuralColoring(pixels: Uint8ClampedArray, heatmap: Ui
 }
 
 // Density factor can be used to provide faster visible result
-export function colorStructuralColoring(pixels: Uint8ClampedArray, heatmap: Uint32Array, colorAccumulator: Float64Array, p: ColorPalette, densityFactor: number) {
+export function colorStructuralColoring(pixels: Uint8ClampedArray, renderData: RenderData, p: ColorPalette) {
+	const heatmap = renderData.heatmap
+	const colorAccumulator = renderData.colorAccumulator
 	for (let i = 0; i < heatmap.length; i++) {
 		if (heatmap[i] < 1) continue
 

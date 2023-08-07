@@ -30,9 +30,9 @@ function updateCanvas(ctx: OffscreenCanvasRenderingContext2D) {
     if (renderMode === defaultRenderMode)
         updatePixelsBuffer(pixels, renderData, flames.palette, 10)
     else if (renderMode === structuralPaletteRenderMode)
-        paletteStructuralColoring(pixels, renderData.heatmap, renderData.paletteAccumulator, flames.palette, 10);
+        paletteStructuralColoring(pixels, renderData, flames.palette);
     else
-        colorStructuralColoring(pixels, renderData.heatmap, renderData.colorAccumulator, flames.palette, 10);
+        colorStructuralColoring(pixels, renderData, flames.palette);
     ctx.putImageData(
         new ImageData(applyAA(baseResolution, pixels), baseResolution.x, baseResolution.y),
         0,
