@@ -35,6 +35,12 @@ export function applyAA(resolution: XY, supersample: Uint8ClampedArray) {
 		buffer[idx + 1] = (c1.g + c2.g + c3.g + c4.g) / 4
 		buffer[idx + 2] = (c1.b + c2.b + c3.b + c4.b) / 4
 		buffer[idx + 3] = (c1.a + c2.a + c3.a + c4.a) / 4
+
+		// Gamma correction
+		buffer[idx + 0] = Math.pow(buffer[idx + 0] / 255, 0.454545) * 255
+		buffer[idx + 1] = Math.pow(buffer[idx + 1] / 255, 0.454545) * 255
+		buffer[idx + 2] = Math.pow(buffer[idx + 2] / 255, 0.454545) * 255
+		buffer[idx + 3] = Math.pow(buffer[idx + 3] / 255, 0.454545) * 255
 	}
 
 	return buffer

@@ -21,7 +21,7 @@ export function createRandomFlames(resolution: XY, palette: ColorPalette, variat
 		},
 		palette: palette,
 		final: createRandomFlamesComponent(palette, variationsPools),
-		components: createRandomFlamesComponents(4, palette, variationsPools),
+		components: createRandomFlamesComponents(Math.round(Math.random() * 10) + 3, palette, variationsPools),
 	}
 }
 

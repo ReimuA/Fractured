@@ -93,20 +93,20 @@ export function updateRenderData(resolution: XY, flames: Flames, renderData: Ren
 	return p
 }
 
-const gamma = 1 / 3.4
-
 // Density factor can be used to provide faster visible result
 export function paletteStructuralColoring(pixels: Uint8ClampedArray, heatmap: Uint32Array, paletteAccumulator: Float64Array, p: ColorPalette, densityFactor: number) {
 	for (let i = 0; i < heatmap.length; i++) {
+		pixels[i * 4 + 3] = mix(pixels[i * 4 + 3], 255, .25)
+
 		if (heatmap[i] < 1) continue
 
-		const c = colorFromPalette(p, paletteAccumulator[i])
-		const aChan = Math.log10(heatmap[i] * densityFactor) / heatmap[i];
+		let c = colorFromPalette(p, paletteAccumulator[i])
+		const aChan = Math.log10(heatmap[i]) / heatmap[i];
 
-		pixels[i * 4 + 0] = mix(pixels[i * 4 + 0], 255 * Math.pow(c.r * aChan, gamma), .25)
-		pixels[i * 4 + 1] = mix(pixels[i * 4 + 1], 255 * Math.pow(c.g * aChan, gamma), .25)
-		pixels[i * 4 + 2] = mix(pixels[i * 4 + 2], 255 * Math.pow(c.b * aChan, gamma), .25)
-		pixels[i * 4 + 3] = mix(pixels[i * 4 + 1], 255 * aChan, .25)
+		pixels[i * 4 + 0] = mix(pixels[i * 4 + 0], 255 * c.r, .25)
+		pixels[i * 4 + 1] = mix(pixels[i * 4 + 1], 255 * c.g, .25)
+		pixels[i * 4 + 2] = mix(pixels[i * 4 + 2], 255 * c.b, .25)
+		pixels[i * 4 + 3] = mix(pixels[i * 4 + 3], 255, .25)
 	}
 	return pixels
 }
@@ -116,15 +116,15 @@ export function colorStructuralColoring(pixels: Uint8ClampedArray, heatmap: Uint
 	for (let i = 0; i < heatmap.length; i++) {
 		if (heatmap[i] < 1) continue
 
-		const r = colorAccumulator[i * 3]
-		const g = colorAccumulator[i * 3 + 1]
-		const b = colorAccumulator[i * 3 + 2]
-		const aChan = Math.log10(heatmap[i] * densityFactor) / heatmap[i];
+		let r = colorAccumulator[i * 3]
+		let g = colorAccumulator[i * 3 + 1]
+		let b = colorAccumulator[i * 3 + 2]
+		const aChan = Math.log10(heatmap[i]) / heatmap[i];
 
-		pixels[i * 4 + 0] = mix(pixels[i * 4 + 0], 255 * Math.pow(r * aChan, gamma), .25)
-		pixels[i * 4 + 1] = mix(pixels[i * 4 + 1], 255 * Math.pow(g * aChan, gamma), .25)
-		pixels[i * 4 + 2] = mix(pixels[i * 4 + 2], 255 * Math.pow(b * aChan, gamma), .25)
-		pixels[i * 4 + 3] = mix(pixels[i * 4 + 1], 255 * aChan, .25)
+		pixels[i * 4 + 0] = mix(pixels[i * 4 + 0], 255 * r, .25)
+		pixels[i * 4 + 1] = mix(pixels[i * 4 + 1], 255 * g, .25)
+		pixels[i * 4 + 2] = mix(pixels[i * 4 + 2], 255 * b, .25)
+		pixels[i * 4 + 3] = mix(pixels[i * 4 + 3], 255, .25)
 	}
 	return pixels
 }
@@ -133,20 +133,18 @@ export function colorStructuralColoring(pixels: Uint8ClampedArray, heatmap: Uint
 export function updatePixelsBuffer(pixels: Uint8ClampedArray, renderData: RenderData, p: ColorPalette, densityFactor: number) {
 	const max = renderData.heatmapMax
 	const heatmap = renderData.heatmap
-
-
 	const maxDensity = Math.log10(max)
+
 	for (let i = 0; i < heatmap.length; i++) {
-		pixels[i * 4 + 3] = 255
 		if (heatmap[i] < 1) continue
 
 		const density = Math.log10(heatmap[i])
-		const c = colorFromPalette(p, density / maxDensity)
+		let c = colorFromPalette(p, density / maxDensity)
 
-
-		pixels[i * 4 + 0] = mix(pixels[i * 4 + 0], 255 * Math.pow(c.r, gamma), .25)
-		pixels[i * 4 + 1] = mix(pixels[i * 4 + 1], 255 * Math.pow(c.g, gamma), .25)
-		pixels[i * 4 + 2] = mix(pixels[i * 4 + 2], 255 * Math.pow(c.b, gamma), .25)
+		pixels[i * 4 + 0] = mix(pixels[i * 4 + 0], 255 * c.r, .25)
+		pixels[i * 4 + 1] = mix(pixels[i * 4 + 1], 255 * c.g, .25)
+		pixels[i * 4 + 2] = mix(pixels[i * 4 + 2], 255 * c.b, .25)
+		pixels[i * 4 + 3] = 255
 	}
 	return pixels
 }
