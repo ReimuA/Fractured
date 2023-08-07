@@ -93,7 +93,6 @@ export function updateRenderData(resolution: XY, flames: Flames, renderData: Ren
 	return p
 }
 
-// Density factor can be used to provide faster visible result
 export function paletteStructuralColoring(pixels: Uint8ClampedArray, renderData: RenderData, p: ColorPalette) {
 	const heatmap = renderData.heatmap
 	const paletteAccumulator = renderData.paletteAccumulator
@@ -113,7 +112,6 @@ export function paletteStructuralColoring(pixels: Uint8ClampedArray, renderData:
 	return pixels
 }
 
-// Density factor can be used to provide faster visible result
 export function colorStructuralColoring(pixels: Uint8ClampedArray, renderData: RenderData, p: ColorPalette) {
 	const heatmap = renderData.heatmap
 	const colorAccumulator = renderData.colorAccumulator
@@ -133,7 +131,6 @@ export function colorStructuralColoring(pixels: Uint8ClampedArray, renderData: R
 	return pixels
 }
 
-// Density factor can be used to provide faster visible result
 export function updatePixelsBuffer(pixels: Uint8ClampedArray, renderData: RenderData, p: ColorPalette, densityFactor: number) {
 	const max = renderData.heatmapMax
 	const heatmap = renderData.heatmap
