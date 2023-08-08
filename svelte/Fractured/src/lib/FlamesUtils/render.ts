@@ -102,7 +102,6 @@ export function paletteStructuralColoring(pixels: Uint8ClampedArray, renderData:
 		if (heatmap[i] < 1) continue
 
 		let c = colorFromPalette(p, paletteAccumulator[i])
-		const aChan = Math.log10(heatmap[i]) / heatmap[i];
 
 		pixels[i * 4 + 0] = mix(pixels[i * 4 + 0], 255 * c.r, .25)
 		pixels[i * 4 + 1] = mix(pixels[i * 4 + 1], 255 * c.g, .25)
@@ -122,7 +121,6 @@ export function colorStructuralColoring(pixels: Uint8ClampedArray, renderData: R
 		let r = colorAccumulator[i * 3]
 		let g = colorAccumulator[i * 3 + 1]
 		let b = colorAccumulator[i * 3 + 2]
-		const aChan = Math.log10(heatmap[i]) / heatmap[i];
 
 		pixels[i * 4 + 0] = mix(pixels[i * 4 + 0], 255 * r, .25)
 		pixels[i * 4 + 1] = mix(pixels[i * 4 + 1], 255 * g, .25)
@@ -132,7 +130,7 @@ export function colorStructuralColoring(pixels: Uint8ClampedArray, renderData: R
 	return pixels
 }
 
-export function updatePixelsBuffer(pixels: Uint8ClampedArray, renderData: RenderData, p: ColorPalette, densityFactor: number) {
+export function updatePixelsBuffer(pixels: Uint8ClampedArray, renderData: RenderData, p: ColorPalette) {
 	const max = renderData.heatmapMax
 	const heatmap = renderData.heatmap
 	const maxDensity = Math.log10(max)

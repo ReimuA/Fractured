@@ -29,12 +29,13 @@ function updateCanvas(ctx: OffscreenCanvasRenderingContext2D) {
         rotation = ( rotation + ( 2 * Math.PI / flames.spaceWarp.rotationalSymmetry ) ) % ( 2 * Math.PI );
 
     if (renderMode === defaultRenderMode)
-        updatePixelsBuffer(pixels, renderData, flames.palette, 10)
+        updatePixelsBuffer(pixels, renderData, flames.palette)
     else if (renderMode === structuralPaletteRenderMode)
         paletteStructuralColoring(pixels, renderData, flames.palette);
     else
         colorStructuralColoring(pixels, renderData, flames.palette);
-    applyAA3x(baseResolution, pixels, canvasContent)
+
+    applyAA3x(baseResolution, pixels, canvasContent, renderData.heatmap)
     ctx.putImageData(
         new ImageData(canvasContent, baseResolution.x, baseResolution.y),
         0,
