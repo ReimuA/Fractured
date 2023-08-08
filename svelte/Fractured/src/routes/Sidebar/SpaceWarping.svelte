@@ -13,7 +13,7 @@
 <label class="block">
 	<input
 		type="checkbox"
-		bind:value={$spaceWarpingStore.mirrorX}
+		bind:checked={$spaceWarpingStore.mirrorX}
 		class="round-r-4 bg-slate-900 ml-12 p-1 mt-4 border-slate-300 border-2 rounded"
 	/>
 	<span class="text-white">Mirror X Axis</span>
@@ -22,7 +22,7 @@
 <label class="block">
 	<input
 		type="checkbox"
-		bind:value={$spaceWarpingStore.mirrorY}
+		bind:checked={$spaceWarpingStore.mirrorY}
 		class="round-r-4 bg-slate-900 ml-12 p-1 mt-4 border-slate-300 border-2 rounded"
 	/>
 	<span class="text-white">Mirror Y Axis</span>
