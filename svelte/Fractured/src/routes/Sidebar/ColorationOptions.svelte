@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { namedPalettesList, type ColorPalette } from '$lib/FlamesUtils/palette';
-	import { defaultRenderMode, renderModeList, type RenderMode } from '$lib/FlamesUtils/render';
-	import { renderModeStore, flamesJsonMetadata, colorPaletteStore } from '../stores';
+	import { type RenderMode, defaultRenderMode, renderModeList } from '$lib/FlamesUtils/Flames';
+	import { namedPalettesList, type ColorPalette, type NamedColorPalette } from '$lib/FlamesUtils/palette';
+	import { renderModeStore, colorPaletteStore, flamesStore } from '../stores';
 
-	let selectedPalette: ColorPalette = namedPalettesList[0].palette;
+	let selectedPalette: string = namedPalettesList[0].name;
 	let renderMode: RenderMode = defaultRenderMode;
 
 	let selectClasses =
@@ -12,19 +12,29 @@
 	renderModeStore.subscribe((mode) => (renderMode = mode));
 
 	function updatePalette() {
-		colorPaletteStore.set(selectedPalette);
+		const namedPalette = namedPalettesList.find(p => p.name === selectedPalette)
+		if (namedPalette)
+			colorPaletteStore.set(namedPalette);
 	}
 
 	function updateRenderMode() {
 		renderModeStore.set(renderMode);
 	}
+
+	flamesStore.subscribe(flames => {
+		if (flames == undefined) return
+
+		
+		renderMode = flames.renderMode
+		selectedPalette = flames.namedPalette.name
+	})
 </script>
 
 <div>
 	<p class="pt-8 pl-6 text-white">Color</p>
 	<select class={selectClasses} bind:value={selectedPalette} on:change={() => updatePalette()}>
 		{#each namedPalettesList as namedPalette}
-			<option class="text-white bg-slate-900" value={namedPalette.palette}
+			<option class="text-white bg-slate-900" value={namedPalette.name}
 				>{namedPalette.name}</option
 			>
 		{/each}

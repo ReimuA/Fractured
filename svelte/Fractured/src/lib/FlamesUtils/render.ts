@@ -4,13 +4,7 @@ import { createRandomFlames, randomWeigthedSelection } from "./random"
 // import { superSampleResolution, applyAA } from "../antialiasing"
 import { type ColorPalette, colorFromPalette } from "./palette"
 
-export type HeatmapCell = { color: number, accumulator: number }
 
-export type RenderMode = "Default" | "Structural (Palette)" | "Structural (Color)"
-export const defaultRenderMode: RenderMode = "Default"
-export const structularColorRenderMode: RenderMode = "Structural (Color)"
-export const structuralPaletteRenderMode: RenderMode = "Structural (Palette)"
-export const renderModeList = [defaultRenderMode, structularColorRenderMode, structuralPaletteRenderMode]
 
 export type RenderData = {
 	heatmap: Uint32Array
@@ -83,7 +77,7 @@ export function updateRenderData(resolution: XY, flames: Flames, renderData: Ren
 				renderData.heatmapMax = renderData.heatmap[idx]
 
 			const colorIdx = idx * 3
-			const color = colorFromPalette(flames.palette, currentComponent.color)
+			const color = colorFromPalette(flames.namedPalette.palette, currentComponent.color)
 			renderData.colorAccumulator[colorIdx] = (renderData.colorAccumulator[colorIdx] + color.r) / 2
 			renderData.colorAccumulator[colorIdx + 1] = (renderData.colorAccumulator[colorIdx + 1] + color.g) / 2
 			renderData.colorAccumulator[colorIdx + 2] = (renderData.colorAccumulator[colorIdx + 2] + color.b) / 2

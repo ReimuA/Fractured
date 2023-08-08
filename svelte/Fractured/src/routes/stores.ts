@@ -1,8 +1,7 @@
 import { writable } from 'svelte/store';
 import type { Variation } from '$lib/FlamesUtils/Variations';
-import type { Flames, SpaceWarp } from '$lib/FlamesUtils/Flames';
-import { namedPalettesList, type ColorPalette } from '$lib/FlamesUtils/palette';
-import { defaultRenderMode, type RenderMode } from '$lib/FlamesUtils/render';
+import { defaultRenderMode, type Flames, type SpaceWarp, type RenderMode } from '$lib/FlamesUtils/Flames';
+import { namedPalettesList, type ColorPalette, type NamedColorPalette } from '$lib/FlamesUtils/palette';
 
 export const variationsPools = writable<Variation[]>([]);
 
@@ -12,9 +11,11 @@ export const spaceWarpingStore = writable<SpaceWarp>({
     mirrorY: false
 })
 
+export const flamesStore = writable<Flames | undefined>()
+
 export const flamesJsonMetadata = writable<string>("{}")
 
-export const colorPaletteStore = writable<ColorPalette>(namedPalettesList[0].palette)
+export const colorPaletteStore = writable<NamedColorPalette>(namedPalettesList[0])
 
 export const renderModeStore = writable<RenderMode>(defaultRenderMode)
 

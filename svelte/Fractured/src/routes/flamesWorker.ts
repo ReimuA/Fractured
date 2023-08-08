@@ -1,10 +1,10 @@
-import type { Flames } from "../lib/FlamesUtils/Flames";
+import { defaultRenderMode, structuralPaletteRenderMode, type Flames, type RenderMode } from "../lib/FlamesUtils/Flames";
 import { allVariations } from "../lib/FlamesUtils/Variations";
 import { applyAA, applyAA3x, superSampleResolution } from "../lib/FlamesUtils/antialiasing";
 import type { XY } from "../lib/FlamesUtils/mathu";
-import { namedPalettesList, type ColorPalette } from "../lib/FlamesUtils/palette";
+import { namedPalettesList, type ColorPalette, type NamedColorPalette } from "../lib/FlamesUtils/palette";
 import { createRandomFlames } from "../lib/FlamesUtils/random";
-import { createRenderData, updateRenderData, type RenderData, type RenderMode, updatePixelsBuffer, paletteStructuralColoring, colorStructuralColoring, defaultRenderMode, structuralPaletteRenderMode, resetRenderData } from "../lib/FlamesUtils/render";
+import { createRenderData, updateRenderData, type RenderData, updatePixelsBuffer, paletteStructuralColoring, colorStructuralColoring, resetRenderData } from "../lib/FlamesUtils/render";
 import type { FlamesMessage, SoftResetMessage } from "./messageType";
 
 let flames: Flames;
@@ -14,7 +14,6 @@ let baseResolution: XY = { x: 0, y: 0 };
 let nbIteration: number = 0;
 let rotation = 0
 let renderData: RenderData | undefined
-let renderMode: RenderMode = defaultRenderMode
 
 let pixels: Uint8ClampedArray | undefined
 let canvasContent: Uint8ClampedArray | undefined
@@ -28,12 +27,12 @@ function updateCanvas(ctx: OffscreenCanvasRenderingContext2D) {
     if (flames.spaceWarp.rotationalSymmetry > 1)
         rotation = ( rotation + ( 2 * Math.PI / flames.spaceWarp.rotationalSymmetry ) ) % ( 2 * Math.PI );
 
-    if (renderMode === defaultRenderMode)
-        updatePixelsBuffer(pixels, renderData, flames.palette)
-    else if (renderMode === structuralPaletteRenderMode)
-        paletteStructuralColoring(pixels, renderData, flames.palette);
+    if (flames.renderMode === defaultRenderMode)
+        updatePixelsBuffer(pixels, renderData, flames.namedPalette.palette)
+    else if (flames.renderMode === structuralPaletteRenderMode)
+        paletteStructuralColoring(pixels, renderData, flames.namedPalette.palette);
     else
-        colorStructuralColoring(pixels, renderData, flames.palette);
+        colorStructuralColoring(pixels, renderData, flames.namedPalette.palette);
 
     applyAA3x(baseResolution, pixels, canvasContent, renderData.heatmap)
     ctx.putImageData(
@@ -58,11 +57,11 @@ function init(canvas: OffscreenCanvas) {
     canvasContent ??= new Uint8ClampedArray(baseResolution.x * baseResolution.y * 4);
     renderData ??= createRenderData(resolution.x * resolution.y)
 
-    flames = createRandomFlames(resolution, namedPalettesList[0].palette, allVariations)
+    flames = createRandomFlames(resolution, namedPalettesList[0], allVariations)
 
     let frame = requestAnimationFrame(flamesIteration);
 
-    function flamesIteration(t: number) {
+    function flamesIteration() {
         updateCanvas(ctx!);
         setTimeout(() => (frame = requestAnimationFrame(flamesIteration)), 1000 / 60);
     }
@@ -72,7 +71,7 @@ function reset(vNames: string[]) {
     const variationsPools = mapToVariations(vNames)
 
     p = { x: 0, y: 0 };
-    flames = createRandomFlames(flames.resolution, flames.palette, variationsPools)
+    flames = createRandomFlames(flames.resolution, flames.namedPalette, variationsPools)
     resetRenderData(renderData!)
     pixels?.fill(0)
 }
@@ -87,13 +86,12 @@ function softreset(msg: SoftResetMessage) {
     resetRenderData(renderData!)
 }
 
-function paletteChange(palette: ColorPalette) {
-    flames.palette = palette
-    console.log(palette)
+function paletteChange(namedPalette: NamedColorPalette) {
+    flames.namedPalette = namedPalette
 }
 
 function RenderModeChange(rm: RenderMode) {
-    renderMode = rm
+    flames.renderMode = rm
 }
 
 onmessage = ({data}: MessageEvent<FlamesMessage>) => {
@@ -108,7 +106,7 @@ onmessage = ({data}: MessageEvent<FlamesMessage>) => {
             init(data.canvasContext)
             break
         case "FlamesPaletteChange":
-            paletteChange(data.palette)
+            paletteChange(data.namedColorPalette)
             break
         case "FlamesRenderModeChange":
             RenderModeChange(data.renderMode)

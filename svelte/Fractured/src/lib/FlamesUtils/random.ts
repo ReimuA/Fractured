@@ -1,8 +1,8 @@
 import type { Color, XY } from "./mathu"
-import type { Flames, FlamesComponent } from "./Flames"
+import { defaultRenderMode, type Flames, type FlamesComponent } from "./Flames"
 import { type IFSTransform, createTransform } from "./IFSTransform"
 import type { WeightedVariation, Variation } from "./Variations"
-import type { ColorPalette } from "./palette"
+import type { ColorPalette, NamedColorPalette } from "./palette"
 
 
 export function createRandomTransform(): IFSTransform {
@@ -11,17 +11,18 @@ export function createRandomTransform(): IFSTransform {
 	return createTransform(r(), r(), r(), r(), r(), r())
 }
 
-export function createRandomFlames(resolution: XY, palette: ColorPalette, variationsPools: Variation[]): Flames {
+export function createRandomFlames(resolution: XY, palette: NamedColorPalette, variationsPools: Variation[]): Flames {
 	return {
 		resolution,
+		renderMode: defaultRenderMode,
 		spaceWarp: {
 			rotationalSymmetry: 1,
 			mirrorX: false,
 			mirrorY: false
 		},
-		palette: palette,
-		final: createRandomFlamesComponent(palette, variationsPools),
-		components: createRandomFlamesComponents(Math.round(Math.random() * 10) + 3, palette, variationsPools),
+		namedPalette: palette,
+		final: createRandomFlamesComponent(palette.palette, variationsPools),
+		components: createRandomFlamesComponents(Math.round(Math.random() * 10) + 3, palette.palette, variationsPools),
 	}
 }
 

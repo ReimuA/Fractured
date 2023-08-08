@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import type { RenderData } from '$lib/FlamesUtils/render';
-	import type { XY } from '$lib/FlamesUtils/mathu';
-	import type { Flames } from '$lib/FlamesUtils/Flames';
-	import { renderModeStore, variationsPools, colorPaletteStore, flamesJsonMetadata, canvasRef, spaceWarpingStore } from './stores';
+	import { createFlamesFromJson, type Flames } from '$lib/FlamesUtils/Flames';
+	import { renderModeStore, variationsPools, colorPaletteStore, flamesJsonMetadata, canvasRef, spaceWarpingStore, flamesStore } from './stores';
 	import type { InitMessage, PaletteChangeMessage, ResetMessage, SoftResetMessage } from './messageType';
+	import {  writable } from 'svelte/store';
+
 
 	let canvas: HTMLCanvasElement;
 	let syncWorker: Worker | undefined;
@@ -24,7 +24,7 @@
 	});
 
 	colorPaletteStore.subscribe((palette) => {
-		const msg: PaletteChangeMessage = { type: 'FlamesPaletteChange', palette };
+		const msg: PaletteChangeMessage = { type: 'FlamesPaletteChange', namedColorPalette: palette };
 		syncWorker?.postMessage(msg);
 	});
 
@@ -37,7 +37,10 @@
 		const SyncWorker = await import('./flamesWorker?worker');
 
 		syncWorker = new SyncWorker.default();
-		syncWorker.onmessage = ({data}) => $flamesJsonMetadata = data.flames;
+		syncWorker.onmessage = ({data}) => {
+			$flamesStore = createFlamesFromJson(data.flames)
+			$flamesJsonMetadata = data.flames
+		};
 		syncWorker.onerror = console.error;
 		syncWorker.onmessageerror = console.error;
 

@@ -1,8 +1,6 @@
-import type { SpaceWarp } from "$lib/FlamesUtils/Flames"
+import type { RenderMode, SpaceWarp } from "$lib/FlamesUtils/Flames"
 import type { Variation } from "../lib/FlamesUtils/Variations"
-import type { ColorPalette } from "../lib/FlamesUtils/palette"
-import type { RenderMode } from "../lib/FlamesUtils/render"
-
+import type { ColorPalette, NamedColorPalette } from "../lib/FlamesUtils/palette"
 type Reset = "FlamesReset"
 type SoftReset = "FlamesSoftReset"
 type Init = "FlamesInit"
@@ -30,7 +28,7 @@ export type InitMessage = {
 
 export type PaletteChangeMessage = {
     type: PaletteChange,
-    palette: ColorPalette
+    namedColorPalette: NamedColorPalette
 }
 
 export type RenderModeChangeMessage = {

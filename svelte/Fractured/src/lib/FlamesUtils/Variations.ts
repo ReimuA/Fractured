@@ -284,6 +284,8 @@ export const allVariations: Variation[] = [
 	fanVariation,
 ]
 
+export const getVariationFromname = (name:string) => allVariations.find(e => e.name == name)
+
 export type WeightedVariation = {
 	weight: number
 	variation: Variation
