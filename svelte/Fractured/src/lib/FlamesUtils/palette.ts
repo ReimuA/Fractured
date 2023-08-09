@@ -9,26 +9,10 @@ export type ColorPalette = {
 }
 
 // Default color palette collection, thse come from https://github.com/thi-ng/cgg
-export const rainbow1 =
+export const rainbow =
 {
     a: { x: 0.500, y: 0.500, z: 0.500 },
     b: { x: 0.500, y: 0.500, z: 0.500 },
-    c: { x: 1.000, y: 1.000, z: 1.000 },
-    d: { x: 0.000, y: 0.333, z: 0.667 },
-}
-
-export const rainbow2 =
-{
-    a: { x: 0.500, y: 0.500, z: 0.500 },
-    b: { x: 0.666, y: 0.666, z: 0.666 },
-    c: { x: 1.000, y: 1.000, z: 1.000 },
-    d: { x: 0.000, y: 0.333, z: 0.667 },
-}
-
-export const rainbow3 =
-{
-    a: { x: 0.500, y: 0.500, z: 0.500 },
-    b: { x: 0.750, y: 0.750, z: 0.750 },
     c: { x: 1.000, y: 1.000, z: 1.000 },
     d: { x: 0.000, y: 0.333, z: 0.667 },
 }
@@ -133,10 +117,7 @@ export type NamedColorPalette = {
 }
 
 export const namedPalettesList: NamedColorPalette[] = [
-    { name: "Rainbow 1", palette: rainbow1 },
-    { name: "Rainbow 2", palette: rainbow2 },
-    { name: "Rainbow 3", palette: rainbow3 },
-    { name: "Rainbow 4", palette: rainbow4 },
+    { name: "Rainbow", palette: rainbow },
     { name: "Blue-Cyan", palette: blueCyan },
     { name: "Blue-Magenta", palette: blueMagenta },
     { name: "Green", palette: green },
