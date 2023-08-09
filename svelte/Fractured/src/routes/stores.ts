@@ -1,6 +1,4 @@
 import { writable } from 'svelte/store';
-import type { Variation } from '$lib/FlamesUtils/Variations';
-import type {  SpaceWarp } from '$lib/FlamesUtils/Flames';
 import { FlamesBuilder } from '$lib/FlamesUtils/flamesBuilder';
 
 export type flamesBuilderStoreValue = {

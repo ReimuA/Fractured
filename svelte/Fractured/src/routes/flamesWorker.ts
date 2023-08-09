@@ -1,9 +1,6 @@
-import { FlamesBuilder } from "$lib/FlamesUtils/flamesBuilder";
-import { defaultRenderMode, structuralPaletteRenderMode, type Flames, type RenderMode, createFlamesFromJson } from "../lib/FlamesUtils/Flames";
-import { allVariations } from "../lib/FlamesUtils/Variations";
-import { applyAA, applyAA3x, superSampleResolution } from "../lib/FlamesUtils/antialiasing";
+import { defaultRenderMode, structuralPaletteRenderMode, type Flames, createFlamesFromJson } from "../lib/FlamesUtils/Flames";
+import { applyAA3x, superSampleResolution } from "../lib/FlamesUtils/antialiasing";
 import type { XY } from "../lib/FlamesUtils/mathu";
-import type {  NamedColorPalette } from "../lib/FlamesUtils/palette";
 import { createRenderData, updateRenderData, type RenderData, updatePixelsBuffer, paletteStructuralColoring, colorStructuralColoring, resetRenderData } from "../lib/FlamesUtils/render";
 import type { FlamesWorkerMessage } from "./messageType";
 
@@ -11,14 +8,12 @@ let flames: Flames | undefined;
 let p: XY = { x: 0, y: 0 };
 let resolution: XY = { x: 0, y: 0 };
 let baseResolution: XY = { x: 0, y: 0 };
-let nbIteration: number = 0;
+let nbIteration = 0;
 let rotation = 0
 let renderData: RenderData | undefined
 
 let pixels: Uint8ClampedArray | undefined
 let canvasContent: Uint8ClampedArray | undefined
-
-const mapToVariations = (vNames: string[]) => vNames.map(e => allVariations.find(v => v.name == e)!)
 
 function updateCanvas(ctx: OffscreenCanvasRenderingContext2D) {
     if (!pixels || !renderData ||!canvasContent || !flames) return
@@ -58,20 +53,21 @@ function init(newFlames: Flames, canvas: OffscreenCanvas) {
     canvasContent ??= new Uint8ClampedArray(baseResolution.x * baseResolution.y * 4);
     renderData ??= createRenderData(resolution.x * resolution.y)
 
-    let frame = requestAnimationFrame(flamesIteration);
+    requestAnimationFrame(flamesIteration);
 
     function flamesIteration() {
-        if (flames !== undefined) {
-            updateCanvas(ctx!);
+        if (flames !== undefined && ctx) {
+            updateCanvas(ctx);
         }
-        setTimeout(() => (frame = requestAnimationFrame(flamesIteration)), 1000 / 60);
+        setTimeout(() => (requestAnimationFrame(flamesIteration)), 1000 / 60);
     }
 }
 
 function reset(newFlames: Flames) {
     p = { x: 0, y: 0 };
     flames = newFlames
-    resetRenderData(renderData!)
+    if (renderData)
+        resetRenderData(renderData)
     pixels?.fill(0)
 }
 
@@ -85,7 +81,8 @@ function softreset(newFlames: Flames) {
     flames.spaceWarp.mirrorY = newFlames.spaceWarp.mirrorY
 
     rotation = 0
-    resetRenderData(renderData!)
+    if (renderData)
+        resetRenderData(renderData)
 }
 
 function update(newFlames: Flames) {
@@ -97,10 +94,11 @@ function update(newFlames: Flames) {
 onmessage = ({data}: MessageEvent<FlamesWorkerMessage>) => {
     
     const flames = createFlamesFromJson(data.rawFlames)
-    console.log((data as any).resetType)
-    switch ((data as any).resetType) {
+    console.log(data.resetType)
+    switch (data.resetType) {
         case "init":
-            init(flames, data.canvasContext!)
+            if (data.canvasContext)
+                init(flames, data.canvasContext)
             break
         case "full":
             reset(flames)
