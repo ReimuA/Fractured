@@ -1,29 +1,29 @@
 <script lang="ts">
-	import { flamesStore, spaceWarpingStore } from '../stores';
+	import { writable } from 'svelte/store';
+	import { flamesBuilderStore } from '../stores';
 
-	 let spaceWarp = {
-		rotationalSymmetry: 1,
-		mirrorX: false,
-		mirrorY: false
-	}
+	let localStore = writable({
+		mirrorY: $flamesBuilderStore.builder.spaceWarp.mirrorY,
+		mirrorX: $flamesBuilderStore.builder.spaceWarp.mirrorX,
+		rotationalSymmetry: $flamesBuilderStore.builder.spaceWarp.rotationalSymmetry
+	});
 
-	function onChange() {
-		$spaceWarpingStore = spaceWarp
-	}
-
-	flamesStore.subscribe(flames => {
-		if (flames === undefined) return
-
-		spaceWarp = {...flames.spaceWarp}
-	})
-
+	localStore.subscribe((store) => {
+		$flamesBuilderStore = {
+			resetType: 'soft',
+			builder: $flamesBuilderStore.builder.withSpaceWarp({
+				mirrorX: store.mirrorX,
+				mirrorY: store.mirrorY,
+				rotationalSymmetry: store.rotationalSymmetry
+			})
+		};
+	});
 </script>
 
 <p class="pt-12 pl-6 text-white">Space warping</p>
 <input
 	type="number"
-	bind:value={spaceWarp.rotationalSymmetry}
-	on:change={onChange}
+	bind:value={$localStore.rotationalSymmetry}
 	min="1"
 	class="round-r-4 bg-slate-900 ml-12 p-1 mt-2 text-white border-slate-300 border-2 rounded w-48"
 />
@@ -31,8 +31,7 @@
 <label class="block">
 	<input
 		type="checkbox"
-		bind:checked={spaceWarp.mirrorX}
-		on:change={onChange}
+		bind:checked={$localStore.mirrorX}
 		class="round-r-4 bg-slate-900 ml-12 p-1 mt-4 border-slate-300 border-2 rounded"
 	/>
 	<span class="text-white">Mirror X Axis</span>
@@ -41,13 +40,11 @@
 <label class="block">
 	<input
 		type="checkbox"
-		bind:checked={spaceWarp.mirrorY}
-		on:change={onChange}
+		bind:checked={$localStore.mirrorY}
 		class="round-r-4 bg-slate-900 ml-12 p-1 mt-4 border-slate-300 border-2 rounded"
 	/>
 	<span class="text-white">Mirror Y Axis</span>
 </label>
-
 
 <style lang="postcss">
 	:global(html) {

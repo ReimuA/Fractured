@@ -1,4 +1,4 @@
-import type { RenderMode, SpaceWarp } from "$lib/FlamesUtils/Flames"
+import type { Flames, RenderMode, SpaceWarp } from "$lib/FlamesUtils/Flames"
 import type { Variation } from "../lib/FlamesUtils/Variations"
 import type { ColorPalette, NamedColorPalette } from "../lib/FlamesUtils/palette"
 type Reset = "FlamesReset"
@@ -6,6 +6,11 @@ type SoftReset = "FlamesSoftReset"
 type Init = "FlamesInit"
 type PaletteChange = "FlamesPaletteChange"
 type RenderModeChange = "FlamesRenderModeChange"
+
+export type FlamesWorkerMessage = {
+    rawFlames: string
+    resetType: "full" | "soft" | "none"
+}
 
 export type FlamesMessageType = SoftReset | Reset | Init | PaletteChange | RenderModeChange
 

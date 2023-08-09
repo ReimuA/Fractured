@@ -1,13 +1,13 @@
 import { FlamesBuilder } from "$lib/FlamesUtils/flamesBuilder";
-import { defaultRenderMode, structuralPaletteRenderMode, type Flames, type RenderMode } from "../lib/FlamesUtils/Flames";
+import { defaultRenderMode, structuralPaletteRenderMode, type Flames, type RenderMode, createFlamesFromJson } from "../lib/FlamesUtils/Flames";
 import { allVariations } from "../lib/FlamesUtils/Variations";
 import { applyAA, applyAA3x, superSampleResolution } from "../lib/FlamesUtils/antialiasing";
 import type { XY } from "../lib/FlamesUtils/mathu";
 import type {  NamedColorPalette } from "../lib/FlamesUtils/palette";
 import { createRenderData, updateRenderData, type RenderData, updatePixelsBuffer, paletteStructuralColoring, colorStructuralColoring, resetRenderData } from "../lib/FlamesUtils/render";
-import type { FlamesMessage, SoftResetMessage } from "./messageType";
+import type { FlamesMessage, FlamesWorkerMessage, SoftResetMessage } from "./messageType";
 
-let flames: Flames;
+let flames: Flames | undefined;
 let p: XY = { x: 0, y: 0 };
 let resolution: XY = { x: 0, y: 0 };
 let baseResolution: XY = { x: 0, y: 0 };
@@ -21,7 +21,7 @@ let canvasContent: Uint8ClampedArray | undefined
 const mapToVariations = (vNames: string[]) => vNames.map(e => allVariations.find(v => v.name == e)!)
 
 function updateCanvas(ctx: OffscreenCanvasRenderingContext2D) {
-    if (!pixels || !renderData ||!canvasContent) return
+    if (!pixels || !renderData ||!canvasContent || !flames) return
 
     p = updateRenderData(resolution, flames, renderData, p, rotation,  5000, 5000 * nbIteration++);
     if (flames.spaceWarp.rotationalSymmetry > 1)
@@ -57,65 +57,60 @@ function init(canvas: OffscreenCanvas) {
     canvasContent ??= new Uint8ClampedArray(baseResolution.x * baseResolution.y * 4);
     renderData ??= createRenderData(resolution.x * resolution.y)
 
-    flames = new FlamesBuilder()
-        .withResolution(resolution)
-        .withSpaceWarp({mirrorX: true, mirrorY: false, rotationalSymmetry:5})
-        .build()
-
     let frame = requestAnimationFrame(flamesIteration);
 
     function flamesIteration() {
-        updateCanvas(ctx!);
+        if (flames !== undefined) {
+            updateCanvas(ctx!);
+        }
         setTimeout(() => (frame = requestAnimationFrame(flamesIteration)), 1000 / 60);
     }
 }
 
-function reset(vNames: string[]) {
+function reset(newFlames: Flames) {
     p = { x: 0, y: 0 };
-
-    flames = new FlamesBuilder()
-        .withResolution(flames.resolution)
-        .withNamedPalette(flames.namedPalette)
-        .withVariations(vNames)
-        .build()
+    flames = newFlames
     resetRenderData(renderData!)
     pixels?.fill(0)
 }
 
-function softreset(msg: SoftResetMessage) {
+function softreset(newFlames: Flames) {
     pixels?.fill(0)
     p = { x: 0, y: 0 };
-    flames.spaceWarp.rotationalSymmetry = msg.spaceWarping.rotationalSymmetry
-    flames.spaceWarp.mirrorX = msg.spaceWarping.mirrorX
-    flames.spaceWarp.mirrorY = msg.spaceWarping.mirrorY
+
+    flames ??= newFlames
+    flames.spaceWarp.rotationalSymmetry = newFlames.spaceWarp.rotationalSymmetry
+    flames.spaceWarp.mirrorX = newFlames.spaceWarp.mirrorX
+    flames.spaceWarp.mirrorY = newFlames.spaceWarp.mirrorY
+
     rotation = 0
     resetRenderData(renderData!)
 }
 
-function paletteChange(namedPalette: NamedColorPalette) {
-    flames.namedPalette = namedPalette
-}
-
-function RenderModeChange(rm: RenderMode) {
-    flames.renderMode = rm
+function update(newFlames: Flames) {
+    flames ??= newFlames
+    flames.namedPalette = newFlames.namedPalette
+    flames.renderMode = newFlames.renderMode
 }
 
 onmessage = ({data}: MessageEvent<FlamesMessage>) => {
     switch (data.type) {
-        case "FlamesReset":
-            reset(data.variationsPools)
-            break
-        case "FlamesSoftReset":
-            softreset(data)
-            break
+       
         case "FlamesInit":
             init(data.canvasContext)
             break
-        case "FlamesPaletteChange":
-            paletteChange(data.namedColorPalette)
+    }
+
+    console.log((data as any).resetType)
+    switch ((data as any).resetType) {
+        case "full":
+            reset(createFlamesFromJson((data as any).rawFlames))
             break
-        case "FlamesRenderModeChange":
-            RenderModeChange(data.renderMode)
+        case "soft":
+            softreset(createFlamesFromJson((data as any).rawFlames))
+            break
+        case "none":
+            update(createFlamesFromJson((data as any).rawFlames))
             break
     }
 

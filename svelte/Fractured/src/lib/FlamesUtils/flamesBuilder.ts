@@ -1,4 +1,3 @@
-import type { variationsPools } from "../../routes/stores";
 import { defaultRenderMode, type Flames, type FlamesComponent, type RenderMode, type SpaceWarp } from "./Flames";
 import { allVariations, getVariationFromname, type Variation } from "./Variations";
 import { iRandom, type XY, type iRange } from "./mathu";
@@ -7,16 +6,16 @@ import { createRandomTransform, createRandomVariations } from "./random";
 
 export class FlamesBuilder {
     // 1 to 1 field
-    private resolution: XY = {x: 1920, y: 1080}
-    private superSampleRatio: 1 | 2 | 3 = 1
-    private renderMode: RenderMode = defaultRenderMode
-    private colorPalette: NamedColorPalette = namedPalettesList[0]
-    private spaceWarp: SpaceWarp = { rotationalSymmetry: 1, mirrorX: false, mirrorY: false}
+    public resolution: XY = {x: 1920 * 3, y: 1080 * 3}
+    public superSampleRatio: 1 | 2 | 3 = 1
+    public renderMode: RenderMode = defaultRenderMode
+    public colorPalette: NamedColorPalette = namedPalettesList[0]
+    public spaceWarp: SpaceWarp = { rotationalSymmetry: 1, mirrorX: false, mirrorY: false}
 
     // Field for random generation
-    private componentsNumberRange: iRange = {min: 4, max: 4}
-    private variationsNumberRange: iRange = {min: 4, max: 14}
-    private variationsPools: string[] = []
+    public componentsNumberRange: iRange = {min: 4, max: 4}
+    public variationsNumberRange: iRange = {min: 4, max: 14}
+    public variationsPools: string[] = []
 
     constructor() {}
 
@@ -102,6 +101,5 @@ export class FlamesBuilder {
             final: this.createRandomFlamesComponent(variationsPools),
             components: this.createRandomFlamesComponents(variationsPools),
         }
-
     }
 }

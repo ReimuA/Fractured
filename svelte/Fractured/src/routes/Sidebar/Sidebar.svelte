@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { canvasRef, flamesJsonMetadata, spaceWarpingStore } from '../stores';
+	import { canvasRef, flamesJsonMetadata } from '../stores';
 	import VariationSelector from './VariationSelector.svelte';
 	import ColorationOptions from './ColorationOptions.svelte';
 	import SpaceWarping from './SpaceWarping.svelte';
