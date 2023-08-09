@@ -2,12 +2,13 @@
 	import { allVariations } from '$lib/FlamesUtils/Variations';
 	import { flamesBuilderStore } from '../stores';
 
-	let variations = allVariations.map((v) => {
+	let variations = allVariations.map((v, idx) => {
 		return {
 			variation: v,
-			selected: false
+			selected: idx === 0 || Math.random() < .2
 		};
 	});
+	updateVariationPools()
 
 	function updateVariationPools() {
 		flamesBuilderStore.update((state) => {
@@ -17,6 +18,7 @@
 			};
 		});
 	}
+	
 </script>
 
 <p class="pt-8 pl-6 text-white">Enable variations</p>

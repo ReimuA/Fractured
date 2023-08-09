@@ -5,7 +5,7 @@ import { applyAA, applyAA3x, superSampleResolution } from "../lib/FlamesUtils/an
 import type { XY } from "../lib/FlamesUtils/mathu";
 import type {  NamedColorPalette } from "../lib/FlamesUtils/palette";
 import { createRenderData, updateRenderData, type RenderData, updatePixelsBuffer, paletteStructuralColoring, colorStructuralColoring, resetRenderData } from "../lib/FlamesUtils/render";
-import type { FlamesMessage, FlamesWorkerMessage, SoftResetMessage } from "./messageType";
+import type { FlamesWorkerMessage } from "./messageType";
 
 let flames: Flames | undefined;
 let p: XY = { x: 0, y: 0 };
@@ -42,7 +42,7 @@ function updateCanvas(ctx: OffscreenCanvasRenderingContext2D) {
     );
 }
 
-function init(canvas: OffscreenCanvas) {
+function init(newFlames: Flames, canvas: OffscreenCanvas) {
     const ctx = canvas.getContext("2d")
 
     if (ctx === null) {
@@ -53,6 +53,7 @@ function init(canvas: OffscreenCanvas) {
     baseResolution = {x: canvas.width, y: canvas.height}
     resolution = superSampleResolution(baseResolution)
     
+    flames = newFlames
     pixels ??= new Uint8ClampedArray(resolution.x * resolution.y * 4);
     canvasContent ??= new Uint8ClampedArray(baseResolution.x * baseResolution.y * 4);
     renderData ??= createRenderData(resolution.x * resolution.y)
@@ -93,24 +94,22 @@ function update(newFlames: Flames) {
     flames.renderMode = newFlames.renderMode
 }
 
-onmessage = ({data}: MessageEvent<FlamesMessage>) => {
-    switch (data.type) {
-       
-        case "FlamesInit":
-            init(data.canvasContext)
-            break
-    }
-
+onmessage = ({data}: MessageEvent<FlamesWorkerMessage>) => {
+    
+    const flames = createFlamesFromJson(data.rawFlames)
     console.log((data as any).resetType)
     switch ((data as any).resetType) {
+        case "init":
+            init(flames, data.canvasContext!)
+            break
         case "full":
-            reset(createFlamesFromJson((data as any).rawFlames))
+            reset(flames)
             break
         case "soft":
-            softreset(createFlamesFromJson((data as any).rawFlames))
+            softreset(flames)
             break
         case "none":
-            update(createFlamesFromJson((data as any).rawFlames))
+            update(flames)
             break
     }
 
