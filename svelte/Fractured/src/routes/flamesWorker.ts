@@ -1,9 +1,9 @@
+import { FlamesBuilder } from "$lib/FlamesUtils/flamesBuilder";
 import { defaultRenderMode, structuralPaletteRenderMode, type Flames, type RenderMode } from "../lib/FlamesUtils/Flames";
 import { allVariations } from "../lib/FlamesUtils/Variations";
 import { applyAA, applyAA3x, superSampleResolution } from "../lib/FlamesUtils/antialiasing";
 import type { XY } from "../lib/FlamesUtils/mathu";
-import { namedPalettesList, type ColorPalette, type NamedColorPalette } from "../lib/FlamesUtils/palette";
-import { createRandomFlames } from "../lib/FlamesUtils/random";
+import type {  NamedColorPalette } from "../lib/FlamesUtils/palette";
 import { createRenderData, updateRenderData, type RenderData, updatePixelsBuffer, paletteStructuralColoring, colorStructuralColoring, resetRenderData } from "../lib/FlamesUtils/render";
 import type { FlamesMessage, SoftResetMessage } from "./messageType";
 
@@ -57,7 +57,10 @@ function init(canvas: OffscreenCanvas) {
     canvasContent ??= new Uint8ClampedArray(baseResolution.x * baseResolution.y * 4);
     renderData ??= createRenderData(resolution.x * resolution.y)
 
-    flames = createRandomFlames(resolution, namedPalettesList[0], allVariations)
+    flames = new FlamesBuilder()
+        .withResolution(resolution)
+        .withSpaceWarp({mirrorX: true, mirrorY: false, rotationalSymmetry:5})
+        .build()
 
     let frame = requestAnimationFrame(flamesIteration);
 
@@ -68,10 +71,13 @@ function init(canvas: OffscreenCanvas) {
 }
 
 function reset(vNames: string[]) {
-    const variationsPools = mapToVariations(vNames)
-
     p = { x: 0, y: 0 };
-    flames = createRandomFlames(flames.resolution, flames.namedPalette, variationsPools)
+
+    flames = new FlamesBuilder()
+        .withResolution(flames.resolution)
+        .withNamedPalette(flames.namedPalette)
+        .withVariations(vNames)
+        .build()
     resetRenderData(renderData!)
     pixels?.fill(0)
 }

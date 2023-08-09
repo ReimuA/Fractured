@@ -1,6 +1,6 @@
 import { mix, type Color, type XY, rotate2d } from "./mathu"
 import { type Flames, applyFlames } from "./Flames"
-import { createRandomFlames, randomWeigthedSelection } from "./random"
+import { randomWeigthedSelection } from "./random"
 // import { superSampleResolution, applyAA } from "../antialiasing"
 import { type ColorPalette, colorFromPalette } from "./palette"
 
