@@ -57,14 +57,17 @@ const downsampleHeatmapCell3x = (idx: number, linesize: number, heatmap: Uint32A
 export function applyAA3x(resolution: XY, supersample: Uint8ClampedArray, canvasContent: Uint8ClampedArray, heatmap: Uint32Array, logScale: boolean) {
 	const ssResolution = { x: resolution.x * 3, y: resolution.y * 3 }
 	let max = 0
+	let logMax = 0
 
-	for (let i = 0; i < resolution.x * resolution.y; i++) {
-		let hidx = 3 * i + Math.floor(i / resolution.x) * ssResolution.x * (2)
-		const cellSample = downsampleHeatmapCell3x(hidx, ssResolution.x, heatmap)
-		if (cellSample > max) max = cellSample
+	if (logScale) {
+		for (let i = 0; i < resolution.x * resolution.y; i++) {
+			let hidx = 3 * i + Math.floor(i / resolution.x) * ssResolution.x * (2)
+			const cellSample = downsampleHeatmapCell3x(hidx, ssResolution.x, heatmap)
+			if (cellSample > max) max = cellSample
+		}
+
+		logMax = Math.log10(max)
 	}
-
-	let logMax = Math.log10(max)
 
 	for (let i = 0; i < resolution.x * resolution.y; i++) {
 		let cIdx = 3 * 4 * i + Math.floor(i / resolution.x) * ssResolution.x * (4 * 2)
@@ -93,9 +96,9 @@ export function applyAA3x(resolution: XY, supersample: Uint8ClampedArray, canvas
 			fAlpha = c01(fAlpha)
 		}
 		// Gamma correction
-		canvasContent[idx + 0] =  Math.pow((canvasContent[idx + 0] / 255) * fAlpha, 0.454545) * 255
-		canvasContent[idx + 1] =  Math.pow((canvasContent[idx + 1] / 255) * fAlpha, 0.454545) * 255
-		canvasContent[idx + 2] =  Math.pow((canvasContent[idx + 2] / 255) * fAlpha, 0.454545) * 255
+		canvasContent[idx + 0] = Math.pow((canvasContent[idx + 0] / 255) * fAlpha, 0.454545) * 255
+		canvasContent[idx + 1] = Math.pow((canvasContent[idx + 1] / 255) * fAlpha, 0.454545) * 255
+		canvasContent[idx + 2] = Math.pow((canvasContent[idx + 2] / 255) * fAlpha, 0.454545) * 255
 		canvasContent[idx + 3] = 255
 	}
 }
