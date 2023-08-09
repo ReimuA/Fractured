@@ -107,18 +107,25 @@ export const yellowRed =
 
 export const blueMagenta =
 {
-    a: {x:0.500,y:0.000,z:0.500},
-    b: {x:0.500,y:0.000,z:0.500},
-    c: {x:0.500,y:0.000,z:0.333},
-    d: {x:0.500,y:0.000,z:0.667},
+    a: { x: 0.500, y: 0.000, z: 0.500 },
+    b: { x: 0.500, y: 0.000, z: 0.500 },
+    c: { x: 0.500, y: 0.000, z: 0.333 },
+    d: { x: 0.500, y: 0.000, z: 0.667 },
 }
 
 export const fire = {
-    a: {x:0.168,y:-0.002,z:0.000},
-    b: {x:0.918,y:0.968,z:0.000},
-    c: {x:0.338,y:0.500,z:0.000},
-    d: {x:-0.252,y:0.468,z:0.000},
-   }
+    a: { x: 0.168, y: -0.002, z: 0.000 },
+    b: { x: 0.918, y: 0.968, z: 0.000 },
+    c: { x: 0.338, y: 0.500, z: 0.000 },
+    d: { x: -0.252, y: 0.468, z: 0.000 },
+}
+
+export const green = {
+    a: { x: 0.518, y: 0.558, z: 0.108 },
+    b: { x: 0.408, y: 0.628, z: 0.048 },
+    c: { x: 0.288, y: 0.288, z: -0.562 },
+    d: { x: 0.448, y: -0.312, z: -1.342 },
+}
 
 export type NamedColorPalette = {
     palette: ColorPalette
@@ -132,6 +139,7 @@ export const namedPalettesList: NamedColorPalette[] = [
     { name: "Rainbow 4", palette: rainbow4 },
     { name: "Blue-Cyan", palette: blueCyan },
     { name: "Blue-Magenta", palette: blueMagenta },
+    { name: "Green", palette: green },
     { name: "Green-Cyan", palette: greenCyan },
     { name: "Green-Magenta", palette: greenMagenta },
     { name: "Green-Red", palette: greenRed },
