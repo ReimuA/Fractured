@@ -34,7 +34,7 @@ function updateCanvas(ctx: OffscreenCanvasRenderingContext2D) {
     else
         colorStructuralColoring(pixels, renderData, flames.namedPalette.palette);
 
-    applyAA3x(baseResolution, pixels, canvasContent, renderData.heatmap)
+    applyAA3x(baseResolution, pixels, canvasContent, renderData.heatmap, flames.renderMode !== defaultRenderMode)
     ctx.putImageData(
         new ImageData(canvasContent, baseResolution.x, baseResolution.y),
         0,
