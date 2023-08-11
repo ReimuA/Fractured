@@ -1,4 +1,5 @@
 import { c01, type Color, type XY } from "./mathu"
+import type { RenderData } from "./render"
 
 export function superSampleResolution(resolution: XY): XY {
 	return {
@@ -53,6 +54,28 @@ const downsampleHeatmapCell3x = (idx: number, linesize: number, heatmap: Uint32A
 	heatmap[idx + linesize * 2 + 1] +
 	heatmap[idx + linesize * 2 + 2]
 ) / 9
+
+export function applyNoAA(resolution: XY, renderData: RenderData, canvasContent: Uint8ClampedArray, logScale: boolean) {
+	const logMax = Math.log10(renderData.heatmapMax)
+
+	console.log(renderData.pixels.length)
+	for (let i = 0; i < resolution.x * resolution.y; i++) {
+		const idx = i * 4
+		const c1 = getColor(renderData.pixels, idx)
+
+		let fAlpha = 1
+		if (logScale) {
+			const alpha = renderData.heatmap[i]
+			fAlpha = alpha == 0 ? 0 : Math.log10(alpha * 10) / logMax
+			fAlpha = c01(fAlpha)
+		}
+		// Gamma correction
+		canvasContent[idx + 0] = Math.pow((c1.r / 255) * fAlpha, 0.454545) * 255
+		canvasContent[idx + 1] = Math.pow((c1.g / 255) * fAlpha, 0.454545) * 255
+		canvasContent[idx + 2] = Math.pow((c1.b / 255) * fAlpha, 0.454545) * 255
+		canvasContent[idx + 3] = 255
+	}
+}
 
 export function applyAA3x(resolution: XY, supersample: Uint8ClampedArray, canvasContent: Uint8ClampedArray, heatmap: Uint32Array, logScale: boolean) {
 	const ssResolution = { x: resolution.x * 3, y: resolution.y * 3 }

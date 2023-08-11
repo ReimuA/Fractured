@@ -7,7 +7,7 @@ import { createRandomTransform, createRandomVariations } from "./random";
 export class FlamesBuilder {
     // 1 to 1 field
     public resolution: XY = {x: 1920, y: 1080}
-    public superSampleRatio: 1 | 3 = 3
+    public antialiasing = false
     public renderMode: RenderMode = defaultRenderMode
     public colorPalette: NamedColorPalette = namedPalettesList[0]
     public spaceWarp: SpaceWarp = { rotationalSymmetry: 1, mirrorX: false, mirrorY: false}
@@ -42,8 +42,8 @@ export class FlamesBuilder {
         return this
     }
 
-    withSuperSampleRatio(ratio: 1 | 3) {
-        this.superSampleRatio = ratio
+    withSuperSampleRatio(antialiasing: boolean) {
+        this.antialiasing = antialiasing
         return this
     }
 
@@ -93,7 +93,7 @@ export class FlamesBuilder {
 
         return {
             resolution: this.resolution,
-            superSampleRatio: this.superSampleRatio,
+            antialiasing: this.antialiasing,
             renderMode: this.renderMode,
             namedPalette: this.colorPalette,
             spaceWarp: this.spaceWarp,

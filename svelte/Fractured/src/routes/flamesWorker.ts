@@ -1,5 +1,5 @@
 import { defaultRenderMode, structuralPaletteRenderMode, type Flames, createFlamesFromJson } from "../lib/FlamesUtils/Flames";
-import { applyAA3x, superSampleResolution } from "../lib/FlamesUtils/antialiasing";
+import { applyAA3x, applyNoAA, superSampleResolution } from "../lib/FlamesUtils/antialiasing";
 import type { XY } from "../lib/FlamesUtils/mathu";
 import { createRenderData, iterateRenderData, type RenderData, updatePixelsBuffer, paletteStructuralColoring, colorStructuralColoring, resetRenderData } from "../lib/FlamesUtils/render";
 import type { FlamesWorkerMessage } from "./messageType";
@@ -10,24 +10,30 @@ let canvasResolution: XY = { x: 0, y: 0 };
 let nbIteration = 0;
 let rotation = 0
 let renderData: RenderData | undefined
+let renderData3x: RenderData | undefined
 
 let canvasContent: Uint8ClampedArray | undefined
 
 function updateCanvas(ctx: OffscreenCanvasRenderingContext2D) {
-    if (!renderData ||!canvasContent || !flames) return
+    if (!renderData3x || ! renderData ||!canvasContent || !flames) return
 
-    p = iterateRenderData(flames, renderData, p, rotation,  5000, 5000 * nbIteration++);
+    p = iterateRenderData(flames, renderData, renderData3x, p, rotation,  5000, 5000 * nbIteration++);
     if (flames.spaceWarp.rotationalSymmetry > 1)
         rotation = ( rotation + ( 2 * Math.PI / flames.spaceWarp.rotationalSymmetry ) ) % ( 2 * Math.PI );
 
-    if (flames.renderMode === defaultRenderMode)
-        updatePixelsBuffer(renderData, flames.namedPalette.palette)
-    else if (flames.renderMode === structuralPaletteRenderMode)
-        paletteStructuralColoring(renderData, flames.namedPalette.palette);
-    else
-        colorStructuralColoring(renderData);
+    const currentRenderData = flames.antialiasing ? renderData3x : renderData
 
-    applyAA3x(canvasResolution, renderData.pixels, canvasContent, renderData.heatmap, flames.renderMode !== defaultRenderMode)
+    if (flames.renderMode === defaultRenderMode)
+        updatePixelsBuffer(currentRenderData, flames.namedPalette.palette)
+    else if (flames.renderMode === structuralPaletteRenderMode)
+        paletteStructuralColoring(currentRenderData, flames.namedPalette.palette);
+    else
+        colorStructuralColoring(currentRenderData);
+
+    if (flames.antialiasing)
+        applyAA3x(canvasResolution, renderData3x.pixels, canvasContent, renderData3x.heatmap, flames.renderMode !== defaultRenderMode)
+    else
+        applyNoAA(canvasResolution, renderData, canvasContent, flames.renderMode !== defaultRenderMode)
     ctx.putImageData(
         new ImageData(canvasContent, canvasResolution.x, canvasResolution.y),
         0,
@@ -47,7 +53,8 @@ function init(newFlames: Flames, canvas: OffscreenCanvas) {
     
     flames = newFlames
     canvasContent ??= new Uint8ClampedArray(canvasResolution.x * canvasResolution.y * 4);
-    renderData ??= createRenderData(flames.resolution.x * flames.resolution.y * flames.superSampleRatio * flames.superSampleRatio)
+    renderData ??= createRenderData(flames.resolution.x * flames.resolution.y)
+    renderData3x ??= createRenderData(flames.resolution.x * flames.resolution.y * 3 * 3)
 
     requestAnimationFrame(flamesIteration);
 
@@ -62,6 +69,8 @@ function init(newFlames: Flames, canvas: OffscreenCanvas) {
 function reset(newFlames: Flames) {
     p = { x: 0, y: 0 };
     flames = newFlames
+    if (renderData3x)
+        resetRenderData(renderData3x)
     if (renderData)
         resetRenderData(renderData)
 }
@@ -75,12 +84,15 @@ function softreset(newFlames: Flames) {
     flames.spaceWarp.mirrorY = newFlames.spaceWarp.mirrorY
 
     rotation = 0
+    if (renderData3x)
+        resetRenderData(renderData3x)
     if (renderData)
         resetRenderData(renderData)
 }
 
 function update(newFlames: Flames) {
     flames ??= newFlames
+    flames.antialiasing = newFlames.antialiasing
     flames.namedPalette = newFlames.namedPalette
     flames.renderMode = newFlames.renderMode
 }
@@ -88,7 +100,7 @@ function update(newFlames: Flames) {
 onmessage = ({data}: MessageEvent<FlamesWorkerMessage>) => {
     
     const flames = createFlamesFromJson(data.rawFlames)
-    console.log(data.resetType)
+    console.log(flames.antialiasing)
     switch (data.resetType) {
         case "init":
             if (data.canvasContext)

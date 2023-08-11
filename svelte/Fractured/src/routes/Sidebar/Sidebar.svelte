@@ -1,11 +1,12 @@
 <script lang="ts">
-	import { canvasRef, flamesJsonMetadata } from '../stores';
+	import { canvasRef, flamesBuilderStore, flamesJsonMetadata } from '../stores';
 	import VariationSelector from './VariationSelector.svelte';
 	import ColorationOptions from './ColorationOptions.svelte';
 	import SpaceWarping from './SpaceWarping.svelte';
 
 	export let open = false;
 
+	let antialiased = false
 	// HTML ref
 	let metadataLink: HTMLAnchorElement | undefined;
 	let imageLink: HTMLAnchorElement | undefined;
@@ -40,7 +41,12 @@
 
 	<p class="pt-12 pl-6 text-white">Anti-aliasing</p>
 	<label class="block">
-		<input
+		<input 
+			bind:checked={antialiased}
+			on:change={() => flamesBuilderStore.update((builder) => ({
+				builder: builder.builder.withSuperSampleRatio(antialiased),
+				resetType: "none"
+			}))}
 			type="checkbox"
 			class="round-r-4 bg-slate-900 ml-12 p-1 mt-4 border-slate-300 border-2 rounded"
 		/>
