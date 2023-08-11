@@ -1,37 +1,35 @@
 import { defaultRenderMode, structuralPaletteRenderMode, type Flames, createFlamesFromJson } from "../lib/FlamesUtils/Flames";
 import { applyAA3x, superSampleResolution } from "../lib/FlamesUtils/antialiasing";
 import type { XY } from "../lib/FlamesUtils/mathu";
-import { createRenderData, updateRenderData, type RenderData, updatePixelsBuffer, paletteStructuralColoring, colorStructuralColoring, resetRenderData } from "../lib/FlamesUtils/render";
+import { createRenderData, iterateRenderData, type RenderData, updatePixelsBuffer, paletteStructuralColoring, colorStructuralColoring, resetRenderData } from "../lib/FlamesUtils/render";
 import type { FlamesWorkerMessage } from "./messageType";
 
 let flames: Flames | undefined;
 let p: XY = { x: 0, y: 0 };
-let resolution: XY = { x: 0, y: 0 };
-let baseResolution: XY = { x: 0, y: 0 };
+let canvasResolution: XY = { x: 0, y: 0 };
 let nbIteration = 0;
 let rotation = 0
 let renderData: RenderData | undefined
 
-let pixels: Uint8ClampedArray | undefined
 let canvasContent: Uint8ClampedArray | undefined
 
 function updateCanvas(ctx: OffscreenCanvasRenderingContext2D) {
-    if (!pixels || !renderData ||!canvasContent || !flames) return
+    if (!renderData ||!canvasContent || !flames) return
 
-    p = updateRenderData(resolution, flames, renderData, p, rotation,  5000, 5000 * nbIteration++);
+    p = iterateRenderData(flames, renderData, p, rotation,  5000, 5000 * nbIteration++);
     if (flames.spaceWarp.rotationalSymmetry > 1)
         rotation = ( rotation + ( 2 * Math.PI / flames.spaceWarp.rotationalSymmetry ) ) % ( 2 * Math.PI );
 
     if (flames.renderMode === defaultRenderMode)
-        updatePixelsBuffer(pixels, renderData, flames.namedPalette.palette)
+        updatePixelsBuffer(renderData, flames.namedPalette.palette)
     else if (flames.renderMode === structuralPaletteRenderMode)
-        paletteStructuralColoring(pixels, renderData, flames.namedPalette.palette);
+        paletteStructuralColoring(renderData, flames.namedPalette.palette);
     else
-        colorStructuralColoring(pixels, renderData, flames.namedPalette.palette);
+        colorStructuralColoring(renderData);
 
-    applyAA3x(baseResolution, pixels, canvasContent, renderData.heatmap, flames.renderMode !== defaultRenderMode)
+    applyAA3x(canvasResolution, renderData.pixels, canvasContent, renderData.heatmap, flames.renderMode !== defaultRenderMode)
     ctx.putImageData(
-        new ImageData(canvasContent, baseResolution.x, baseResolution.y),
+        new ImageData(canvasContent, canvasResolution.x, canvasResolution.y),
         0,
         0
     );
@@ -45,13 +43,11 @@ function init(newFlames: Flames, canvas: OffscreenCanvas) {
         return
     }
 
-    baseResolution = {x: canvas.width, y: canvas.height}
-    resolution = superSampleResolution(baseResolution)
+    canvasResolution = {x: canvas.width, y: canvas.height}
     
     flames = newFlames
-    pixels ??= new Uint8ClampedArray(resolution.x * resolution.y * 4);
-    canvasContent ??= new Uint8ClampedArray(baseResolution.x * baseResolution.y * 4);
-    renderData ??= createRenderData(resolution.x * resolution.y)
+    canvasContent ??= new Uint8ClampedArray(canvasResolution.x * canvasResolution.y * 4);
+    renderData ??= createRenderData(flames.resolution.x * flames.resolution.y * flames.superSampleRatio * flames.superSampleRatio)
 
     requestAnimationFrame(flamesIteration);
 
@@ -68,11 +64,9 @@ function reset(newFlames: Flames) {
     flames = newFlames
     if (renderData)
         resetRenderData(renderData)
-    pixels?.fill(0)
 }
 
 function softreset(newFlames: Flames) {
-    pixels?.fill(0)
     p = { x: 0, y: 0 };
 
     flames ??= newFlames

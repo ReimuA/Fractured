@@ -37,6 +37,15 @@
 		<a bind:this={metadataLink} class=" text-white block" href="#metadata">Metadata</a>
 		<button class="text-white block" on:click={() => downloadImage()}>Image</button>
 	</nav>
+
+	<p class="pt-12 pl-6 text-white">Anti-aliasing</p>
+	<label class="block">
+		<input
+			type="checkbox"
+			class="round-r-4 bg-slate-900 ml-12 p-1 mt-4 border-slate-300 border-2 rounded"
+		/>
+		<span class="text-white">Enable</span>
+	</label>
 	<SpaceWarping />
 	<ColorationOptions />
 	<VariationSelector />

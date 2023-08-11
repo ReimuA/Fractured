@@ -18,6 +18,7 @@ export const renderModeList = [defaultRenderMode, structularColorRenderMode, str
 
 export type Flames = {
 	resolution: XY
+	superSampleRatio: number
 	renderMode: RenderMode
 	spaceWarp: SpaceWarp
 	namedPalette: NamedColorPalette

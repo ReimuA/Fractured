@@ -61,7 +61,7 @@ export function applyAA3x(resolution: XY, supersample: Uint8ClampedArray, canvas
 
 	if (logScale) {
 		for (let i = 0; i < resolution.x * resolution.y; i++) {
-			let hidx = 3 * i + Math.floor(i / resolution.x) * ssResolution.x * (2)
+			const hidx = 3 * i + Math.floor(i / resolution.x) * ssResolution.x * (2)
 			const cellSample = downsampleHeatmapCell3x(hidx, ssResolution.x, heatmap)
 			if (cellSample > max) max = cellSample
 		}
@@ -70,7 +70,7 @@ export function applyAA3x(resolution: XY, supersample: Uint8ClampedArray, canvas
 	}
 
 	for (let i = 0; i < resolution.x * resolution.y; i++) {
-		let cIdx = 3 * 4 * i + Math.floor(i / resolution.x) * ssResolution.x * (4 * 2)
+		const cIdx = 3 * 4 * i + Math.floor(i / resolution.x) * ssResolution.x * (4 * 2)
 
 		const c1 = getColor(supersample, cIdx + 0)
 		const c2 = getColor(supersample, cIdx + 4)
@@ -90,8 +90,8 @@ export function applyAA3x(resolution: XY, supersample: Uint8ClampedArray, canvas
 
 		let fAlpha = 1
 		if (logScale) {
-			let hidx = 3 * i + Math.floor(i / resolution.x) * ssResolution.x * 2
-			let alpha = downsampleHeatmapCell3x(hidx, ssResolution.x, heatmap)
+			const hidx = 3 * i + Math.floor(i / resolution.x) * ssResolution.x * 2
+			const alpha = downsampleHeatmapCell3x(hidx, ssResolution.x, heatmap)
 			fAlpha = alpha == 0 ? 0 : Math.log10(alpha * 10) / logMax
 			fAlpha = c01(fAlpha)
 		}

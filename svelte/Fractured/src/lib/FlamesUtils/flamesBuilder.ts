@@ -6,8 +6,8 @@ import { createRandomTransform, createRandomVariations } from "./random";
 
 export class FlamesBuilder {
     // 1 to 1 field
-    public resolution: XY = {x: 1920 * 3, y: 1080 * 3}
-    public superSampleRatio: 1 | 2 | 3 = 1
+    public resolution: XY = {x: 1920, y: 1080}
+    public superSampleRatio: 1 | 3 = 3
     public renderMode: RenderMode = defaultRenderMode
     public colorPalette: NamedColorPalette = namedPalettesList[0]
     public spaceWarp: SpaceWarp = { rotationalSymmetry: 1, mirrorX: false, mirrorY: false}
@@ -16,8 +16,6 @@ export class FlamesBuilder {
     public componentsNumberRange: iRange = {min: 4, max: 4}
     public variationsNumberRange: iRange = {min: 4, max: 14}
     public variationsPools: string[] = []
-
-    constructor() {}
 
     withResolution(resolution: XY) {
         this.resolution = resolution
@@ -44,7 +42,7 @@ export class FlamesBuilder {
         return this
     }
 
-    withSuperSampleRatio(ratio: 1 | 2 | 3) {
+    withSuperSampleRatio(ratio: 1 | 3) {
         this.superSampleRatio = ratio
         return this
     }
@@ -95,6 +93,7 @@ export class FlamesBuilder {
 
         return {
             resolution: this.resolution,
+            superSampleRatio: this.superSampleRatio,
             renderMode: this.renderMode,
             namedPalette: this.colorPalette,
             spaceWarp: this.spaceWarp,
