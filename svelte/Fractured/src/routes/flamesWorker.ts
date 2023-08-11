@@ -9,6 +9,13 @@ let p: XY = { x: 0, y: 0 };
 let canvasResolution: XY = { x: 0, y: 0 };
 let nbIteration = 0;
 let rotation = 0
+
+// In order to switch in and out of anti aliasing, we compute both the normal sample and the super sample at the same time.
+// The performance cost of this is mostly trivial since the heavy calculation happen when trying to render, rather than plotting the data. 
+// The memory cost is also trivial as we had a mere 11.11% memory usage because we will plot the super sample data anyway, which is 9 times larger (3 * 3)
+// than the default one.
+//
+// Finally : The advantage of this is to remove the heavy weight of rendering the supersample every time, because we can just render the default sample and thus increase the performance. 
 let renderData: RenderData | undefined
 let renderData3x: RenderData | undefined
 
