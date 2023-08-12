@@ -58,7 +58,6 @@ const downsampleHeatmapCell3x = (idx: number, linesize: number, heatmap: Uint32A
 export function applyNoAA(resolution: XY, renderData: RenderData, canvasContent: Uint8ClampedArray, logScale: boolean) {
 	const logMax = Math.log10(renderData.heatmapMax)
 
-	console.log(renderData.pixels.length)
 	for (let i = 0; i < resolution.x * resolution.y; i++) {
 		const idx = i * 4
 		const c1 = getColor(renderData.pixels, idx)
