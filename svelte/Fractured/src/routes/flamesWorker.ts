@@ -1,5 +1,5 @@
 import { defaultRenderMode, structuralPaletteRenderMode, type Flames, createFlamesFromJson } from "../lib/FlamesUtils/Flames";
-import { applyAA3x, applyNoAA, superSampleResolution } from "../lib/FlamesUtils/antialiasing";
+import { applyAA3x, applyNoAA } from "../lib/FlamesUtils/antialiasing";
 import type { XY } from "../lib/FlamesUtils/mathu";
 import { createRenderData, iterateRenderData, type RenderData, updatePixelsBuffer, paletteStructuralColoring, colorStructuralColoring, resetRenderData } from "../lib/FlamesUtils/render";
 import type { FlamesWorkerMessage } from "./messageType";

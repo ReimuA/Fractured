@@ -8,6 +8,7 @@ export class FlamesBuilder {
     // 1 to 1 field
     public resolution: XY = {x: 1920, y: 1080}
     public antialiasing = false
+    public densityEstimation = false
     public renderMode: RenderMode = defaultRenderMode
     public colorPalette: NamedColorPalette = namedPalettesList[0]
     public spaceWarp: SpaceWarp = { rotationalSymmetry: 1, mirrorX: false, mirrorY: false}
@@ -52,6 +53,11 @@ export class FlamesBuilder {
         return this
     }
 
+    withDensityEstimation(densityEstimation: boolean) {
+        this.densityEstimation = densityEstimation
+        return this
+    }
+
     withVariationsNumberRange(range: iRange) {
         this.variationsNumberRange = range
         return this
@@ -92,6 +98,7 @@ export class FlamesBuilder {
         if (variationsPools.length === 0) variationsPools = allVariations
 
         return {
+            densityEstimation: this.densityEstimation,
             resolution: this.resolution,
             antialiasing: this.antialiasing,
             renderMode: this.renderMode,

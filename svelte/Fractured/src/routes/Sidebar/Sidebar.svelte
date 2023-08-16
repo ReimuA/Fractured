@@ -7,6 +7,7 @@
 	export let open = false;
 
 	let antialiased = false
+	let densityEstimation = false
 	// HTML ref
 	let metadataLink: HTMLAnchorElement | undefined;
 	let imageLink: HTMLAnchorElement | undefined;
@@ -39,7 +40,7 @@
 		<button class="text-white block" on:click={() => downloadImage()}>Image</button>
 	</nav>
 
-	<p class="pt-12 pl-6 text-white">Anti-aliasing</p>
+	<p class="pt-12 pl-6 text-white">Quality enhancement</p>
 	<label class="block">
 		<input 
 			bind:checked={antialiased}
@@ -50,7 +51,19 @@
 			type="checkbox"
 			class="round-r-4 bg-slate-900 ml-12 p-1 mt-4 border-slate-300 border-2 rounded"
 		/>
-		<span class="text-white">Enable</span>
+		<span class="text-white">Anti aliasing</span>
+	</label>
+	<label class="block">
+		<input 
+			bind:checked={densityEstimation}
+			on:change={() => flamesBuilderStore.update((builder) => ({
+				builder: builder.builder.withDensityEstimation(densityEstimation),
+				resetType: "none"
+			}))}
+			type="checkbox"
+			class="round-r-4 bg-slate-900 ml-12 p-1 mt-4 border-slate-300 border-2 rounded"
+		/>
+		<span class="text-white">Density estimation</span>
 	</label>
 	<SpaceWarping />
 	<ColorationOptions />

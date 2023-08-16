@@ -18,6 +18,7 @@ export const renderModeList = [defaultRenderMode, structularColorRenderMode, str
 
 export type Flames = {
 	resolution: XY
+	densityEstimation: boolean
 	antialiasing: boolean
 	renderMode: RenderMode
 	spaceWarp: SpaceWarp
