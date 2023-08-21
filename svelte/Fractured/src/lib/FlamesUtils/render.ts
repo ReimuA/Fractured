@@ -76,6 +76,11 @@ function updateRenderdata(flames: Flames, renderData: RenderData, pixel: XY, col
 	renderData.colorAccumulator[colorIdx + 2] = (renderData.colorAccumulator[colorIdx + 2] + color.b) / 2
 }
 
+function applyZoom(flames: Flames, p: XY) {
+	p.x *= flames.spaceWarp.zoom
+	p.y *= flames.spaceWarp.zoom
+}
+
 export function iterateRenderData(flames: Flames, renderData: RenderData, renderData3x: RenderData, p: XY, rotation: number, iteration: number, totalIteration: number) {
 	const resX3x = flames.resolution.x * 3
 	const resY3x = flames.resolution.y * 3
@@ -84,6 +89,7 @@ export function iterateRenderData(flames: Flames, renderData: RenderData, render
 
 		p = applyFlames(flames, flames.components.indexOf(currentComponent), p)
 
+		applyZoom(flames, p)
 		applyMirrorSettings(flames, p, i + totalIteration)
 
 		const pixel3x = worldCoordinatesToPixels(p, { x: resX3x, y: resY3x }, flames, rotation)

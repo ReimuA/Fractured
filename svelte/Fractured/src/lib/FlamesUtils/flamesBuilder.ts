@@ -11,7 +11,7 @@ export class FlamesBuilder {
     public densityEstimation = false
     public renderMode: RenderMode = defaultRenderMode
     public colorPalette: NamedColorPalette = namedPalettesList[0]
-    public spaceWarp: SpaceWarp = { rotationalSymmetry: 1, mirrorX: false, mirrorY: false}
+    public spaceWarp: SpaceWarp = { rotationalSymmetry: 1, mirrorX: false, mirrorY: false, zoom: 1}
 
     // Field for random generation
     public componentsNumberRange: iRange = {min: 4, max: 4}

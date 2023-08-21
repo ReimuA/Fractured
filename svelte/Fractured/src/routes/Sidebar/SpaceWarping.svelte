@@ -5,7 +5,8 @@
 	let localStore = writable({
 		mirrorY: $flamesBuilderStore.builder.spaceWarp.mirrorY,
 		mirrorX: $flamesBuilderStore.builder.spaceWarp.mirrorX,
-		rotationalSymmetry: $flamesBuilderStore.builder.spaceWarp.rotationalSymmetry
+		rotationalSymmetry: $flamesBuilderStore.builder.spaceWarp.rotationalSymmetry,
+		zoom: $flamesBuilderStore.builder.spaceWarp.zoom
 	});
 
 	localStore.subscribe((store) => {
@@ -14,13 +15,24 @@
 			builder: $flamesBuilderStore.builder.withSpaceWarp({
 				mirrorX: store.mirrorX,
 				mirrorY: store.mirrorY,
-				rotationalSymmetry: store.rotationalSymmetry
+				rotationalSymmetry: store.rotationalSymmetry,
+				zoom: store.zoom
 			})
 		};
 	});
 </script>
 
-<p class="pt-12 pl-6 text-white">Space warping</p>
+<p class="pt-12 pl-6 text-white">Zoom</p>
+<input
+	type="number"
+	bind:value={$localStore.zoom}
+	min="0"
+
+	class="round-r-4 bg-slate-900 ml-12 p-1 mt-2 text-white border-slate-300 border-2 rounded w-48"
+/>
+
+
+<p class="pt-4 pl-6 text-white">Space warping</p>
 <input
 	type="number"
 	bind:value={$localStore.rotationalSymmetry}

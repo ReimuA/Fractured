@@ -4,6 +4,7 @@ import type { XY } from "./mathu"
 import type { NamedColorPalette } from "./palette"
 
 export type SpaceWarp = {
+	zoom: number
 	rotationalSymmetry: number
 	mirrorX: boolean
 	mirrorY: boolean
