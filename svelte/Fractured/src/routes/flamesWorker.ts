@@ -1,7 +1,8 @@
+import { updateFlamesColor } from "$lib/FlamesUtils/colorRendering";
 import { defaultRenderMode, structuralPaletteRenderMode, type Flames, createFlamesFromJson } from "../lib/FlamesUtils/Flames";
 import { applyAA3x, applyNoAA } from "../lib/FlamesUtils/antialiasing";
 import type { XY } from "../lib/FlamesUtils/mathu";
-import { createRenderData, iterateRenderData, type RenderData, updatePixelsBuffer, paletteStructuralColoring, colorStructuralColoring, resetRenderData } from "../lib/FlamesUtils/render";
+import { createRenderData, iterateRenderData, type RenderData, resetRenderData } from "../lib/FlamesUtils/render";
 import type { FlamesWorkerMessage } from "./messageType";
 
 let flames: Flames | undefined;
@@ -28,19 +29,13 @@ function updateCanvas(ctx: OffscreenCanvasRenderingContext2D) {
     if (flames.spaceWarp.rotationalSymmetry > 1)
         rotation = ( rotation + ( 2 * Math.PI / flames.spaceWarp.rotationalSymmetry ) ) % ( 2 * Math.PI );
 
-    const currentRenderData = flames.antialiasing ? renderData3x : renderData
-
-    if (flames.renderMode === defaultRenderMode)
-        updatePixelsBuffer(currentRenderData, flames.namedPalette.palette)
-    else if (flames.renderMode === structuralPaletteRenderMode)
-        paletteStructuralColoring(currentRenderData, flames.namedPalette.palette);
-    else
-        colorStructuralColoring(currentRenderData);
+    updateFlamesColor(flames, flames.antialiasing ? renderData3x : renderData)
 
     if (flames.antialiasing)
         applyAA3x(canvasResolution, renderData3x.pixels, canvasContent, renderData3x.heatmap, flames.renderMode !== defaultRenderMode)
     else
         applyNoAA(canvasResolution, renderData, canvasContent, flames.renderMode !== defaultRenderMode)
+
     ctx.putImageData(
         new ImageData(canvasContent, canvasResolution.x, canvasResolution.y),
         0,
