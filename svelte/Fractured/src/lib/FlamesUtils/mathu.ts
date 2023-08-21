@@ -1,5 +1,6 @@
 export type XY = { x: number; y: number }
 export type Color = { r: number; g: number; b: number }
+export type ColorAlpha = Color & { a: number }
 
 export type XYZ = XY & { z: number }
 export type Vec3 = XYZ

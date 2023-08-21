@@ -89,6 +89,7 @@ function softreset(newFlames: Flames) {
     flames.spaceWarp.rotationalSymmetry = newFlames.spaceWarp.rotationalSymmetry
     flames.spaceWarp.mirrorX = newFlames.spaceWarp.mirrorX
     flames.spaceWarp.mirrorY = newFlames.spaceWarp.mirrorY
+    flames.densityEstimation = newFlames.densityEstimation
 
     rotation = 0
     if (renderData3x)
