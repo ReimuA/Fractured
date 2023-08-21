@@ -1,7 +1,7 @@
-import sharp from "sharp"
 import type { XY } from "./mathu"
 
 export function createBlurKernel(sigma: number): number[][] {
+	if (sigma <= 0) sigma = 1e-6
 	const GAUSSKERN = 3.0
 	let l = Math.floor(Math.max(3.0, GAUSSKERN * sigma))
 	if (l % 2 == 0)
