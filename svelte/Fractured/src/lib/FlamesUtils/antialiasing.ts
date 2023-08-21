@@ -17,30 +17,11 @@ function getColor(sample: Uint8ClampedArray, idx: number) {
 	}
 }
 
-export function applyAA(resolution: XY, supersample: Uint8ClampedArray, canvasContent: Uint8ClampedArray) {
-	const ssResolution = superSampleResolution(resolution)
-
-	for (let i = 0; i < resolution.x * resolution.y; i++) {
-		const idx = i * 4
-
-		const cIdx = 2 * idx + Math.floor(i / resolution.x) * ssResolution.x * 4
-
-		const c1 = getColor(supersample, cIdx + 0)
-		const c2 = getColor(supersample, cIdx + 4)
-		const c3 = getColor(supersample, cIdx + ssResolution.x * 4 + 0)
-		const c4 = getColor(supersample, cIdx + ssResolution.x * 4 + 4)
-
-		canvasContent[idx + 0] = (c1.r + c2.r + c3.r + c4.r) / 4
-		canvasContent[idx + 1] = (c1.g + c2.g + c3.g + c4.g) / 4
-		canvasContent[idx + 2] = (c1.b + c2.b + c3.b + c4.b) / 4
-		canvasContent[idx + 3] = (c1.a + c2.a + c3.a + c4.a) / 4
-
-		// Gamma correction
-		canvasContent[idx + 0] = Math.pow(canvasContent[idx + 0] / 255, 0.454545) * 255
-		canvasContent[idx + 1] = Math.pow(canvasContent[idx + 1] / 255, 0.454545) * 255
-		canvasContent[idx + 2] = Math.pow(canvasContent[idx + 2] / 255, 0.454545) * 255
-		canvasContent[idx + 3] = Math.pow(canvasContent[idx + 3] / 255, 0.454545) * 255
-	}
+function gammaCorrection(canvasContent: Uint8ClampedArray, idx: number, c: Color, fAlpha: number) {
+	canvasContent[idx + 0] = Math.pow((c.r / 255) * fAlpha, 0.454545) * 255
+	canvasContent[idx + 1] = Math.pow((c.g / 255) * fAlpha, 0.454545) * 255
+	canvasContent[idx + 2] = Math.pow((c.b / 255) * fAlpha, 0.454545) * 255
+	canvasContent[idx + 3] = 255
 }
 
 const downsampleHeatmapCell3x = (idx: number, linesize: number, heatmap: Uint32Array) => (
@@ -68,11 +49,8 @@ export function applyNoAA(resolution: XY, renderData: RenderData, canvasContent:
 			fAlpha = alpha == 0 ? 0 : Math.log10(alpha * 10) / logMax
 			fAlpha = c01(fAlpha)
 		}
-		// Gamma correction
-		canvasContent[idx + 0] = Math.pow((c1.r / 255) * fAlpha, 0.454545) * 255
-		canvasContent[idx + 1] = Math.pow((c1.g / 255) * fAlpha, 0.454545) * 255
-		canvasContent[idx + 2] = Math.pow((c1.b / 255) * fAlpha, 0.454545) * 255
-		canvasContent[idx + 3] = 255
+
+		gammaCorrection(canvasContent, idx, c1, fAlpha)
 	}
 }
 
@@ -105,10 +83,11 @@ export function applyAA3x(resolution: XY, supersample: Uint8ClampedArray, canvas
 		const c9 = getColor(supersample, cIdx + ssResolution.x * 8 + 8)
 
 		const idx = i * 4
-		canvasContent[idx + 0] = (c1.r + c2.r + c3.r + c4.r + c5.r + c6.r + c7.r + c8.r + c9.r) / 9
-		canvasContent[idx + 1] = (c1.g + c2.g + c3.g + c4.g + c5.g + c6.g + c7.g + c8.g + c9.g) / 9
-		canvasContent[idx + 2] = (c1.b + c2.b + c3.b + c4.b + c5.b + c6.b + c7.b + c8.b + c9.b) / 9
-		canvasContent[idx + 3] = (c1.a + c2.a + c3.a + c4.a + c5.a + c6.a + c7.a + c8.a + c9.a) / 9
+		const fc = {
+			r: (c1.r + c2.r + c3.r + c4.r + c5.r + c6.r + c7.r + c8.r + c9.r) / 9,
+			g: (c1.g + c2.g + c3.g + c4.g + c5.g + c6.g + c7.g + c8.g + c9.g) / 9,
+			b: (c1.b + c2.b + c3.b + c4.b + c5.b + c6.b + c7.b + c8.b + c9.b) / 9,
+		}
 
 		let fAlpha = 1
 		if (logScale) {
@@ -117,10 +96,7 @@ export function applyAA3x(resolution: XY, supersample: Uint8ClampedArray, canvas
 			fAlpha = alpha == 0 ? 0 : Math.log10(alpha * 10) / logMax
 			fAlpha = c01(fAlpha)
 		}
-		// Gamma correction
-		canvasContent[idx + 0] = Math.pow((canvasContent[idx + 0] / 255) * fAlpha, 0.454545) * 255
-		canvasContent[idx + 1] = Math.pow((canvasContent[idx + 1] / 255) * fAlpha, 0.454545) * 255
-		canvasContent[idx + 2] = Math.pow((canvasContent[idx + 2] / 255) * fAlpha, 0.454545) * 255
-		canvasContent[idx + 3] = 255
+
+		gammaCorrection(canvasContent, idx, fc, 1)
 	}
 }
