@@ -19,8 +19,11 @@
 		{ img: nebula, anim: tweened(0, { duration: 750, easing: cubicOut }) },
 		{ img: neon, anim: tweened(0, { duration: 750, easing: cubicOut }) }
 	];
-	
-	const d = derived(imgs.map(e => e.anim), (e) => e);
+
+	const d = derived(
+		imgs.map((e) => e.anim),
+		(e) => e
+	);
 
 	let currentIdx = 0;
 
@@ -45,18 +48,18 @@
 {/each}
 
 <button class="absolute left-12 top-1/2" on:click={() => updateDisplayedImage(-1)}>
-	<img src={chevronLeft} width="64" height="64" alt="left" class="filter-white opacity-50"/>
+	<img src={chevronLeft} width="64" height="64" alt="left" class="filter-white opacity-50" />
 </button>
 
 <button class="absolute right-12 top-1/2" on:click={() => updateDisplayedImage(1)}>
-	<img src={chevronRight} width="64" height="64" alt="right" class="filter-white opacity-50"/>
+	<img src={chevronRight} width="64" height="64" alt="right" class="filter-white opacity-50" />
 </button>
 
 <style lang="postcss">
 	:global(html) {
 	}
 
-	.filter-white{
-        filter: invert(95%) sepia(100%) saturate(0%) hue-rotate(291deg) brightness(102%) contrast(103%);
-    }
+	.filter-white {
+		filter: invert(95%) sepia(100%) saturate(0%) hue-rotate(291deg) brightness(102%) contrast(103%);
+	}
 </style>

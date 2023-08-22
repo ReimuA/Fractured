@@ -1,43 +1,44 @@
-import type { Color, XY } from "./mathu"
-import { defaultRenderMode, type Flames, type FlamesComponent } from "./Flames"
-import { type IFSTransform, createTransform } from "./IFSTransform"
-import type { WeightedVariation, Variation } from "./Variations"
-import type { ColorPalette, NamedColorPalette } from "./palette"
-
+import type { Color, XY } from './mathu';
+import { defaultRenderMode, type Flames, type FlamesComponent } from './Flames';
+import { type IFSTransform, createTransform } from './IFSTransform';
+import type { WeightedVariation, Variation } from './Variations';
+import type { ColorPalette, NamedColorPalette } from './palette';
 
 export function createRandomTransform(): IFSTransform {
-	const r = () => Math.random() * 3 - 3 / 2
+	const r = () => Math.random() * 3 - 3 / 2;
 
-	return createTransform(r(), r(), r(), r(), r(), r())
+	return createTransform(r(), r(), r(), r(), r(), r());
 }
 
-export function createRandomVariations(nb: number, variationsPools: Variation[]): WeightedVariation[] {
-	const variations: WeightedVariation[] = []
+export function createRandomVariations(
+	nb: number,
+	variationsPools: Variation[]
+): WeightedVariation[] {
+	const variations: WeightedVariation[] = [];
 
 	for (let i = 0; i < nb; i++) {
-		const weight = Math.random()
-		const randomVariation = variationsPools[Math.floor(Math.random() * variationsPools.length)]
+		const weight = Math.random();
+		const randomVariation = variationsPools[Math.floor(Math.random() * variationsPools.length)];
 
-		if (!variations.some(e => e.variation.name === randomVariation.name))
-			variations.push({ weight, variation: randomVariation })
+		if (!variations.some((e) => e.variation.name === randomVariation.name))
+			variations.push({ weight, variation: randomVariation });
 	}
 
-	const totalWeight = variations.reduce((total, v) => total + v.weight, 0)
+	const totalWeight = variations.reduce((total, v) => total + v.weight, 0);
 
-	for (const v of variations)
-		v.weight /= totalWeight
+	for (const v of variations) v.weight /= totalWeight;
 
-	return variations
+	return variations;
 }
 
 export function randomWeigthedSelection<T>(objs: (T & { weight: number })[]): T {
-	const r = Math.random()
-	let accumulator = 0
+	const r = Math.random();
+	let accumulator = 0;
 
 	for (let i = 0; i < objs.length; i++) {
-		accumulator += objs[i].weight
-		if (accumulator > r) return objs[i]
+		accumulator += objs[i].weight;
+		if (accumulator > r) return objs[i];
 	}
 
-	return objs[objs.length - 1]
+	return objs[objs.length - 1];
 }

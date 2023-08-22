@@ -1,35 +1,29 @@
 <script lang="ts">
 	import { renderModeList } from '$lib/FlamesUtils/Flames';
-	import {
-		namedPalettesList,
-	} from '$lib/FlamesUtils/palette';
+	import { namedPalettesList } from '$lib/FlamesUtils/palette';
 	import { writable } from 'svelte/store';
 	import { flamesBuilderStore } from '../stores';
 
 	let selectClasses =
 		'round-r-4 bg-slate-900 ml-12 p-1 mt-2 text-white border-slate-300 border-2 rounded w-48';
 	let localStore = writable({
-			palette: $flamesBuilderStore.builder.colorPalette,
-			renderMode: $flamesBuilderStore.builder.renderMode
-	})
-	
-	localStore.subscribe(store => {
+		palette: $flamesBuilderStore.builder.colorPalette,
+		renderMode: $flamesBuilderStore.builder.renderMode
+	});
+
+	localStore.subscribe((store) => {
 		$flamesBuilderStore = {
-			builder: $flamesBuilderStore
-				.builder
+			builder: $flamesBuilderStore.builder
 				.withNamedPalette(store.palette)
 				.withRendermode(store.renderMode),
-			resetType: "none"
-		}
-	})
+			resetType: 'none'
+		};
+	});
 </script>
 
 <div>
 	<p class="pt-8 pl-6 text-white">Color</p>
-	<select
-		class={selectClasses}
-		bind:value={$localStore.palette}
-	>
+	<select class={selectClasses} bind:value={$localStore.palette}>
 		{#each namedPalettesList as namedPalette}
 			<option class="text-white bg-slate-900" value={namedPalette}>{namedPalette.name}</option>
 		{/each}

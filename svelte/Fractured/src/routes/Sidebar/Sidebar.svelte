@@ -6,8 +6,8 @@
 
 	export let open = false;
 
-	let antialiased = false
-	let densityEstimation = false
+	let antialiased = false;
+	let densityEstimation = false;
 	// HTML ref
 	let metadataLink: HTMLAnchorElement | undefined;
 	let imageLink: HTMLAnchorElement | undefined;
@@ -33,7 +33,10 @@
 	}
 </script>
 
-<aside class="absolute top-0 w-72 h-full bg-slate-700/25 shadow-lg scroll-smooth overflow-y-auto" class:open>
+<aside
+	class="absolute top-0 w-72 h-full bg-slate-700/25 shadow-lg scroll-smooth overflow-y-auto"
+	class:open
+>
 	<p class="pt-12 pl-6 text-white">Download</p>
 	<nav class="pl-12 pt-2 text-l">
 		<a bind:this={metadataLink} class=" text-white block" href="#metadata">Metadata</a>
@@ -42,24 +45,26 @@
 
 	<p class="pt-12 pl-6 text-white">Quality enhancement</p>
 	<label class="block">
-		<input 
+		<input
 			bind:checked={antialiased}
-			on:change={() => flamesBuilderStore.update((builder) => ({
-				builder: builder.builder.withSuperSampleRatio(antialiased),
-				resetType: "none"
-			}))}
+			on:change={() =>
+				flamesBuilderStore.update((builder) => ({
+					builder: builder.builder.withSuperSampleRatio(antialiased),
+					resetType: 'none'
+				}))}
 			type="checkbox"
 			class="round-r-4 bg-slate-900 ml-12 p-1 mt-4 border-slate-300 border-2 rounded"
 		/>
 		<span class="text-white">Anti aliasing</span>
 	</label>
 	<label class="block">
-		<input 
+		<input
 			bind:checked={densityEstimation}
-			on:change={() => flamesBuilderStore.update((builder) => ({
-				builder: builder.builder.withDensityEstimation(densityEstimation),
-				resetType: "none"
-			}))}
+			on:change={() =>
+				flamesBuilderStore.update((builder) => ({
+					builder: builder.builder.withDensityEstimation(densityEstimation),
+					resetType: 'none'
+				}))}
 			type="checkbox"
 			class="round-r-4 bg-slate-900 ml-12 p-1 mt-4 border-slate-300 border-2 rounded"
 		/>

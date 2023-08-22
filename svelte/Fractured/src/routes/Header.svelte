@@ -3,22 +3,20 @@
 </script>
 
 <header>
-	<div class="corner">
-	</div>
+	<div class="corner" />
 
 	<nav>
 		<svg viewBox="0 0 2 3" aria-hidden="true">
 			<path d="M0,0 L1,2 C1.5,3 1.5,3 2,3 L2,0 Z" />
 		</svg>
 		<ul>
-			<li 
-				class="hover:text-red-500"
-				aria-current={$page.url.pathname === '/' ? 'page' : undefined}>
+			<li class="hover:text-red-500" aria-current={$page.url.pathname === '/' ? 'page' : undefined}>
 				<a href="/">Home</a>
 			</li>
-			<li 
+			<li
 				class="hover:text-red-500"
-				aria-current={$page.url.pathname === '/gallery' ? 'page' : undefined}>
+				aria-current={$page.url.pathname === '/gallery' ? 'page' : undefined}
+			>
 				<a href="/gallery">Gallery</a>
 			</li>
 		</ul>
@@ -28,8 +26,7 @@
 	</nav>
 
 	<div class="corner">
-		<a href="https://github.com/sveltejs/kit">
-		</a>
+		<a href="https://github.com/sveltejs/kit" />
 	</div>
 </header>
 
@@ -80,7 +77,6 @@
 		background: var(--background);
 		background-size: contain;
 	}
-
 
 	nav a {
 		display: flex;

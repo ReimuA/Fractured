@@ -1,6 +1,6 @@
 <script>
 	import Header from './Header.svelte';
-	import '../app.css'
+	import '../app.css';
 </script>
 
 <div class="app h-screen">
@@ -9,9 +9,9 @@
 	<main>
 		<slot />
 	</main>
-
 </div>
 
 <style lang="postcss">
-	:global(html) {}
+	:global(html) {
+	}
 </style>

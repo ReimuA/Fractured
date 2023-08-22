@@ -27,10 +27,8 @@
 	type="number"
 	bind:value={$localStore.zoom}
 	min="0"
-
 	class="round-r-4 bg-slate-900 ml-12 p-1 mt-2 text-white border-slate-300 border-2 rounded w-48"
 />
-
 
 <p class="pt-4 pl-6 text-white">Space warping</p>
 <input

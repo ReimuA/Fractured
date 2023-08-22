@@ -5,20 +5,21 @@
 	let variations = allVariations.map((v, idx) => {
 		return {
 			variation: v,
-			selected: idx === 0 || Math.random() < .2
+			selected: idx === 0 || Math.random() < 0.2
 		};
 	});
-	updateVariationPools()
+	updateVariationPools();
 
 	function updateVariationPools() {
 		flamesBuilderStore.update((state) => {
 			return {
-				builder: state.builder.withVariations(variations.filter(e => e.selected).map((e) => e.variation.name)),
-				resetType: "full"
+				builder: state.builder.withVariations(
+					variations.filter((e) => e.selected).map((e) => e.variation.name)
+				),
+				resetType: 'full'
 			};
 		});
 	}
-	
 </script>
 
 <p class="pt-8 pl-6 text-white">Enable variations</p>
