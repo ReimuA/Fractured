@@ -29,6 +29,32 @@ export function createBlurKernel(sigma: number): number[][] {
 	return kernel
 }
 
+export function localBlur(idx: number, resolution: XY, input: Uint8Array, output: Uint8Array, sigma: number) {
+	const rx = resolution.x * 4
+	const kernel = createBlurKernel(sigma)
+	const ml = Math.floor(kernel.length / 2)
+
+	for (let i = 0; i < 3; i++) {
+		let newValue = 0
+		const outputIdx = idx + i
+		const ix = (outputIdx) % rx
+		const iy = Math.floor(outputIdx / rx)
+
+
+		for (let x = 0; x < kernel.length; x++) {
+			for (let y = 0; y < kernel.length; y++) {
+				const current = kernel[y][x]
+				const xOffset = (x - ml) * 4
+				const yOffset = (y - ml)
+				const inputIdx = ((ix + xOffset) + (yOffset + iy) * rx)
+				if (ix + xOffset >= 0 && iy + yOffset >= 0)
+					newValue += (input[inputIdx] ?? 0) * current
+			}
+		}
+
+		output[outputIdx] = newValue
+	}
+}
 
 export function gaussianBlur(resolution: XY, input: Uint8Array, output: Uint8Array, sigma: number) {
 	const kernel = createBlurKernel(sigma)
@@ -40,7 +66,7 @@ export function gaussianBlur(resolution: XY, input: Uint8Array, output: Uint8Arr
 		if ((i + 1) % 4 == 0) {
 			output[i] = input[i]
 			continue
-		} 
+		}
 
 		const ix = i % rx
 		const iy = Math.floor(i / rx)

@@ -1,3 +1,4 @@
+import { localBlur } from '$lib/FlamesUtils/blur';
 import { updateFlamesColor } from '$lib/FlamesUtils/colorRendering';
 import {
 	defaultRenderMode,
@@ -6,7 +7,7 @@ import {
 	createFlamesFromJson
 } from '../lib/FlamesUtils/Flames';
 import { applyAA3x, applyNoAA } from '../lib/FlamesUtils/antialiasing';
-import type { XY } from '../lib/FlamesUtils/mathu';
+import { c01, mix, type XY } from '../lib/FlamesUtils/mathu';
 import {
 	createRenderData,
 	iterateRenderData,
@@ -40,6 +41,25 @@ function updateCanvas(ctx: OffscreenCanvasRenderingContext2D) {
 		rotation = (rotation + (2 * Math.PI) / flames.spaceWarp.rotationalSymmetry) % (2 * Math.PI);
 
 	updateFlamesColor(flames, flames.antialiasing ? renderData3x : renderData);
+
+	if (flames.densityEstimation && !flames.antialiasing) {
+		const maxSigma = 13
+		const minSigma = 1
+		const jpp = new Uint8ClampedArray(renderData.pixels.length)
+		
+		for (let i = 0; i < renderData.heatmap.length; i++) {
+			const pixelsIdx = i * 4
+			const max = Math.log10(renderData.heatmapMax / 100)
+			const current = Math.log10(renderData.heatmap[i]) 
+			const sigma = maxSigma - c01((current / max)) *  (maxSigma - minSigma)
+			/* jpp[pixelsIdx] = 255 * sigma / maxSigma
+			jpp[pixelsIdx + 1] = 255 * sigma / maxSigma
+			jpp[pixelsIdx + 3] = 255 */
+			localBlur(pixelsIdx, flames.resolution, renderData.pixels, jpp, sigma)
+		}
+
+		renderData.pixels = jpp
+	}
 
 	if (flames.antialiasing)
 		applyAA3x(
@@ -104,6 +124,7 @@ function update(newFlames: Flames) {
 	flames.antialiasing = newFlames.antialiasing;
 	flames.namedPalette = newFlames.namedPalette;
 	flames.renderMode = newFlames.renderMode;
+	flames.densityEstimation = newFlames.densityEstimation;
 }
 
 onmessage = ({ data }: MessageEvent<FlamesWorkerMessage>) => {
