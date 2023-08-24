@@ -3,11 +3,14 @@
 	import VariationSelector from './VariationSelector.svelte';
 	import ColorationOptions from './ColorationOptions.svelte';
 	import SpaceWarping from './SpaceWarping.svelte';
+	import type { DensityEstimation } from '$lib/FlamesUtils/Flames';
 
 	export let open = false;
 
 	let antialiased = false;
 	let densityEstimation = false;
+	let minSigma = 0
+	let maxSigma = 3
 	// HTML ref
 	let metadataLink: HTMLAnchorElement | undefined;
 	let imageLink: HTMLAnchorElement | undefined;
@@ -23,6 +26,19 @@
 		metadataLink.href = URL.createObjectURL(blob);
 		metadataLink.download = 'flames.metadata.json';
 	});
+
+	function updateDensityEstimation() {
+		let dEstimation: DensityEstimation | null = null
+
+		if (densityEstimation) {
+			dEstimation = {minSigma: 0, maxSigma: 3}
+		}
+
+		flamesBuilderStore.update((builder) => ({
+			builder: builder.builder.withDensityEstimation(dEstimation),
+			resetType: 'none'
+		}))
+	}
 
 	function downloadImage() {
 		if (!flamesCanvas) return;
@@ -60,15 +76,33 @@
 	<label class="block">
 		<input
 			bind:checked={densityEstimation}
-			on:change={() =>
-				flamesBuilderStore.update((builder) => ({
-					builder: builder.builder.withDensityEstimation(densityEstimation),
-					resetType: 'none'
-				}))}
+			on:change={updateDensityEstimation}
 			type="checkbox"
 			class="round-r-4 bg-slate-900 ml-12 p-1 mt-4 border-slate-300 border-2 rounded"
 		/>
 		<span class="text-white">Density estimation</span>
+	</label>
+
+	<label class="block">
+		<span class="ml-12 p-1 text-white">Min sigma</span>
+		<input
+			bind:value={minSigma}
+			on:change={updateDensityEstimation}
+			type="number"
+			min="0"
+			max={maxSigma - 1}
+			class="round-r-4 text-white bg-slate-900 w-16 pl-1 mt-4 border-slate-300 border-2 rounded"
+		/>
+	</label>
+	<label class="block">
+		<span class="ml-12 p-1 text-white">Max sigma</span>
+		<input
+			bind:value={maxSigma}
+			on:change={updateDensityEstimation}
+			type="number"
+			min={minSigma + 1}
+			class="round-r-4 text-white bg-slate-900  w-16 pl-1 mt-4 border-slate-300 border-2 rounded"
+		/>
 	</label>
 	<SpaceWarping />
 	<ColorationOptions />

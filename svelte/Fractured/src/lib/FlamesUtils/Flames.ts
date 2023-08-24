@@ -20,9 +20,14 @@ export const renderModeList = [
 	structuralPaletteRenderMode
 ];
 
+export type DensityEstimation = {
+    minSigma: number
+    maxSigma: number
+}
+
 export type Flames = {
 	resolution: XY;
-	densityEstimation: boolean;
+	densityEstimation: DensityEstimation | null;
 	antialiasing: boolean;
 	renderMode: RenderMode;
 	spaceWarp: SpaceWarp;

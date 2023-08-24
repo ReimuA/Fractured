@@ -1,5 +1,6 @@
 import {
 	defaultRenderMode,
+	type DensityEstimation,
 	type Flames,
 	type FlamesComponent,
 	type RenderMode,
@@ -14,7 +15,7 @@ export class FlamesBuilder {
 	// 1 to 1 field
 	public resolution: XY = { x: 1920, y: 1080 };
 	public antialiasing = false;
-	public densityEstimation = false;
+	public densityEstimation: DensityEstimation | null = null;
 	public renderMode: RenderMode = defaultRenderMode;
 	public colorPalette: NamedColorPalette = namedPalettesList[0];
 	public spaceWarp: SpaceWarp = { rotationalSymmetry: 1, mirrorX: false, mirrorY: false, zoom: 1 };
@@ -59,7 +60,7 @@ export class FlamesBuilder {
 		return this;
 	}
 
-	withDensityEstimation(densityEstimation: boolean) {
+	withDensityEstimation(densityEstimation: DensityEstimation | null) {
 		this.densityEstimation = densityEstimation;
 		return this;
 	}

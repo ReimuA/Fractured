@@ -2,12 +2,11 @@ import { localBlur } from '$lib/FlamesUtils/blur';
 import { updateFlamesColor } from '$lib/FlamesUtils/colorRendering';
 import {
 	defaultRenderMode,
-	structuralPaletteRenderMode,
 	type Flames,
 	createFlamesFromJson
 } from '../lib/FlamesUtils/Flames';
 import { applyAA3x, applyNoAA } from '../lib/FlamesUtils/antialiasing';
-import { c01, mix, type XY } from '../lib/FlamesUtils/mathu';
+import { c01,  type XY } from '../lib/FlamesUtils/mathu';
 import {
 	createRenderData,
 	iterateRenderData,
@@ -43,8 +42,9 @@ function updateCanvas(ctx: OffscreenCanvasRenderingContext2D) {
 	updateFlamesColor(flames, flames.antialiasing ? renderData3x : renderData);
 
 	if (flames.densityEstimation && !flames.antialiasing) {
-		const maxSigma = 13
-		const minSigma = 1
+		const maxSigma = flames.densityEstimation.maxSigma
+		const minSigma = flames.densityEstimation.minSigma
+
 		const jpp = new Uint8ClampedArray(renderData.pixels.length)
 		
 		for (let i = 0; i < renderData.heatmap.length; i++) {
