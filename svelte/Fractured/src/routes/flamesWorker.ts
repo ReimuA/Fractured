@@ -41,6 +41,8 @@ function updateCanvas(ctx: OffscreenCanvasRenderingContext2D) {
 
 	updateFlamesColor(flames, flames.antialiasing ? renderData3x : renderData);
 
+	let pixelsBuffer = flames.antialiasing ? renderData3x.pixels : renderData.pixels
+
 	if (flames.densityEstimation && !flames.antialiasing) {
 		const maxSigma = flames.densityEstimation.maxSigma
 		const minSigma = flames.densityEstimation.minSigma
@@ -58,7 +60,7 @@ function updateCanvas(ctx: OffscreenCanvasRenderingContext2D) {
 			localBlur(pixelsIdx, flames.resolution, renderData.pixels, jpp, sigma)
 		}
 
-		renderData.pixels = jpp
+		pixelsBuffer = jpp
 	}
 
 	if (flames.antialiasing)
@@ -70,7 +72,7 @@ function updateCanvas(ctx: OffscreenCanvasRenderingContext2D) {
 			flames.renderMode !== defaultRenderMode
 		);
 	else
-		applyNoAA(canvasResolution, renderData, canvasContent, flames.renderMode !== defaultRenderMode);
+		applyNoAA(canvasResolution, pixelsBuffer, renderData.heatmap, renderData.heatmapMax, canvasContent, flames.renderMode !== defaultRenderMode);
 
 	ctx.putImageData(new ImageData(canvasContent, canvasResolution.x, canvasResolution.y), 0, 0);
 }
