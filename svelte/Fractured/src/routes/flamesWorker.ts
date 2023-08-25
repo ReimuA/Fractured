@@ -1,17 +1,17 @@
 import { localBlur } from '$lib/FlamesUtils/blur';
 import { updateFlamesColor } from '$lib/FlamesUtils/colorRendering';
 import {
+	createFlamesFromJson,
 	defaultRenderMode,
-	type Flames,
-	createFlamesFromJson
+	type Flames
 } from '../lib/FlamesUtils/Flames';
 import { applyAA3x, applyNoAA } from '../lib/FlamesUtils/antialiasing';
-import { c01,  type XY } from '../lib/FlamesUtils/mathu';
+import { c01, type XY } from '../lib/FlamesUtils/mathu';
 import {
 	createRenderData,
 	iterateRenderData,
-	type RenderData,
-	resetRenderData
+	resetRenderData,
+	type RenderData
 } from '../lib/FlamesUtils/render';
 import type { FlamesWorkerMessage } from './messageType';
 
@@ -110,23 +110,15 @@ function reset(newFlames: Flames) {
 }
 
 function softreset(newFlames: Flames) {
-	p = { x: 0, y: 0 };
-
-	flames ??= newFlames;
-	flames.spaceWarp = newFlames.spaceWarp;
-	flames.densityEstimation = newFlames.densityEstimation;
-
 	rotation = 0;
+	flames = newFlames;
+	p = { x: 0, y: 0 };
 	if (renderData3x) resetRenderData(renderData3x);
 	if (renderData) resetRenderData(renderData);
 }
 
 function update(newFlames: Flames) {
-	flames ??= newFlames;
-	flames.antialiasing = newFlames.antialiasing;
-	flames.namedPalette = newFlames.namedPalette;
-	flames.renderMode = newFlames.renderMode;
-	flames.densityEstimation = newFlames.densityEstimation;
+	flames = newFlames;
 }
 
 onmessage = ({ data }: MessageEvent<FlamesWorkerMessage>) => {
@@ -150,4 +142,5 @@ onmessage = ({ data }: MessageEvent<FlamesWorkerMessage>) => {
 	postMessage({ flames: JSON.stringify(flames, null, 4) });
 };
 
-export {};
+export { };
+

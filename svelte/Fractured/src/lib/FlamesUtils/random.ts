@@ -1,34 +1,11 @@
-import type { Color, XY } from './mathu';
-import { defaultRenderMode, type Flames, type FlamesComponent } from './Flames';
-import { type IFSTransform, createTransform } from './IFSTransform';
-import type { WeightedVariation, Variation } from './Variations';
-import type { ColorPalette, NamedColorPalette } from './palette';
-
-export function createRandomTransform(): IFSTransform {
-	const r = () => Math.random() * 3 - 3 / 2;
-
-	return createTransform(r(), r(), r(), r(), r(), r());
-}
-
-export function createRandomVariations(
-	nb: number,
-	variationsPools: Variation[]
-): WeightedVariation[] {
-	const variations: WeightedVariation[] = [];
-
-	for (let i = 0; i < nb; i++) {
-		const weight = Math.random();
-		const randomVariation = variationsPools[Math.floor(Math.random() * variationsPools.length)];
-
-		if (!variations.some((e) => e.variation.name === randomVariation.name))
-			variations.push({ weight, variation: randomVariation });
-	}
-
-	const totalWeight = variations.reduce((total, v) => total + v.weight, 0);
-
-	for (const v of variations) v.weight /= totalWeight;
-
-	return variations;
+// seed parameter is used as an integer and is thus truncated
+export function splitmix32(seed: number) {
+    return function () {
+        seed |= 0; seed = seed + 0x9e3779b9 | 0;
+        let t = seed ^ seed >>> 16; t = Math.imul(t, 0x21f0aaad);
+        t = t ^ t >>> 15; t = Math.imul(t, 0x735a2d97);
+        return ((t = t ^ t >>> 15) >>> 0) / 4294967296;
+    }
 }
 
 export function randomWeigthedSelection<T>(objs: (T & { weight: number })[]): T {
