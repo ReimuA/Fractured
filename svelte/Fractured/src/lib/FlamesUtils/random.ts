@@ -1,4 +1,4 @@
-// seed parameter is used as an integer and is thus truncated
+// seed parameter is used as an integer and is truncated
 export function splitmix32(seed: number) {
     return function () {
         seed |= 0; seed = seed + 0x9e3779b9 | 0;
