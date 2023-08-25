@@ -161,8 +161,7 @@ export class FlamesBuilder {
 	}
 
 	build(): Flames {
-		this.seed = Math.random() * (2 ^ 32)
-		console.log("BUILD SEED : " + this.seed)
+		this.seed = Math.random() * (1e7) 
 		this.prng = splitmix32(this.seed)
 		return this.buildInternal()
 	}
