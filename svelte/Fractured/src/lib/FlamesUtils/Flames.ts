@@ -27,6 +27,7 @@ export type DensityEstimation = {
 
 export type Flames = {
 	resolution: XY;
+	gammaCorrection: number
 	densityEstimation: DensityEstimation | null;
 	antialiasing: boolean;
 	renderMode: RenderMode;

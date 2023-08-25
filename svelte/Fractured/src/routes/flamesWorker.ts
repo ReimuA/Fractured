@@ -69,10 +69,11 @@ function updateCanvas(ctx: OffscreenCanvasRenderingContext2D) {
 			renderData3x.pixels,
 			canvasContent,
 			renderData3x.heatmap,
-			flames.renderMode !== defaultRenderMode
+			flames.renderMode !== defaultRenderMode,
+			flames.gammaCorrection
 		);
 	else
-		applyNoAA(canvasResolution, pixelsBuffer, renderData.heatmap, renderData.heatmapMax, canvasContent, flames.renderMode !== defaultRenderMode);
+		applyNoAA(canvasResolution, pixelsBuffer, renderData.heatmap, renderData.heatmapMax, canvasContent, flames.renderMode !== defaultRenderMode, flames.gammaCorrection);
 
 	ctx.putImageData(new ImageData(canvasContent, canvasResolution.x, canvasResolution.y), 0, 0);
 }

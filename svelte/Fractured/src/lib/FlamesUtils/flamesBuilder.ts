@@ -16,6 +16,7 @@ export class FlamesBuilder {
 	// 1 to 1 field
 	public resolution: XY = { x: 1920, y: 1080 };
 	public antialiasing = false;
+	public gammaCorrection = 0.454545;
 	public densityEstimation: DensityEstimation | null = null;
 	public renderMode: RenderMode = defaultRenderMode;
 	public colorPalette: NamedColorPalette = namedPalettesList[0];
@@ -70,6 +71,11 @@ export class FlamesBuilder {
 
 	withVariationsNumberRange(range: iRange) {
 		this.variationsNumberRange = range;
+		return this;
+	}
+
+	withgammaCorrection(gammaCorrection: number) {
+		this.gammaCorrection = gammaCorrection;
 		return this;
 	}
 
@@ -141,6 +147,7 @@ export class FlamesBuilder {
 		if (variationsPools.length === 0) variationsPools = allVariations;
 
 		return {
+			gammaCorrection: this.gammaCorrection,
 			densityEstimation: this.densityEstimation,
 			resolution: this.resolution,
 			antialiasing: this.antialiasing,
@@ -155,7 +162,6 @@ export class FlamesBuilder {
 	// Use the same seed as the previous build
 	// Succesive call to purebuild always use the same seed
 	pureBuild(): Flames {
-		console.log("PURE BUILD SEED : " + this.seed)
 		this.prng = splitmix32(this.seed)
 		return this.buildInternal()
 	}

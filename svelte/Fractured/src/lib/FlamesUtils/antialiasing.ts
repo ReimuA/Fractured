@@ -17,10 +17,10 @@ function getColor(sample: Uint8ClampedArray, idx: number) {
 	};
 }
 
-function gammaCorrection(canvasContent: Uint8ClampedArray, idx: number, c: Color, fAlpha: number) {
-	canvasContent[idx + 0] = Math.pow((c.r / 255) * fAlpha, 0.454545) * 255;
-	canvasContent[idx + 1] = Math.pow((c.g / 255) * fAlpha, 0.454545) * 255;
-	canvasContent[idx + 2] = Math.pow((c.b / 255) * fAlpha, 0.454545) * 255;
+function gammaCorrection(canvasContent: Uint8ClampedArray, idx: number, c: Color, fAlpha: number, gammaCorrection: number) {
+	canvasContent[idx + 0] = Math.pow((c.r / 255) * fAlpha, gammaCorrection) * 255;
+	canvasContent[idx + 1] = Math.pow((c.g / 255) * fAlpha, gammaCorrection) * 255;
+	canvasContent[idx + 2] = Math.pow((c.b / 255) * fAlpha, gammaCorrection) * 255;
 	canvasContent[idx + 3] = 255;
 }
 
@@ -42,7 +42,8 @@ export function applyNoAA(
 	heatmap: Uint32Array,
 	heatmapMax: number,
 	canvasContent: Uint8ClampedArray,
-	logScale: boolean
+	logScale: boolean,
+	gammaCorrectionValue: number
 ) {
 	const logMax = Math.log10(heatmapMax);
 
@@ -57,7 +58,7 @@ export function applyNoAA(
 			fAlpha = c01(fAlpha);
 		}
 
-		gammaCorrection(canvasContent, idx, c1, fAlpha);
+		gammaCorrection(canvasContent, idx, c1, fAlpha, gammaCorrectionValue);
 	}
 }
 
@@ -66,7 +67,8 @@ export function applyAA3x(
 	supersample: Uint8ClampedArray,
 	canvasContent: Uint8ClampedArray,
 	heatmap: Uint32Array,
-	logScale: boolean
+	logScale: boolean,
+	gammaCorrectionValue: number
 ) {
 	const ssResolution = { x: resolution.x * 3, y: resolution.y * 3 };
 	let max = 0;
@@ -112,6 +114,6 @@ export function applyAA3x(
 			fAlpha = c01(fAlpha);
 		}
 
-		gammaCorrection(canvasContent, idx, fc, 1);
+		gammaCorrection(canvasContent, idx, fc, 1, gammaCorrectionValue);
 	}
 }

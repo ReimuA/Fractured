@@ -9,6 +9,7 @@
 
 	let antialiased = false;
 	let densityEstimation = false;
+	let gammaCorrection: number = 0.454545
 	let minSigma = 0
 	let maxSigma = 3
 	// HTML ref
@@ -60,6 +61,19 @@
 	</nav>
 
 	<p class="pt-12 pl-6 text-white">Quality enhancement</p>
+	<label class="block">
+		<span class="ml-12 p-1 text-white">Gamma correction</span>
+		<input
+			bind:value={gammaCorrection}
+			on:change={() => flamesBuilderStore.update(builder => ({
+				builder: builder.builder.withgammaCorrection(gammaCorrection),
+				resetType: 'none',
+			}))}
+			type="number"
+			min={minSigma + 1}
+			class="round-r-4 text-white bg-slate-900  w-16 pl-1 mt-4 border-slate-300 border-2 rounded"
+		/>
+	</label>
 	<label class="block">
 		<input
 			bind:checked={antialiased}
