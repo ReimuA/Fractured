@@ -1,6 +1,6 @@
 import type { IFSTransform } from './IFSTransform';
 import { getVariationFromname, type WeightedVariation } from './Variations';
-import type { XY } from './mathu';
+import type { Color, XY } from './mathu';
 import type { NamedColorPalette } from './palette';
 
 export type SpaceWarp = {
@@ -10,14 +10,16 @@ export type SpaceWarp = {
 	mirrorY: boolean;
 };
 
-export type RenderMode = 'Default' | 'Structural (Palette)' | 'Structural (Color)';
+export type RenderMode = 'Default' | 'Structural' | 'Structural (Palette)' | 'Structural (Palette index)';
 export const defaultRenderMode: RenderMode = 'Default';
-export const structularColorRenderMode: RenderMode = 'Structural (Color)';
-export const structuralPaletteRenderMode: RenderMode = 'Structural (Palette)';
+export const structuralRenderMode: RenderMode = 'Structural';
+export const structularPaletteRenderMode: RenderMode = 'Structural (Palette)';
+export const structuralPaletteIndexRenderMode: RenderMode = 'Structural (Palette index)';
 export const renderModeList = [
 	defaultRenderMode,
-	structularColorRenderMode,
-	structuralPaletteRenderMode
+	structuralRenderMode,
+	structularPaletteRenderMode,
+	structuralPaletteIndexRenderMode
 ];
 
 export type DensityEstimation = {
@@ -38,7 +40,8 @@ export type Flames = {
 };
 
 export type FlamesComponent = {
-	color: number;
+	color: Color;
+	colorPaletteIndex: number;
 	weight: number;
 	transform: IFSTransform;
 	weightedVariations: WeightedVariation[];

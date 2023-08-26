@@ -1,4 +1,4 @@
-import { defaultRenderMode, structuralPaletteRenderMode, type Flames } from './Flames';
+import { defaultRenderMode, structuralPaletteIndexRenderMode, type Flames, structuralRenderMode } from './Flames';
 import { mix, type Color } from './mathu';
 import { type ColorPalette, colorFromPalette } from './palette';
 import type { RenderData } from './render';
@@ -10,7 +10,7 @@ function mixColor(pixels: Uint8ClampedArray, idx: number, c: Color) {
 	pixels[idx + 3] = mix(pixels[idx + 3], 255, 0.25);
 }
 
-function paletteStructuralColoring(renderData: RenderData, p: ColorPalette) {
+function colorStructuralPaletteIndex(renderData: RenderData, p: ColorPalette) {
 	const heatmap = renderData.heatmap;
 	const pixels = renderData.pixels;
 	const paletteAccumulator = renderData.paletteAccumulator;
@@ -25,7 +25,26 @@ function paletteStructuralColoring(renderData: RenderData, p: ColorPalette) {
 	return pixels;
 }
 
-function colorStructuralColoring(renderData: RenderData) {
+function colorStructuralPalette(renderData: RenderData) {
+	const heatmap = renderData.heatmap;
+	const pixels = renderData.pixels;
+	const colorAccumulator = renderData.colorPaletteIndexAccumulator;
+	for (let i = 0; i < heatmap.length; i++) {
+		pixels[i * 4 + 3] = mix(pixels[i * 4 + 3], 255, 0.25);
+		if (heatmap[i] < 1) continue;
+
+		const c = {
+			r: colorAccumulator[i * 3],
+			g: colorAccumulator[i * 3 + 1],
+			b: colorAccumulator[i * 3 + 2]
+		};
+
+		mixColor(pixels, i * 4, c);
+	}
+	return pixels;
+}
+
+function colorStructural(renderData: RenderData) {
 	const heatmap = renderData.heatmap;
 	const pixels = renderData.pixels;
 	const colorAccumulator = renderData.colorAccumulator;
@@ -64,7 +83,9 @@ function defaultColoring(renderData: RenderData, p: ColorPalette) {
 export function updateFlamesColor(flames: Flames, renderData: RenderData) {
 	if (flames.renderMode === defaultRenderMode)
 		defaultColoring(renderData, flames.namedPalette.palette);
-	else if (flames.renderMode === structuralPaletteRenderMode)
-		paletteStructuralColoring(renderData, flames.namedPalette.palette);
-	else colorStructuralColoring(renderData);
+	else if (flames.renderMode === structuralPaletteIndexRenderMode)
+		colorStructuralPaletteIndex(renderData, flames.namedPalette.palette);
+	else if (flames.renderMode === structuralRenderMode) colorStructural(renderData)
+
+	else colorStructuralPalette(renderData);
 }
