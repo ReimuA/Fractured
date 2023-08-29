@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { allVariations } from '$lib/FlamesUtils/Variations';
-	import { flamesBuilderStore } from '../stores';
+	import { flamesBuilderStore, flamesStore } from '../stores';
 
 	let variations = allVariations.map((v, idx) => {
 		return {
@@ -12,8 +12,10 @@
 
 	function updateVariationPools() {
 		flamesBuilderStore.update((builder) => {
-			return builder.withVariations(
-					variations.filter((e) => e.selected).map((e) => e.variation.name)
+			return builder
+				.inferParameterFromFlames($flamesStore.flames)
+				.withVariations(
+						variations.filter((e) => e.selected).map((e) => e.variation.name)
 				)
 		});
 	}

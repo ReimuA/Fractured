@@ -79,6 +79,18 @@ export class FlamesBuilder {
 		return this;
 	}
 
+	inferParameterFromFlames(flames: Flames) {
+		this.resolution = flames.resolution
+		this.antialiasing = flames.antialiasing
+		this.gammaCorrection = flames.gammaCorrection;
+		this.densityEstimation = flames.densityEstimation
+		this.renderMode =flames.renderMode
+		this.colorPalette = flames.namedPalette
+		this.spaceWarp = flames.spaceWarp
+
+		return this
+	}
+
 	private iRandom(range: iRange): number {
 		if (range.min === range.max) return range.max;
 		return Math.floor(this.prng() * (range.max - range.min + 1) + range.min);
