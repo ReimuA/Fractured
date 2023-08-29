@@ -2,20 +2,22 @@
 	import { renderModeList } from '$lib/FlamesUtils/Flames';
 	import { namedPalettesList } from '$lib/FlamesUtils/palette';
 	import { writable } from 'svelte/store';
-	import { flamesBuilderStore } from '../stores';
+	import { flamesBuilderStore, flamesStore } from '../stores';
 
 	let selectClasses =
 		'round-r-4 bg-slate-900 ml-12 p-1 mt-2 text-white border-slate-300 border-2 rounded w-48';
 	let localStore = writable({
-		palette: $flamesBuilderStore.builder.colorPalette,
-		renderMode: $flamesBuilderStore.builder.renderMode
+		palette: $flamesStore.flames.namedPalette,
+		renderMode: $flamesStore.flames.renderMode
 	});
 
 	localStore.subscribe((store) => {
-		$flamesBuilderStore = {
-			builder: $flamesBuilderStore.builder
-				.withNamedPalette(store.palette)
-				.withRendermode(store.renderMode),
+		const flames = $flamesStore.flames
+		flames.namedPalette = store.palette
+		flames.renderMode = store.renderMode
+
+		$flamesStore = {
+			flames: flames,
 			resetType: 'none'
 		};
 	});

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { canvasRef, flamesBuilderStore, flamesJsonMetadata } from '../stores';
+	import { canvasRef, flamesStore, flamesJsonMetadata } from '../stores';
 	import VariationSelector from './VariationSelector.svelte';
 	import ColorationOptions from './ColorationOptions.svelte';
 	import SpaceWarping from './SpaceWarping.svelte';
@@ -35,10 +35,12 @@
 			dEstimation = {minSigma: 0, maxSigma: 3}
 		}
 
-		flamesBuilderStore.update((builder) => ({
-			builder: builder.builder.withDensityEstimation(dEstimation),
-			resetType: 'none'
-		}))
+		flamesStore.update((value) => {
+			value.flames.densityEstimation = dEstimation,
+			value.resetType = 'none'
+
+			return value
+		})
 	}
 
 	function downloadImage() {
@@ -65,10 +67,11 @@
 		<span class="ml-12 p-1 text-white">Gamma correction</span>
 		<input
 			bind:value={gammaCorrection}
-			on:change={() => flamesBuilderStore.update(builder => ({
-				builder: builder.builder.withgammaCorrection(gammaCorrection),
-				resetType: 'none',
-			}))}
+			on:change={() => flamesStore.update(value => {
+				value.flames.gammaCorrection = gammaCorrection
+				value.resetType = 'none'
+				return value
+			})}
 			type="number"
 			min={minSigma + 1}
 			class="round-r-4 text-white bg-slate-900  w-16 pl-1 mt-4 border-slate-300 border-2 rounded"
@@ -78,10 +81,11 @@
 		<input
 			bind:checked={antialiased}
 			on:change={() =>
-				flamesBuilderStore.update((builder) => ({
-					builder: builder.builder.withSuperSampleRatio(antialiased),
-					resetType: 'none'
-				}))}
+				flamesStore.update((value) => {
+					value.flames.antialiasing = antialiased
+					value.resetType = 'none'
+					return value
+				})}
 			type="checkbox"
 			class="round-r-4 bg-slate-900 ml-12 p-1 mt-4 border-slate-300 border-2 rounded"
 		/>

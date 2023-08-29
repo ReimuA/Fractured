@@ -1,23 +1,26 @@
 <script lang="ts">
 	import { writable } from 'svelte/store';
-	import { flamesBuilderStore } from '../stores';
+	import { flamesStore } from '../stores';
 
 	let localStore = writable({
-		mirrorY: $flamesBuilderStore.builder.spaceWarp.mirrorY,
-		mirrorX: $flamesBuilderStore.builder.spaceWarp.mirrorX,
-		rotationalSymmetry: $flamesBuilderStore.builder.spaceWarp.rotationalSymmetry,
-		zoom: $flamesBuilderStore.builder.spaceWarp.zoom
+		mirrorY: $flamesStore.flames.spaceWarp.mirrorY,
+		mirrorX: $flamesStore.flames.spaceWarp.mirrorX,
+		rotationalSymmetry: $flamesStore.flames.spaceWarp.rotationalSymmetry,
+		zoom: $flamesStore.flames.spaceWarp.zoom
 	});
 
 	localStore.subscribe((store) => {
-		$flamesBuilderStore = {
-			resetType: 'soft',
-			builder: $flamesBuilderStore.builder.withSpaceWarp({
+		const flames = $flamesStore.flames
+		flames.spaceWarp = {
 				mirrorX: store.mirrorX,
 				mirrorY: store.mirrorY,
 				rotationalSymmetry: store.rotationalSymmetry,
 				zoom: store.zoom
-			})
+			}
+
+		$flamesStore = {
+			resetType: 'soft',
+			flames: flames,
 		};
 	});
 </script>

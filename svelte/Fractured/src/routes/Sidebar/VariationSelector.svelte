@@ -11,13 +11,10 @@
 	updateVariationPools();
 
 	function updateVariationPools() {
-		flamesBuilderStore.update((state) => {
-			return {
-				builder: state.builder.withVariations(
+		flamesBuilderStore.update((builder) => {
+			return builder.withVariations(
 					variations.filter((e) => e.selected).map((e) => e.variation.name)
-				),
-				resetType: 'full'
-			};
+				)
 		});
 	}
 </script>

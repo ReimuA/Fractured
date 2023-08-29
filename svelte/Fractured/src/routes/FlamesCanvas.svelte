@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import type { FlamesWorkerMessage } from './messageType';
-	import { canvasRef, flamesBuilderStore, flamesJsonMetadata } from './stores';
+	import { canvasRef, flamesBuilderStore, flamesJsonMetadata, flamesStore } from './stores';
 
 	let canvas: HTMLCanvasElement;
 	let syncWorker: Worker | undefined;
@@ -16,7 +16,7 @@
 		};
 		syncWorker.onerror = console.error;
 		syncWorker.onmessageerror = console.error;
-		const rawFlames = JSON.stringify($flamesBuilderStore.builder.build());
+		const rawFlames = JSON.stringify($flamesBuilderStore.build());
 		const initMsg: FlamesWorkerMessage = {
 			resetType: 'init',
 			rawFlames,
@@ -28,13 +28,9 @@
 	onMount(() => {
 		loadWorker();
 
-		flamesBuilderStore.subscribe((builder) => {
-			const flames = builder.resetType === "full" ? 
-				builder.builder.build() :
-				builder.builder.pureBuild()
-
-			const rawFlames = JSON.stringify(flames);
-			const msg: FlamesWorkerMessage = { rawFlames, resetType: builder.resetType };
+		flamesStore.subscribe((value) => {
+			const rawFlames = JSON.stringify(value.flames);
+			const msg: FlamesWorkerMessage = { rawFlames, resetType: value.resetType };
 			syncWorker?.postMessage(msg);
 		});
 
