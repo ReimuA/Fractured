@@ -16,7 +16,7 @@
 		};
 		syncWorker.onerror = console.error;
 		syncWorker.onmessageerror = console.error;
-		const rawFlames = JSON.stringify($flamesBuilderStore.build());
+		const rawFlames = JSON.stringify($flamesStore.flames);
 		const initMsg: FlamesWorkerMessage = {
 			resetType: 'init',
 			rawFlames,

@@ -124,7 +124,6 @@ function update(newFlames: Flames) {
 
 onmessage = ({ data }: MessageEvent<FlamesWorkerMessage>) => {
 	const flames = createFlamesFromJson(data.rawFlames);
-	console.log(flames.antialiasing);
 	switch (data.resetType) {
 		case 'init':
 			if (data.canvasContext) init(flames, data.canvasContext);
