@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import type { FlamesWorkerMessage } from './messageType';
-	import { canvasRef, flamesBuilderStore, flamesJsonMetadata, flamesStore } from './stores';
+	import { canvasRef, flamesBuilderStore, flamesStore } from './stores';
 
 	let canvas: HTMLCanvasElement;
 	let syncWorker: Worker | undefined;
@@ -11,9 +11,6 @@
 		const SyncWorker = await import('./flamesWorker?worker');
 
 		syncWorker = new SyncWorker.default();
-		syncWorker.onmessage = ({ data }) => {
-			$flamesJsonMetadata = data.flames;
-		};
 		syncWorker.onerror = console.error;
 		syncWorker.onmessageerror = console.error;
 		const rawFlames = JSON.stringify($flamesStore.flames);

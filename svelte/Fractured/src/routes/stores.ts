@@ -20,8 +20,4 @@ flamesBuilderStore.subscribe((builder) => {
 	flamesStore.set({flames, resetType: "full"})
 })
 
-
-export const flamesJsonMetadata = writable<string>('{}');
-
-
 export const canvasRef = writable<HTMLCanvasElement>();

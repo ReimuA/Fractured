@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { canvasRef, flamesStore, flamesJsonMetadata } from '../stores';
+	import { canvasRef, flamesStore } from '../stores';
 	import VariationSelector from './VariationSelector.svelte';
 	import ColorationOptions from './ColorationOptions.svelte';
 	import SpaceWarping from './SpaceWarping.svelte';
@@ -13,20 +13,25 @@
 	let minSigma = 0
 	let maxSigma = 3
 	// HTML ref
-	let metadataLink: HTMLAnchorElement | undefined;
 	let imageLink: HTMLAnchorElement | undefined;
+
+	let metadataHref = ''
+	let metadataName = 'flames.metadata.json'
 
 	// Canvas ref from FlamesCanvas.svelte
 	let flamesCanvas: HTMLCanvasElement | undefined;
 
 	canvasRef.subscribe((canvas) => (flamesCanvas = canvas));
 
-	flamesJsonMetadata.subscribe((metadata) => {
-		if (!metadataLink) return;
-		const blob = new Blob([metadata], { type: 'application/json' });
-		metadataLink.href = URL.createObjectURL(blob);
-		metadataLink.download = 'flames.metadata.json';
+	flamesStore.subscribe((value) => {
+		updateMetadataLink(value.flames)
 	});
+
+	function updateMetadataLink(obj: Object) {
+		const blob = new Blob([JSON.stringify(obj, null, 4)], { type: 'application/json' });
+		metadataHref = URL.createObjectURL(blob);
+		metadataName = 'flames.metadata.json';
+	}
 
 	function updateDensityEstimation() {
 		let dEstimation: DensityEstimation | null = null
@@ -58,7 +63,7 @@
 >
 	<p class="pt-12 pl-6 text-white">Download</p>
 	<nav class="pl-12 pt-2 text-l">
-		<a bind:this={metadataLink} class=" text-white block" href="#metadata">Metadata</a>
+		<a href={metadataHref} class=" text-white block" download={metadataName} >Metadata</a>
 		<button class="text-white block" on:click={() => downloadImage()}>Image</button>
 	</nav>
 
