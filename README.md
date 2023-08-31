@@ -4,14 +4,14 @@ A fractal flames repository.
 
 3 implementation exists : CUDA, node and svelte, with svelte being the most developed.
 
-## Cuda :
+## Cuda
 
 Used to create the fractal flames directly on the CPU.
 
-## Node :
+## Node
 
 CLI and tools to create flames.
 
-## Svelte :
+## Svelte
 
-UI and live rendering of flame.
+UI and live rendering of flames.
