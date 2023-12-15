@@ -6,7 +6,7 @@ A fractal flames repository.
 
 ## Cuda
 
-Used to create the fractal flames directly on the CPU.
+Used to create the fractal flames directly on the GPU.
 
 ## Node
 
