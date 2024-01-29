@@ -5,6 +5,7 @@ import {
 	defaultRenderMode,
 	type Flames
 } from '../lib/FlamesUtils/Flames';
+import aashader from '../lib/FlamesUtils/shaders/aa.comp.wgsl?raw'
 import { applyAA3x, applyNoAA } from '../lib/FlamesUtils/antialiasing';
 import { c01, type XY } from '../lib/FlamesUtils/mathu';
 import {
@@ -32,10 +33,52 @@ let renderData3x: RenderData | undefined;
 
 let canvasContent: Uint8ClampedArray | undefined;
 
-function updateCanvas(ctx: OffscreenCanvasRenderingContext2D) {
+
+let inputBuffer!: GPUBuffer
+let outputBuffer!: GPUBuffer
+let outputReadBuffer!: GPUBuffer
+
+let gammabuffer!: GPUBuffer
+let bindgroup!: GPUBindGroup
+let bindgroupLayout!: GPUBindGroupLayout
+let flamesBindgroup!: GPUBindGroup
+let flamesBindgroupLayout!: GPUBindGroupLayout
+let device: GPUDevice;
+let pipeline!: GPUComputePipeline
+let pipelineLayout!: GPUPipelineLayout
+
+
+async function frameWebGpu(buffer: Uint8ClampedArray, ctx: OffscreenCanvasRenderingContext2D) {
+	device.queue.writeBuffer(inputBuffer, 0, buffer);
+	device.queue.writeBuffer(gammabuffer, 0, new Float32Array([flames!.gammaCorrection]))
+	let encoder = device.createCommandEncoder({ label: 'Compute encoder' });
+
+	let pass = encoder.beginComputePass();
+
+	pass.setPipeline(pipeline);
+	pass.setBindGroup(0, bindgroup);
+	pass.setBindGroup(1, flamesBindgroup);
+	pass.dispatchWorkgroups(1920 / 8, 1080 / 8);
+	pass.end();
+
+	encoder.copyBufferToBuffer(outputBuffer, 0, outputReadBuffer, 0, outputReadBuffer.size);
+
+	device.queue.submit([encoder.finish()]);
+
+	await outputReadBuffer.mapAsync(GPUMapMode.READ);
+
+	const imageData = new Uint8ClampedArray(outputReadBuffer.getMappedRange());
+
+	const image = new ImageData(imageData, 1920, 1080);
+	ctx.putImageData(image, 0, 0);
+
+	outputReadBuffer.unmap();
+}
+
+async function updateCanvas(ctx: OffscreenCanvasRenderingContext2D) {
 	if (!renderData3x || !renderData || !canvasContent || !flames) return;
 
-	p = iterateRenderData(flames, renderData, renderData3x, p, rotation, 5000, 5000 * nbIteration++);
+	p = iterateRenderData(flames, renderData, renderData3x, p, rotation, 25000, 25000 * nbIteration++);
 	if (flames.spaceWarp.rotationalSymmetry > 1)
 		rotation = (rotation + (2 * Math.PI) / flames.spaceWarp.rotationalSymmetry) % (2 * Math.PI);
 
@@ -48,43 +91,115 @@ function updateCanvas(ctx: OffscreenCanvasRenderingContext2D) {
 		const minSigma = flames.densityEstimation.minSigma
 
 		const jpp = new Uint8ClampedArray(renderData.pixels.length)
-		
+
 		for (let i = 0; i < renderData.heatmap.length; i++) {
 			const pixelsIdx = i * 4
 			const max = Math.log10(renderData.heatmapMax / 100)
-			const current = Math.log10(renderData.heatmap[i]) 
-			const sigma = maxSigma - c01((current / max)) *  (maxSigma - minSigma)
-			/* jpp[pixelsIdx] = 255 * sigma / maxSigma
-			jpp[pixelsIdx + 1] = 255 * sigma / maxSigma
-			jpp[pixelsIdx + 3] = 255 */
+			const current = Math.log10(renderData.heatmap[i])
+			const sigma = maxSigma - c01((current / max)) * (maxSigma - minSigma)
+			/*  jpp[pixelsIdx] = 255 * sigma / maxSigma
+				jpp[pixelsIdx + 1] = 255 * sigma / maxSigma
+				jpp[pixelsIdx + 3] = 255 */
 			localBlur(pixelsIdx, flames.resolution, renderData.pixels, jpp, sigma)
 		}
 
 		pixelsBuffer = jpp
 	}
 
-	if (flames.antialiasing)
-		applyAA3x(
-			canvasResolution,
-			renderData3x.pixels,
-			canvasContent,
-			renderData3x.heatmap,
-			flames.renderMode !== defaultRenderMode,
-			flames.gammaCorrection
-		);
-	else
-		applyNoAA(canvasResolution, pixelsBuffer, renderData.heatmap, renderData.heatmapMax, canvasContent, flames.renderMode !== defaultRenderMode, flames.gammaCorrection);
+	let time = Date.now()
 
-	ctx.putImageData(new ImageData(canvasContent, canvasResolution.x, canvasResolution.y), 0, 0);
+	if (flames.antialiasing) {
+		await frameWebGpu(renderData3x.pixels, ctx)
+
+	} else {
+		applyNoAA(canvasResolution, pixelsBuffer, renderData.heatmap, renderData.heatmapMax, canvasContent, flames.renderMode !== defaultRenderMode, flames.gammaCorrection);
+		ctx.putImageData(new ImageData(canvasContent, canvasResolution.x, canvasResolution.y), 0, 0);
+
+	}
 }
 
-function init(newFlames: Flames, canvas: OffscreenCanvas) {
+async function init(newFlames: Flames, canvas: OffscreenCanvas) {
 	const ctx = canvas.getContext('2d');
 
 	if (ctx === null) {
 		console.error('Failure to initialize the flames worker due to invaldie canvas context');
 		return;
 	}
+
+	const adapter = await navigator.gpu.requestAdapter();
+	device = await adapter!.requestDevice();
+	bindgroupLayout = device.createBindGroupLayout({
+		entries: [
+			{
+				binding: 0,
+				visibility: GPUShaderStage.COMPUTE,
+				buffer: {
+					type: 'storage'
+				}
+			},
+			{
+				binding: 1,
+				visibility: GPUShaderStage.COMPUTE,
+				buffer: {
+					type: 'storage'
+				}
+			}
+		]
+	});
+
+	flamesBindgroupLayout = device.createBindGroupLayout({
+		entries: [
+			{
+				binding: 0,
+				visibility: GPUShaderStage.COMPUTE,
+				buffer: { type: 'uniform' }
+			}
+		]
+	})
+	inputBuffer = device.createBuffer({
+		size: 1920 * 1080 * 4 * 9,
+		usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
+	});
+
+	outputBuffer = device.createBuffer({
+		size: 1920 * 1080 * 4,
+		usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC
+	});
+
+	gammabuffer = device.createBuffer({
+		size: 4,
+		usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+	})
+
+	outputReadBuffer = device.createBuffer({
+		size: 1920 * 1080 * 4,
+		usage: GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST
+	});
+
+	bindgroup = device.createBindGroup({
+		layout: bindgroupLayout,
+		entries: [
+			{ binding: 0, resource: { buffer: inputBuffer } },
+			{ binding: 1, resource: { buffer: outputBuffer } }
+		]
+	});
+
+	flamesBindgroup = device.createBindGroup({
+		layout: flamesBindgroupLayout,
+		entries: [
+			{ binding: 0, resource: { buffer: gammabuffer } }
+		]
+	})
+
+	pipelineLayout = device.createPipelineLayout({ bindGroupLayouts: [bindgroupLayout, flamesBindgroupLayout] });
+
+	pipeline = device.createComputePipeline({
+		layout: pipelineLayout,
+		compute: {
+			module: device.createShaderModule({ code: aashader }),
+			entryPoint: 'main'
+		}
+	});
 
 	canvasResolution = { x: canvas.width, y: canvas.height };
 
@@ -95,9 +210,9 @@ function init(newFlames: Flames, canvas: OffscreenCanvas) {
 
 	requestAnimationFrame(flamesIteration);
 
-	function flamesIteration() {
+	async function flamesIteration() {
 		if (flames !== undefined && ctx) {
-			updateCanvas(ctx);
+			await updateCanvas(ctx);
 		}
 		setTimeout(() => requestAnimationFrame(flamesIteration), 1000 / 60);
 	}
@@ -122,11 +237,11 @@ function update(newFlames: Flames) {
 	flames = newFlames;
 }
 
-onmessage = ({ data }: MessageEvent<FlamesWorkerMessage>) => {
+onmessage = async ({ data }: MessageEvent<FlamesWorkerMessage>) => {
 	const flames = createFlamesFromJson(data.rawFlames);
 	switch (data.resetType) {
 		case 'init':
-			if (data.canvasContext) init(flames, data.canvasContext);
+			if (data.canvasContext) await init(flames, data.canvasContext);
 			break;
 		case 'full':
 			reset(flames);

@@ -114,6 +114,10 @@ export function applyAA3x(
 			fAlpha = c01(fAlpha);
 		}
 
-		gammaCorrection(canvasContent, idx, fc, 1, gammaCorrectionValue);
+		canvasContent[idx + 0] = fc.r;
+		canvasContent[idx + 1] = fc.g;
+		canvasContent[idx + 2] = fc.b;
+		canvasContent[idx + 3] = 255;
+	//	gammaCorrection(canvasContent, idx, fc, 1, gammaCorrectionValue);
 	}
 }
