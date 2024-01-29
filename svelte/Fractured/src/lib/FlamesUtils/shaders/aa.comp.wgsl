@@ -1,11 +1,7 @@
 @group(0) @binding(0) var<storage, read_write> input: array<u32>;
 @group(0) @binding(1) var<storage, read_write> output: array<u32>;
 
-struct FlamesParameters {
-    gamma: f32
-}
-
-@group(1) @binding(0) var<uniform> flames: FlamesParameters;
+@group(1) @binding(0) var<uniform> gamma: f32;
 
 @compute @workgroup_size(8, 8)fn main(
     @builtin(workgroup_id) workgroup_id: vec3<u32>,
@@ -44,10 +40,10 @@ struct FlamesParameters {
     var fres = vec4<f32>(res);
     fres /= 255.;
 
-    fres.w = clamp(0, 1, pow(fres.w, 1. / flames.gamma));
-    fres.z = clamp(0, 1, pow(fres.z, 1. / flames.gamma));
-    fres.y = clamp(0, 1, pow(fres.y, 1. / flames.gamma));
-    fres.x = clamp(0, 1, pow(fres.x, 1. / flames.gamma));
+    fres.w = clamp(0, 1, pow(fres.w, 1. / gamma));
+    fres.z = clamp(0, 1, pow(fres.z, 1. / gamma));
+    fres.y = clamp(0, 1, pow(fres.y, 1. / gamma));
+    fres.x = clamp(0, 1, pow(fres.x, 1. / gamma));
 
     fres *= 255.;
 
