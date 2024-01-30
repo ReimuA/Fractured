@@ -6,7 +6,7 @@ import {
 	type Flames
 } from '../lib/FlamesUtils/Flames';
 import aashader from '../lib/FlamesUtils/shaders/aa.comp.wgsl?raw'
-import { applyAA3x, applyNoAA } from '../lib/FlamesUtils/antialiasing';
+import { applyAA3x, applyNoAA, downsampleHeatmapCell3x } from '../lib/FlamesUtils/antialiasing';
 import { c01, type XY } from '../lib/FlamesUtils/mathu';
 import {
 	createRenderData,
@@ -34,11 +34,14 @@ let renderData3x: RenderData | undefined;
 let canvasContent: Uint8ClampedArray | undefined;
 
 
-let inputBuffer!: GPUBuffer
+let heatmapGPUBuffer!: GPUBuffer
+let pixelsGPUBuffer!: GPUBuffer
+let heatmapMaxBuffer!: GPUBuffer
 let outputBuffer!: GPUBuffer
 let outputReadBuffer!: GPUBuffer
 
 let gammabuffer!: GPUBuffer
+let logDensityBuffer!: GPUBuffer
 let bindgroup!: GPUBindGroup
 let bindgroupLayout!: GPUBindGroupLayout
 let flamesBindgroup!: GPUBindGroup
@@ -48,9 +51,12 @@ let pipeline!: GPUComputePipeline
 let pipelineLayout!: GPUPipelineLayout
 
 
-async function frameWebGpu(buffer: Uint8ClampedArray, ctx: OffscreenCanvasRenderingContext2D) {
-	device.queue.writeBuffer(inputBuffer, 0, buffer);
+async function frameWebGpu(renderData: RenderData, ctx: OffscreenCanvasRenderingContext2D) {
+	device.queue.writeBuffer(pixelsGPUBuffer, 0, renderData.pixels);
+	device.queue.writeBuffer(heatmapGPUBuffer, 0, new Float32Array(renderData.heatmap))
+	device.queue.writeBuffer(heatmapMaxBuffer, 0, new Float32Array([renderData.heatmapMax]))
 	device.queue.writeBuffer(gammabuffer, 0, new Float32Array([flames!.gammaCorrection]))
+	device.queue.writeBuffer(logDensityBuffer, 0, new Float32Array([Number(flames!.renderMode != defaultRenderMode)]))
 	let encoder = device.createCommandEncoder({ label: 'Compute encoder' });
 
 	let pass = encoder.beginComputePass();
@@ -79,6 +85,7 @@ async function updateCanvas(ctx: OffscreenCanvasRenderingContext2D) {
 	if (!renderData3x || !renderData || !canvasContent || !flames) return;
 
 	p = iterateRenderData(flames, renderData, renderData3x, p, rotation, 25000, 25000 * nbIteration++);
+
 	if (flames.spaceWarp.rotationalSymmetry > 1)
 		rotation = (rotation + (2 * Math.PI) / flames.spaceWarp.rotationalSymmetry) % (2 * Math.PI);
 
@@ -106,15 +113,13 @@ async function updateCanvas(ctx: OffscreenCanvasRenderingContext2D) {
 		pixelsBuffer = jpp
 	}
 
-	let time = Date.now()
-
 	if (flames.antialiasing) {
-		await frameWebGpu(renderData3x.pixels, ctx)
-
+		// applyAA3x(canvasResolution, renderData3x.heatmapMax, pixelsBuffer, canvasContent, renderData3x.heatmap, flames.renderMode !== defaultRenderMode, flames.gammaCorrection);
+		// ctx.putImageData(new ImageData(canvasContent, canvasResolution.x, canvasResolution.y), 0, 0);
+		await frameWebGpu(renderData3x, ctx)
 	} else {
 		applyNoAA(canvasResolution, pixelsBuffer, renderData.heatmap, renderData.heatmapMax, canvasContent, flames.renderMode !== defaultRenderMode, flames.gammaCorrection);
 		ctx.putImageData(new ImageData(canvasContent, canvasResolution.x, canvasResolution.y), 0, 0);
-
 	}
 }
 
@@ -143,6 +148,20 @@ async function init(newFlames: Flames, canvas: OffscreenCanvas) {
 				buffer: {
 					type: 'storage'
 				}
+			},
+			{
+				binding: 2,
+				visibility: GPUShaderStage.COMPUTE,
+				buffer: {
+					type: 'storage'
+				}
+			},
+			{
+				binding: 3,
+				visibility: GPUShaderStage.COMPUTE,
+				buffer: {
+					type: 'uniform'
+				}
 			}
 		]
 	});
@@ -153,11 +172,26 @@ async function init(newFlames: Flames, canvas: OffscreenCanvas) {
 				binding: 0,
 				visibility: GPUShaderStage.COMPUTE,
 				buffer: { type: 'uniform' }
+			},
+			{
+				binding: 1,
+				visibility: GPUShaderStage.COMPUTE,
+				buffer: { type: 'uniform' }
 			}
 		]
 	})
-	inputBuffer = device.createBuffer({
+	pixelsGPUBuffer = device.createBuffer({
 		size: 1920 * 1080 * 4 * 9,
+		usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
+	});
+
+	heatmapMaxBuffer = device.createBuffer({
+		size: 4,
+		usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+	});
+
+	heatmapGPUBuffer = device.createBuffer({
+		size: 1920 * 1080 * 9 * 4,
 		usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
 	});
 
@@ -171,6 +205,11 @@ async function init(newFlames: Flames, canvas: OffscreenCanvas) {
 		usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
 	})
 
+	logDensityBuffer = device.createBuffer({
+		size: 4,
+		usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+	})
+
 	outputReadBuffer = device.createBuffer({
 		size: 1920 * 1080 * 4,
 		usage: GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST
@@ -179,15 +218,18 @@ async function init(newFlames: Flames, canvas: OffscreenCanvas) {
 	bindgroup = device.createBindGroup({
 		layout: bindgroupLayout,
 		entries: [
-			{ binding: 0, resource: { buffer: inputBuffer } },
-			{ binding: 1, resource: { buffer: outputBuffer } }
+			{ binding: 0, resource: { buffer: heatmapGPUBuffer } },
+			{ binding: 1, resource: { buffer: pixelsGPUBuffer } },
+			{ binding: 2, resource: { buffer: outputBuffer } },
+			{ binding: 3, resource: { buffer: heatmapMaxBuffer } },
 		]
 	});
 
 	flamesBindgroup = device.createBindGroup({
 		layout: flamesBindgroupLayout,
 		entries: [
-			{ binding: 0, resource: { buffer: gammabuffer } }
+			{ binding: 0, resource: { buffer: gammabuffer } },
+			{ binding: 1, resource: { buffer: logDensityBuffer } },
 		]
 	})
 

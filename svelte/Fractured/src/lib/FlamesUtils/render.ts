@@ -69,14 +69,33 @@ function updateRenderdata(
 	antialiasing: boolean
 ) {
 	const colorPaletteIdx = currentComponent.colorPaletteIndex
-
+	const heatmap = renderData.heatmap
 	const f = antialiasing ? 3 : 1;
 	const idx = pixel.y * flames.resolution.x * f + pixel.x;
 	renderData.paletteAccumulator[idx] = (renderData.paletteAccumulator[idx] + colorPaletteIdx) / 2;
-	renderData.heatmap[idx]++;
+	heatmap[idx]++;
 
-	if (renderData.heatmapMax < renderData.heatmap[idx])
-		renderData.heatmapMax = renderData.heatmap[idx];
+	let bucketValue = heatmap[idx]
+
+	if (antialiasing) {
+		const bucketX = (pixel.x - pixel.x % 3) / 3
+		const bucketY = (pixel.y - pixel.y % 3) / 3
+		let hidx = 3 * bucketX + 3 * bucketY * flames.resolution.x * 3
+
+		bucketValue = (heatmap[hidx] +
+			heatmap[hidx + 1] +
+			heatmap[hidx + 2] +
+			heatmap[hidx + flames.resolution.x * 3] +
+			heatmap[hidx + flames.resolution.x * 3 + 1] +
+			heatmap[hidx + flames.resolution.x * 3 + 2] +
+			heatmap[hidx + flames.resolution.x * 3 * 2] +
+			heatmap[hidx + flames.resolution.x * 3 * 2 + 1] +
+			heatmap[hidx + flames.resolution.x * 3 * 2 + 2]) /
+		9
+	}
+
+	if (renderData.heatmapMax < bucketValue)
+		renderData.heatmapMax = bucketValue;
 
 	const colorIdx = idx * 3;
 	const color = colorFromPalette(flames.namedPalette.palette, colorPaletteIdx);

@@ -24,7 +24,7 @@ function gammaCorrection(canvasContent: Uint8ClampedArray, idx: number, c: Color
 	canvasContent[idx + 3] = 255;
 }
 
-const downsampleHeatmapCell3x = (idx: number, linesize: number, heatmap: Uint32Array) =>
+export const downsampleHeatmapCell3x = (idx: number, linesize: number, heatmap: Uint32Array) =>
 	(heatmap[idx] +
 		heatmap[idx + 1] +
 		heatmap[idx + 2] +
@@ -64,6 +64,7 @@ export function applyNoAA(
 
 export function applyAA3x(
 	resolution: XY,
+	heatmapMax: number,
 	supersample: Uint8ClampedArray,
 	canvasContent: Uint8ClampedArray,
 	heatmap: Uint32Array,
@@ -71,18 +72,6 @@ export function applyAA3x(
 	gammaCorrectionValue: number
 ) {
 	const ssResolution = { x: resolution.x * 3, y: resolution.y * 3 };
-	let max = 0;
-	let logMax = 0;
-
-	if (logScale) {
-		for (let i = 0; i < resolution.x * resolution.y; i++) {
-			const hidx = 3 * i + Math.floor(i / resolution.x) * ssResolution.x * 2;
-			const cellSample = downsampleHeatmapCell3x(hidx, ssResolution.x, heatmap);
-			if (cellSample > max) max = cellSample;
-		}
-
-		logMax = Math.log10(max);
-	}
 
 	for (let i = 0; i < resolution.x * resolution.y; i++) {
 		// To keep track of the super sampled index we simply add twice the line lenght to the current index
@@ -108,16 +97,16 @@ export function applyAA3x(
 
 		let fAlpha = 1;
 		if (logScale) {
+			let logMax = Math.log10(heatmapMax);
 			const hidx = 3 * i + Math.floor(i / resolution.x) * ssResolution.x * 2;
 			const alpha = downsampleHeatmapCell3x(hidx, ssResolution.x, heatmap);
+		
 			fAlpha = alpha == 0 ? 0 : Math.log10(alpha * 10) / logMax;
 			fAlpha = c01(fAlpha);
 		}
 
-		canvasContent[idx + 0] = fc.r;
-		canvasContent[idx + 1] = fc.g;
-		canvasContent[idx + 2] = fc.b;
-		canvasContent[idx + 3] = 255;
-	//	gammaCorrection(canvasContent, idx, fc, 1, gammaCorrectionValue);
+		
+
+		gammaCorrection(canvasContent, idx, fc, 1, gammaCorrectionValue);
 	}
 }
