@@ -258,6 +258,13 @@ export const fanVariation: Variation = {
 	}
 };
 
+export const squareVariation: Variation = {
+	name: 'Square',
+	function: (p: XY, transform: IFSTransform) => {
+		return {x: _psi() - 0.5, y: _psi() - 0.5}
+	}
+}
+
 export const allVariations: Variation[] = [
 	linearVariation,
 	sinusoidalVariation,
@@ -280,7 +287,8 @@ export const allVariations: Variation[] = [
 	exponentialVariation,
 	powerVariation,
 	// TODO: Variation 20 Cosine
-	fanVariation
+	fanVariation,
+	squareVariation
 ];
 
 export const getVariationFromname = (name: string) => allVariations.find((e) => e.name == name);
