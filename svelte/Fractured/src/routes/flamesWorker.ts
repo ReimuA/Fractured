@@ -15,6 +15,7 @@ import {
 	type RenderData
 } from '../lib/FlamesUtils/render';
 import type { FlamesWorkerMessage } from './messageType';
+import { createRenderDataBinding, type RenderDataBinding } from '$lib/FlamesUtils/webgpu/renderdata';
 
 let flames: Flames | undefined;
 let p: XY = { x: 0, y: 0 };
@@ -33,17 +34,12 @@ let renderData3x: RenderData | undefined;
 
 let canvasContent: Uint8ClampedArray | undefined;
 
-
-let heatmapGPUBuffer!: GPUBuffer
-let pixelsGPUBuffer!: GPUBuffer
-let heatmapMaxBuffer!: GPUBuffer
-let outputBuffer!: GPUBuffer
 let outputReadBuffer!: GPUBuffer
+
+let rDataBinding!: RenderDataBinding
 
 let gammabuffer!: GPUBuffer
 let logDensityBuffer!: GPUBuffer
-let bindgroup!: GPUBindGroup
-let bindgroupLayout!: GPUBindGroupLayout
 let flamesBindgroup!: GPUBindGroup
 let flamesBindgroupLayout!: GPUBindGroupLayout
 let device: GPUDevice;
@@ -52,9 +48,9 @@ let pipelineLayout!: GPUPipelineLayout
 
 
 async function frameWebGpu(renderData: RenderData, ctx: OffscreenCanvasRenderingContext2D) {
-	device.queue.writeBuffer(pixelsGPUBuffer, 0, renderData.pixels);
-	device.queue.writeBuffer(heatmapGPUBuffer, 0, new Float32Array(renderData.heatmap))
-	device.queue.writeBuffer(heatmapMaxBuffer, 0, new Float32Array([renderData.heatmapMax]))
+	device.queue.writeBuffer(rDataBinding.buffers.pixels, 0, renderData.pixels);
+	device.queue.writeBuffer(rDataBinding.buffers.heatmap, 0, new Float32Array(renderData.heatmap))
+	device.queue.writeBuffer(rDataBinding.buffers.heatmapMax, 0, new Float32Array([renderData.heatmapMax]))
 	device.queue.writeBuffer(gammabuffer, 0, new Float32Array([flames!.gammaCorrection]))
 	device.queue.writeBuffer(logDensityBuffer, 0, new Float32Array([Number(flames!.renderMode != defaultRenderMode)]))
 	let encoder = device.createCommandEncoder({ label: 'Compute encoder' });
@@ -62,12 +58,12 @@ async function frameWebGpu(renderData: RenderData, ctx: OffscreenCanvasRendering
 	let pass = encoder.beginComputePass();
 
 	pass.setPipeline(pipeline);
-	pass.setBindGroup(0, bindgroup);
+	pass.setBindGroup(0, rDataBinding.bindgroup);
 	pass.setBindGroup(1, flamesBindgroup);
 	pass.dispatchWorkgroups(1920 / 8, 1080 / 8);
 	pass.end();
 
-	encoder.copyBufferToBuffer(outputBuffer, 0, outputReadBuffer, 0, outputReadBuffer.size);
+	encoder.copyBufferToBuffer(rDataBinding.buffers.finalImage, 0, outputReadBuffer, 0, outputReadBuffer.size);
 
 	device.queue.submit([encoder.finish()]);
 
@@ -133,38 +129,7 @@ async function init(newFlames: Flames, canvas: OffscreenCanvas) {
 
 	const adapter = await navigator.gpu.requestAdapter();
 	device = await adapter!.requestDevice();
-	bindgroupLayout = device.createBindGroupLayout({
-		entries: [
-			{
-				binding: 0,
-				visibility: GPUShaderStage.COMPUTE,
-				buffer: {
-					type: 'storage'
-				}
-			},
-			{
-				binding: 1,
-				visibility: GPUShaderStage.COMPUTE,
-				buffer: {
-					type: 'storage'
-				}
-			},
-			{
-				binding: 2,
-				visibility: GPUShaderStage.COMPUTE,
-				buffer: {
-					type: 'storage'
-				}
-			},
-			{
-				binding: 3,
-				visibility: GPUShaderStage.COMPUTE,
-				buffer: {
-					type: 'uniform'
-				}
-			}
-		]
-	});
+	rDataBinding = createRenderDataBinding(device)
 
 	flamesBindgroupLayout = device.createBindGroupLayout({
 		entries: [
@@ -180,25 +145,6 @@ async function init(newFlames: Flames, canvas: OffscreenCanvas) {
 			}
 		]
 	})
-	pixelsGPUBuffer = device.createBuffer({
-		size: 1920 * 1080 * 4 * 9,
-		usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
-	});
-
-	heatmapMaxBuffer = device.createBuffer({
-		size: 4,
-		usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
-	});
-
-	heatmapGPUBuffer = device.createBuffer({
-		size: 1920 * 1080 * 9 * 4,
-		usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
-	});
-
-	outputBuffer = device.createBuffer({
-		size: 1920 * 1080 * 4,
-		usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC
-	});
 
 	gammabuffer = device.createBuffer({
 		size: 4,
@@ -215,16 +161,6 @@ async function init(newFlames: Flames, canvas: OffscreenCanvas) {
 		usage: GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST
 	});
 
-	bindgroup = device.createBindGroup({
-		layout: bindgroupLayout,
-		entries: [
-			{ binding: 0, resource: { buffer: heatmapGPUBuffer } },
-			{ binding: 1, resource: { buffer: pixelsGPUBuffer } },
-			{ binding: 2, resource: { buffer: outputBuffer } },
-			{ binding: 3, resource: { buffer: heatmapMaxBuffer } },
-		]
-	});
-
 	flamesBindgroup = device.createBindGroup({
 		layout: flamesBindgroupLayout,
 		entries: [
@@ -233,7 +169,7 @@ async function init(newFlames: Flames, canvas: OffscreenCanvas) {
 		]
 	})
 
-	pipelineLayout = device.createPipelineLayout({ bindGroupLayouts: [bindgroupLayout, flamesBindgroupLayout] });
+	pipelineLayout = device.createPipelineLayout({ bindGroupLayouts: [rDataBinding.bindgroupLayout, flamesBindgroupLayout] });
 
 	pipeline = device.createComputePipeline({
 		layout: pipelineLayout,
