@@ -123,7 +123,6 @@ async function updateCanvas(ctx: OffscreenCanvasRenderingContext2D) {
 			localBlur(pixelsIdx, flames.resolution, renderData.pixels, jpp, sigma)
 		}
 
-		console.log("quoicoubeh")
 		pixelsBuffer = jpp
 	}
 
