@@ -20,11 +20,11 @@ const createBindGroupLayout = (device: GPUDevice) => device.createBindGroupLayou
             visibility: GPUShaderStage.COMPUTE,
             buffer: { type: 'uniform' }
         },
-       /*  {
-            binding: 1,
+        {
+            binding: 2,
             visibility: GPUShaderStage.COMPUTE,
             buffer: { type: 'uniform' }
-        } */
+        } 
     ]
 })
 
@@ -52,7 +52,7 @@ export function createFlamesBinding(device: GPUDevice): FlamesBinding {
 		entries: [
 			{ binding: 0, resource: { buffer: gamma } },
 			{ binding: 1, resource: { buffer: logDensity } },
-			// { binding: 2, resource: { buffer: densityEstimation } },
+			{ binding: 2, resource: { buffer: densityEstimation } },
 		]
 	})
 

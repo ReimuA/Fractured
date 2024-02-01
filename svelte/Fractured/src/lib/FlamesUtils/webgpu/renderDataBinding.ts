@@ -6,6 +6,7 @@ export type RenderDataBinding = {
         heatmap: GPUBuffer
         heatmapMax: GPUBuffer
         finalImage: GPUBuffer
+        blurredImage: GPUBuffer
     }  
 }
 
@@ -38,6 +39,13 @@ const createBindGroupLayout = (device: GPUDevice) => device.createBindGroupLayou
             buffer: {
                 type: 'uniform'
             }
+        },
+        {
+            binding: 4,
+            visibility: GPUShaderStage.COMPUTE,
+            buffer: {
+                type: 'storage'
+            }
         }
     ]
 });
@@ -62,6 +70,11 @@ export function createRenderDataBinding(device: GPUDevice): RenderDataBinding {
 
 	const finalImage = device.createBuffer({
 		size: 1920 * 1080 * 4,
+		usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST
+	});
+
+    const blurredImage = device.createBuffer({
+		size: 1920 * 1080 * 4,
 		usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC
 	});
 
@@ -72,6 +85,7 @@ export function createRenderDataBinding(device: GPUDevice): RenderDataBinding {
 			{ binding: 1, resource: { buffer: pixels } },
 			{ binding: 2, resource: { buffer: finalImage } },
 			{ binding: 3, resource: { buffer: heatmapMax } },
+			{ binding: 4, resource: { buffer: blurredImage } },
 		]
 	});
 
@@ -82,7 +96,8 @@ export function createRenderDataBinding(device: GPUDevice): RenderDataBinding {
             pixels,
             heatmap,
             heatmapMax,
-            finalImage
+            finalImage,
+            blurredImage
         }
     }
 }

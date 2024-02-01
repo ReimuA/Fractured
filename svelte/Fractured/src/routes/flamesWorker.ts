@@ -6,6 +6,7 @@ import {
 	type Flames
 } from '../lib/FlamesUtils/Flames';
 import aashader from '../lib/FlamesUtils/shaders/aa.comp.wgsl?raw'
+import blurshader from '../lib/FlamesUtils/shaders/blur.comp.wgsl?raw'
 import { applyAA3x, applyNoAA, downsampleHeatmapCell3x } from '../lib/FlamesUtils/antialiasing';
 import { c01, type XY } from '../lib/FlamesUtils/mathu';
 import {
@@ -42,6 +43,7 @@ let rDataBinding!: RenderDataBinding
 let flamesBinding!: FlamesBinding
 
 let device: GPUDevice;
+let blurPipeline!: GPUComputePipeline
 let pipeline!: GPUComputePipeline
 let pipelineLayout!: GPUPipelineLayout
 
@@ -52,27 +54,43 @@ async function frameWebGpu(renderData: RenderData, ctx: OffscreenCanvasRendering
 	device.queue.writeBuffer(rDataBinding.buffers.heatmapMax, 0, new Float32Array([renderData.heatmapMax]))
 	device.queue.writeBuffer(flamesBinding.buffers.gamma, 0, new Float32Array([flames!.gammaCorrection]))
 	device.queue.writeBuffer(flamesBinding.buffers.logDensity, 0, new Float32Array([Number(flames!.renderMode != defaultRenderMode)]))
+	console.log(flames?.densityEstimation)
+	device.queue.writeBuffer(flamesBinding.buffers.densityEstimation, 0, new Float32Array([flames?.densityEstimation ? 1 : 0, flames?.densityEstimation?.minSigma ?? 0, flames?.densityEstimation?.maxSigma ?? 0]))
 	let encoder = device.createCommandEncoder({ label: 'Compute encoder' });
 
+	const passbegin = Date.now();
 	let pass = encoder.beginComputePass();
 
 	pass.setPipeline(pipeline);
 	pass.setBindGroup(0, rDataBinding.bindgroup);
 	pass.setBindGroup(1, flamesBinding.bindgroup);
 	pass.dispatchWorkgroups(1920 / 8, 1080 / 8);
+
+	if (flames?.densityEstimation) {
+		pass.setPipeline(blurPipeline);
+		pass.setBindGroup(0, rDataBinding.bindgroup);
+		pass.setBindGroup(1, flamesBinding.bindgroup);
+		pass.dispatchWorkgroups(1920 / 8, 1080 / 8);
+	}
+
 	pass.end();
 
-	encoder.copyBufferToBuffer(rDataBinding.buffers.finalImage, 0, outputReadBuffer, 0, outputReadBuffer.size);
+	if (flames?.densityEstimation) {
+		encoder.copyBufferToBuffer(rDataBinding.buffers.blurredImage, 0, outputReadBuffer, 0, outputReadBuffer.size);
+	}
+	else {
+		encoder.copyBufferToBuffer(rDataBinding.buffers.finalImage, 0, outputReadBuffer, 0, outputReadBuffer.size);
+	}
 
 	device.queue.submit([encoder.finish()]);
 
 	await outputReadBuffer.mapAsync(GPUMapMode.READ);
+	console.log("Pass time : " + (Date.now() - passbegin))
 
 	const imageData = new Uint8ClampedArray(outputReadBuffer.getMappedRange());
 
 	const image = new ImageData(imageData, 1920, 1080);
 	ctx.putImageData(image, 0, 0);
-
 	outputReadBuffer.unmap();
 }
 
@@ -105,6 +123,7 @@ async function updateCanvas(ctx: OffscreenCanvasRenderingContext2D) {
 			localBlur(pixelsIdx, flames.resolution, renderData.pixels, jpp, sigma)
 		}
 
+		console.log("quoicoubeh")
 		pixelsBuffer = jpp
 	}
 
@@ -131,7 +150,7 @@ async function init(newFlames: Flames, canvas: OffscreenCanvas) {
 
 	rDataBinding = createRenderDataBinding(device)
 	flamesBinding = createFlamesBinding(device)
-	
+
 
 	outputReadBuffer = device.createBuffer({
 		size: 1920 * 1080 * 4,
@@ -145,6 +164,14 @@ async function init(newFlames: Flames, canvas: OffscreenCanvas) {
 		layout: pipelineLayout,
 		compute: {
 			module: device.createShaderModule({ code: aashader }),
+			entryPoint: 'main'
+		}
+	});
+
+	blurPipeline = device.createComputePipeline({
+		layout: pipelineLayout,
+		compute: {
+			module: device.createShaderModule({ code: blurshader }),
 			entryPoint: 'main'
 		}
 	});
