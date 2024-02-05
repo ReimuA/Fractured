@@ -5,6 +5,7 @@ export type FlamesBinding = {
         gamma: GPUBuffer // Boolean
         logDensity: GPUBuffer // Boolean
         densityEstimation: GPUBuffer // Boolean - u32 (min sigma) - u32 (max sigma)
+        antialiasing: GPUBuffer // Boolean
     }  
 }
 
@@ -22,6 +23,11 @@ const createBindGroupLayout = (device: GPUDevice) => device.createBindGroupLayou
         },
         {
             binding: 2,
+            visibility: GPUShaderStage.COMPUTE,
+            buffer: { type: 'uniform' }
+        },
+        {
+            binding: 3,
             visibility: GPUShaderStage.COMPUTE,
             buffer: { type: 'uniform' }
         } 
@@ -46,6 +52,11 @@ export function createFlamesBinding(device: GPUDevice): FlamesBinding {
 		usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
 	})
 
+    const antialiasing = device.createBuffer({
+		size: 4,
+		usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+	})
+
     
 	const bindgroup = device.createBindGroup({
 		layout: bindgroupLayout,
@@ -53,6 +64,7 @@ export function createFlamesBinding(device: GPUDevice): FlamesBinding {
 			{ binding: 0, resource: { buffer: gamma } },
 			{ binding: 1, resource: { buffer: logDensity } },
 			{ binding: 2, resource: { buffer: densityEstimation } },
+			{ binding: 3, resource: { buffer: antialiasing } },
 		]
 	})
 
@@ -62,7 +74,8 @@ export function createFlamesBinding(device: GPUDevice): FlamesBinding {
         buffers: {
             gamma,
             logDensity,
-            densityEstimation
+            densityEstimation,
+            antialiasing
         }
     }
 }

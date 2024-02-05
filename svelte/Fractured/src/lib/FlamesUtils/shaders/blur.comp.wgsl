@@ -13,6 +13,7 @@ struct DensityEstimation {
 @group(1) @binding(0) var<uniform> gamma: f32;
 @group(1) @binding(1) var<uniform> logDensity: u32;
 @group(1) @binding(2) var<uniform> densityEstimation: DensityEstimation;
+@group(1) @binding(3) var<uniform> antialiasing: u32;
 
 var<private> gaussKern = array<f32, 729>();
 
@@ -76,7 +77,7 @@ fn blur(x: i32, y: i32, len: i32) {
 fn downsampleHeatmap(x: u32, y: u32, rowsize: u32) -> u32 {
     let cIdx = 3 * x + 3 * y * rowsize;
 
-    return (pixels[cIdx] + pixels[cIdx + 1] + pixels[cIdx + 2] + pixels[cIdx + rowsize + 0] + pixels[cIdx + rowsize + 1] + pixels[cIdx + rowsize + 2] + pixels[cIdx + 2 * rowsize + 0] + pixels[cIdx + 2 * rowsize + 1] + pixels[cIdx + 2 * rowsize + 2]) / 9;
+    return (heatmap[cIdx] + heatmap[cIdx + 1] + heatmap[cIdx + 2] + heatmap[cIdx + rowsize + 0] + heatmap[cIdx + rowsize + 1] + heatmap[cIdx + rowsize + 2] + heatmap[cIdx + 2 * rowsize + 0] + heatmap[cIdx + 2 * rowsize + 1] + heatmap[cIdx + 2 * rowsize + 2]) / 9;
 }
 
 @compute @workgroup_size(8, 8)
@@ -90,7 +91,11 @@ fn main(
     
     let x = global_invocation_id.x;
     let y = global_invocation_id.y;
-    let hvalue = downsampleHeatmap(x, y, 1920u * 3u);
+    var hvalue = heatmap[x + y * 1920u];
+    if antialiasing != 0 {
+        hvalue = downsampleHeatmap(x, y, 1920u * 3u);
+    }
+    
     let logmax = log2(heatmapMax) / log2(10.);
     let logcurrent = log2(f32(hvalue + 1)) / log2(10.);
     let sigma = mix(densityEstimation.minsigma, densityEstimation.maxsigma, f32(hvalue) / heatmapMax);

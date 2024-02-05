@@ -7,8 +7,9 @@ import {
 } from '../lib/FlamesUtils/Flames';
 import aashader from '../lib/FlamesUtils/shaders/aa.comp.wgsl?raw'
 import blurshader from '../lib/FlamesUtils/shaders/blur.comp.wgsl?raw'
+import gammaShader from '../lib/FlamesUtils/shaders/gamma.comp.wgsl?raw'
 import { applyAA3x, applyNoAA, downsampleHeatmapCell3x } from '../lib/FlamesUtils/antialiasing';
-import { c01, type XY } from '../lib/FlamesUtils/mathu';
+import type { XY } from '../lib/FlamesUtils/mathu';
 import {
 	createRenderData,
 	iterateRenderData,
@@ -19,6 +20,7 @@ import type { FlamesWorkerMessage } from './messageType';
 import { createRenderDataBinding, type RenderDataBinding } from '$lib/FlamesUtils/webgpu/renderDataBinding';
 import { dev } from '$app/environment';
 import { createFlamesBinding, type FlamesBinding } from '$lib/FlamesUtils/webgpu/flamesbinding';
+import { updateGPUBuffer } from '$lib/FlamesUtils/webgpu/renderpass';
 
 let flames: Flames | undefined;
 let p: XY = { x: 0, y: 0 };
@@ -44,43 +46,40 @@ let flamesBinding!: FlamesBinding
 
 let device: GPUDevice;
 let blurPipeline!: GPUComputePipeline
-let pipeline!: GPUComputePipeline
+let gammaPipeline!: GPUComputePipeline
+let aaPipeline!: GPUComputePipeline
 let pipelineLayout!: GPUPipelineLayout
 
 
+function addPipeline(pass: GPUComputePassEncoder, pipeline: GPUComputePipeline) {
+	pass.setPipeline(pipeline);
+	pass.setBindGroup(0, rDataBinding.bindgroup);
+	pass.setBindGroup(1, flamesBinding.bindgroup);
+	pass.dispatchWorkgroups(1920 / 8, 1080 / 8);
+}
+
 async function frameWebGpu(renderData: RenderData, ctx: OffscreenCanvasRenderingContext2D) {
-	device.queue.writeBuffer(rDataBinding.buffers.pixels, 0, renderData.pixels);
-	device.queue.writeBuffer(rDataBinding.buffers.heatmap, 0, new Float32Array(renderData.heatmap))
-	device.queue.writeBuffer(rDataBinding.buffers.heatmapMax, 0, new Float32Array([renderData.heatmapMax]))
-	device.queue.writeBuffer(flamesBinding.buffers.gamma, 0, new Float32Array([flames!.gammaCorrection]))
-	device.queue.writeBuffer(flamesBinding.buffers.logDensity, 0, new Float32Array([Number(flames!.renderMode != defaultRenderMode)]))
-	console.log(flames?.densityEstimation)
-	device.queue.writeBuffer(flamesBinding.buffers.densityEstimation, 0, new Float32Array([flames?.densityEstimation ? 1 : 0, flames?.densityEstimation?.minSigma ?? 0, flames?.densityEstimation?.maxSigma ?? 0]))
+	updateGPUBuffer(device, renderData, flames!, rDataBinding, flamesBinding)
+	
+	let outputbuffer = rDataBinding.buffers.finalImage
 	let encoder = device.createCommandEncoder({ label: 'Compute encoder' });
 
 	const passbegin = Date.now();
 	let pass = encoder.beginComputePass();
 
-	pass.setPipeline(pipeline);
-	pass.setBindGroup(0, rDataBinding.bindgroup);
-	pass.setBindGroup(1, flamesBinding.bindgroup);
-	pass.dispatchWorkgroups(1920 / 8, 1080 / 8);
+	if (flames?.antialiasing)
+		addPipeline(pass, aaPipeline)
+	else 
+		addPipeline(pass, gammaPipeline)
 
 	if (flames?.densityEstimation) {
-		pass.setPipeline(blurPipeline);
-		pass.setBindGroup(0, rDataBinding.bindgroup);
-		pass.setBindGroup(1, flamesBinding.bindgroup);
-		pass.dispatchWorkgroups(1920 / 8, 1080 / 8);
+		addPipeline(pass, blurPipeline)
+		outputbuffer = rDataBinding.buffers.blurredImage
 	}
 
 	pass.end();
 
-	if (flames?.densityEstimation) {
-		encoder.copyBufferToBuffer(rDataBinding.buffers.blurredImage, 0, outputReadBuffer, 0, outputReadBuffer.size);
-	}
-	else {
-		encoder.copyBufferToBuffer(rDataBinding.buffers.finalImage, 0, outputReadBuffer, 0, outputReadBuffer.size);
-	}
+	encoder.copyBufferToBuffer(outputbuffer, 0, outputReadBuffer, 0, outputReadBuffer.size);
 
 	device.queue.submit([encoder.finish()]);
 
@@ -103,37 +102,9 @@ async function updateCanvas(ctx: OffscreenCanvasRenderingContext2D) {
 		rotation = (rotation + (2 * Math.PI) / flames.spaceWarp.rotationalSymmetry) % (2 * Math.PI);
 
 	updateFlamesColor(flames, flames.antialiasing ? renderData3x : renderData);
-
-	let pixelsBuffer = flames.antialiasing ? renderData3x.pixels : renderData.pixels
-
-	if (flames.densityEstimation && !flames.antialiasing) {
-		const maxSigma = flames.densityEstimation.maxSigma
-		const minSigma = flames.densityEstimation.minSigma
-
-		const jpp = new Uint8ClampedArray(renderData.pixels.length)
-
-		for (let i = 0; i < renderData.heatmap.length; i++) {
-			const pixelsIdx = i * 4
-			const max = Math.log10(renderData.heatmapMax / 100)
-			const current = Math.log10(renderData.heatmap[i])
-			const sigma = maxSigma - c01((current / max)) * (maxSigma - minSigma)
-			/*  jpp[pixelsIdx] = 255 * sigma / maxSigma
-				jpp[pixelsIdx + 1] = 255 * sigma / maxSigma
-				jpp[pixelsIdx + 3] = 255 */
-			localBlur(pixelsIdx, flames.resolution, renderData.pixels, jpp, sigma)
-		}
-
-		pixelsBuffer = jpp
-	}
-
-	if (flames.antialiasing) {
-		// applyAA3x(canvasResolution, renderData3x.heatmapMax, pixelsBuffer, canvasContent, renderData3x.heatmap, flames.renderMode !== defaultRenderMode, flames.gammaCorrection);
-		// ctx.putImageData(new ImageData(canvasContent, canvasResolution.x, canvasResolution.y), 0, 0);
-		await frameWebGpu(renderData3x, ctx)
-	} else {
-		applyNoAA(canvasResolution, pixelsBuffer, renderData.heatmap, renderData.heatmapMax, canvasContent, flames.renderMode !== defaultRenderMode, flames.gammaCorrection);
-		ctx.putImageData(new ImageData(canvasContent, canvasResolution.x, canvasResolution.y), 0, 0);
-	}
+	
+	let rData = flames.antialiasing ? renderData3x : renderData;
+	await frameWebGpu(rData, ctx)
 }
 
 async function init(newFlames: Flames, canvas: OffscreenCanvas) {
@@ -159,13 +130,21 @@ async function init(newFlames: Flames, canvas: OffscreenCanvas) {
 
 	pipelineLayout = device.createPipelineLayout({ bindGroupLayouts: [rDataBinding.bindgroupLayout, flamesBinding.bindgroupLayout] });
 
-	pipeline = device.createComputePipeline({
+	aaPipeline = device.createComputePipeline({
 		layout: pipelineLayout,
 		compute: {
 			module: device.createShaderModule({ code: aashader }),
 			entryPoint: 'main'
 		}
 	});
+
+	gammaPipeline = device.createComputePipeline({
+		layout: pipelineLayout,
+		compute: {
+			module: device.createShaderModule({ code: gammaShader }),
+			entryPoint: 'main'
+		}
+	})
 
 	blurPipeline = device.createComputePipeline({
 		layout: pipelineLayout,

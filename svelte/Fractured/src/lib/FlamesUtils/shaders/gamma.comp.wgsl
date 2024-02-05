@@ -6,40 +6,6 @@
 @group(1) @binding(0) var<uniform> gamma: f32;
 @group(1) @binding(1) var<uniform> logDensity: u32;
 
-fn downsamplePixels(x: u32, y: u32, rowsize: u32) -> vec4<u32> {
-    let cIdx = 3 * x + 3 * y * rowsize;
-
-    let c1 = pixels[cIdx];
-    let c2 = pixels[cIdx + 1];
-    let c3 = pixels[cIdx + 2];
-    let c4 = pixels[cIdx + rowsize + 0];
-    let c5 = pixels[cIdx + rowsize + 1];
-    let c6 = pixels[cIdx + rowsize + 2];
-    let c7 = pixels[cIdx + 2 * rowsize + 0];
-    let c8 = pixels[cIdx + 2 * rowsize + 1];
-    let c9 = pixels[cIdx + 2 * rowsize + 2];
-
-    let arr = array<u32, 9>(c1, c2, c3, c4, c5, c6, c7, c8, c9);
-    var res = vec4<u32>(0);
-
-    for (var i = 0; i < 9; i++) {
-        res.x += (arr[i] >> 24) & 0xFF;
-        res.y += (arr[i] >> 16) & 0xFF;
-        res.z += (arr[i] >> 8) & 0xFF;
-        res.w += (arr[i]) & 0xFF;
-    }
-
-    res /= 9;
-
-    return res;
-}
-
-fn downsampleHeatmap(x: u32, y: u32, rowsize: u32) -> u32 {
-    let cIdx = 3 * x + 3 * y * rowsize;
-
-    return (heatmap[cIdx] + heatmap[cIdx + 1] + heatmap[cIdx + 2] + heatmap[cIdx + rowsize + 0] + heatmap[cIdx + rowsize + 1] + heatmap[cIdx + rowsize + 2] + heatmap[cIdx + 2 * rowsize + 0] + heatmap[cIdx + 2 * rowsize + 1] + pixels[cIdx + 2 * rowsize + 2]) / 9;
-}
-
 // return a rgba color, 8 bit per channel.
 fn gammaCorrection(col: vec4<u32>, hvalue: f32) -> u32 {
     var fres = vec4<f32>(col);
@@ -73,10 +39,15 @@ fn main(
 ) {
     let x = global_invocation_id.x;
     let y = global_invocation_id.y;
-    let rowsize = 3u * 1920u;
+    let rowsize = 1920u;
 
-    let res = downsamplePixels(x, y, rowsize);
-    let hvalue = downsampleHeatmap(x, y, rowsize);
+    var res = vec4<u32>(0);
+    let pixel = pixels[x + y * rowsize];
 
-    output[x + y * (rowsize / 3)] = gammaCorrection(res, f32(hvalue));
+    res.x += (pixel >> 24) & 0xFF;
+    res.y += (pixel >> 16) & 0xFF;
+    res.z += (pixel >> 8) & 0xFF;
+    res.w += (pixel) & 0xFF;
+    
+    output[x + y * rowsize] = gammaCorrection(res, f32(pixel));
 }
