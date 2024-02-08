@@ -1,5 +1,6 @@
 import { defaultRenderMode, renderModeToNumber, type Flames, type FlamesComponent } from "../Flames";
 import { variationToNumber } from "../Variations";
+import { reduceColorArray } from "../arrayUtils";
 import type { RenderData } from "../render";
 import type { FlamesBinding } from "./flamesbinding";
 import type { RenderDataBinding } from "./renderDataBinding";
@@ -59,17 +60,19 @@ export function updateGPUBuffer(device: GPUDevice, renderData: RenderData, flame
 	device.queue.writeBuffer(flamesBinding.buffers.flames, 0, flamesBinding.structuredView.arrayBuffer)
 
 	//device.queue.writeBuffer(renderDataBinding.buffers.pixels, 0, renderData.pixels);
-	let renderingAccumulator: Float32Array | null;
 
-	switch (flames.renderMode) {
-		case "Default": renderingAccumulator = null; break;
-		case "Structural": renderingAccumulator = renderData.colorAccumulator; break;
-		case "Structural (Palette)": renderingAccumulator = renderData.paletteAccumulator; break;
-		case "Structural (Palette index)": renderingAccumulator = renderData.colorPaletteIndexAccumulator; break;
+	if (flames.renderMode === "Structural (Palette index)") {
+		device.queue.writeBuffer(renderDataBinding.buffers.paletteIndexAccumulator, 0, renderData.colorPaletteIndexAccumulator);
 	}
 
-	//if (renderingAccumulator)
-	device.queue.writeBuffer(renderDataBinding.buffers.renderingAccumulator, 0, renderData.paletteAccumulator);
+	if (flames.renderMode == "Structural") {
+		device.queue.writeBuffer(renderDataBinding.buffers.colorAccumulator, 0, reduceColorArray(renderData.colorAccumulator))
+	}
+
+	if (flames.renderMode == "Structural (Palette)") {
+		device.queue.writeBuffer(renderDataBinding.buffers.colorAccumulator, 0, reduceColorArray(renderData.paletteAccumulator))
+	}
+
 	device.queue.writeBuffer(renderDataBinding.buffers.heatmap, 0, renderData.heatmap)
 	device.queue.writeBuffer(renderDataBinding.buffers.heatmapMax, 0, new Uint32Array([renderData.heatmapMax]))
 	device.queue.writeBuffer(flamesBinding.buffers.gamma, 0, new Float32Array([flames!.gammaCorrection]))

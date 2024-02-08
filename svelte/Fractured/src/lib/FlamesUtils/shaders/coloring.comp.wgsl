@@ -3,7 +3,10 @@
 @group(0) @binding(2) var<storage, read_write> image: array<u32>;
 @group(0) @binding(3) var<storage, read_write> heatmapMax: u32;
 @group(0) @binding(4) var<storage, read_write> blurredImage: array<u32>;
-@group(0) @binding(5) var<storage, read_write> colorAccumulator: array<f32>;
+@group(0) @binding(5) var<storage, read_write> paletteIndexAccumulator: array<f32>;
+
+@group(0) @binding(6) var<storage, read_write> colorAccumulator: array<u32>;
+@group(0) @binding(7) var<storage, read_write> paletteAccumulator: array<u32>;
 
 struct DensityEstimation {
     enabled: f32,
@@ -109,19 +112,36 @@ fn defaultColoring(idx: u32) -> vec3<f32> {
     return palette(colorIdx);
 }
 
+fn structural(color: u32) -> vec3<f32> {
+    let r = (color >> 16) & 0xFF;
+    let g = (color >> 8) & 0xFF;
+    let b = (color) & 0xFF;
+    
+    return vec3<f32>(
+        f32(r),
+        f32(g),
+        f32(b)
+    );
+}
+
 fn coloring(idx: u32) -> u32 {
     if (heatmap[idx] < 1) {
         return 0;
-        }
+    }
 
     let renderMode = flames.renderMode;
     var c: vec3<f32>;
     if renderMode == DEFAULT {
-        c = defaultColoring(idx);
+        c = defaultColoring(idx) * 255.;
     }
-    else {
-        // TODO: giga seum sur le max buffer allowed sur le gpu
-        c = palette(colorAccumulator[idx]);
+    if renderMode == STRUCTURAL_PALETTE_INDEX {
+        c = palette(paletteIndexAccumulator[idx])  * 255.;
+    }
+    if renderMode == STRUCTURAL {
+        c = structural(colorAccumulator[idx]);
+    }
+    if renderMode == STRUCTURAL_PALETTE {
+        c = structural(colorAccumulator[idx]);
     }
 
     let previousColor = pixels[idx];
@@ -132,7 +152,7 @@ fn coloring(idx: u32) -> u32 {
     );
 
     // Pixels Interpolation isn't working correctly when switching from/to antialising. Could be due to a single buffer being used now.
-    c = mix(c2 , c  * 255., 0.15);
+    c = mix(c2 , c, 0.15);
     var c255 = vec3<u32>(c);
 
     return (0xFF << 24) | (u32(c255.z & 0xFF) << 16) | (u32(c255.y & 0xFF) << 8) | (u32(c255.x & 0xFF));

@@ -7,55 +7,21 @@ export type RenderDataBinding = {
         heatmapMax: GPUBuffer
         finalImage: GPUBuffer
         blurredImage: GPUBuffer
-        renderingAccumulator: GPUBuffer
+        paletteIndexAccumulator: GPUBuffer
+        // Both accumulator here should use u32
+        colorAccumulator: GPUBuffer
+        colorPaletteAccumulator: GPUBuffer
     }
 }
 
 const createBindGroupLayout = (device: GPUDevice) => device.createBindGroupLayout({
-    entries: [
-        {
-            binding: 0,
-            visibility: GPUShaderStage.COMPUTE,
-            buffer: {
-                type: 'storage'
-            }
-        },
-        {
-            binding: 1,
-            visibility: GPUShaderStage.COMPUTE,
-            buffer: {
-                type: 'storage'
-            }
-        },
-        {
-            binding: 2,
-            visibility: GPUShaderStage.COMPUTE,
-            buffer: {
-                type: 'storage'
-            }
-        },
-        {
-            binding: 3,
-            visibility: GPUShaderStage.COMPUTE,
-            buffer: {
-                type: 'storage'
-            }
-        },
-        {
-            binding: 4,
-            visibility: GPUShaderStage.COMPUTE,
-            buffer: {
-                type: 'storage'
-            }
-        },
-        {
-            binding: 5,
-            visibility: GPUShaderStage.COMPUTE,
-            buffer: {
-                type: 'storage'
-            }
+    entries: Array.from({length: 8}, (_, i) =>({
+        binding: i,
+        visibility: GPUShaderStage.COMPUTE,
+        buffer: {
+            type: 'storage'
         }
-    ]
+    }))
 });
 
 export function createRenderDataBinding(device: GPUDevice): RenderDataBinding {
@@ -77,7 +43,17 @@ export function createRenderDataBinding(device: GPUDevice): RenderDataBinding {
     });
 
 
-    const renderingAccumulator = device.createBuffer({
+    const paletteIndexAccumulator = device.createBuffer({
+        size: 1920 * 1080 * 4 * 9,
+        usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
+    })
+
+    const colorAccumulator = device.createBuffer({
+        size: 1920 * 1080 * 4 * 9,
+        usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
+    })
+
+    const colorPaletteAccumulator = device.createBuffer({
         size: 1920 * 1080 * 4 * 9,
         usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
     })
@@ -100,7 +76,9 @@ export function createRenderDataBinding(device: GPUDevice): RenderDataBinding {
             { binding: 2, resource: { buffer: finalImage } },
             { binding: 3, resource: { buffer: heatmapMax } },
             { binding: 4, resource: { buffer: blurredImage } },
-            { binding: 5, resource: { buffer: renderingAccumulator } },
+            { binding: 5, resource: { buffer: paletteIndexAccumulator } },
+            { binding: 6, resource: { buffer: colorAccumulator } },
+            { binding: 7, resource: { buffer: colorPaletteAccumulator } },
         ]
     });
 
@@ -113,7 +91,9 @@ export function createRenderDataBinding(device: GPUDevice): RenderDataBinding {
             heatmapMax,
             finalImage,
             blurredImage,
-            renderingAccumulator,
+            paletteIndexAccumulator,
+            colorAccumulator,
+            colorPaletteAccumulator
         }
     }
 }

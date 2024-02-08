@@ -7,8 +7,8 @@ export type RenderData = {
 	pixels: Uint8ClampedArray;
 	heatmap: Uint32Array;
 	heatmapMax: number;
-	paletteAccumulator: Float32Array;
 	colorPaletteIndexAccumulator: Float32Array;
+	paletteAccumulator: Float32Array;
 	colorAccumulator: Float32Array;
 };
 
@@ -18,8 +18,8 @@ export function createRenderData(length: number): RenderData {
 		heatmapMax: 0,
 		pixels: new Uint8ClampedArray(length * 4),
 		colorAccumulator: new Float32Array(length * 3),
-		colorPaletteIndexAccumulator: new Float32Array(length * 3),
-		paletteAccumulator: new Float32Array(length)
+		paletteAccumulator: new Float32Array(length * 3),
+		colorPaletteIndexAccumulator: new Float32Array(length)
 	};
 }
 
@@ -28,8 +28,8 @@ export function resetRenderData(renderData: RenderData) {
 	renderData.pixels.fill(0);
 	renderData.heatmap.fill(0);
 	renderData.colorAccumulator.fill(0);
-	renderData.colorPaletteIndexAccumulator.fill(0);
 	renderData.paletteAccumulator.fill(0);
+	renderData.colorPaletteIndexAccumulator.fill(0);
 }
 
 function applyMirrorSettings(flames: Flames, p: XY, i: number) {
@@ -72,7 +72,7 @@ function updateRenderdata(
 	const heatmap = renderData.heatmap
 	const f = antialiasing ? 3 : 1;
 	const idx = pixel.y * flames.resolution.x * f + pixel.x;
-	renderData.paletteAccumulator[idx] = (renderData.paletteAccumulator[idx] + colorPaletteIdx) / 2;
+	renderData.colorPaletteIndexAccumulator[idx] = (renderData.colorPaletteIndexAccumulator[idx] + colorPaletteIdx) / 2;
 	heatmap[idx]++;
 
 	let bucketValue = heatmap[idx]
@@ -99,11 +99,11 @@ function updateRenderdata(
 
 	const colorIdx = idx * 3;
 	const color = colorFromPalette(flames.namedPalette.palette, colorPaletteIdx);
-	renderData.colorPaletteIndexAccumulator[colorIdx] = (renderData.colorPaletteIndexAccumulator[colorIdx] + color.r) / 2;
-	renderData.colorPaletteIndexAccumulator[colorIdx + 1] =
-		(renderData.colorPaletteIndexAccumulator[colorIdx + 1] + color.g) / 2;
-	renderData.colorPaletteIndexAccumulator[colorIdx + 2] =
-		(renderData.colorPaletteIndexAccumulator[colorIdx + 2] + color.b) / 2;
+	renderData.paletteAccumulator[colorIdx] = (renderData.paletteAccumulator[colorIdx] + color.r) / 2;
+	renderData.paletteAccumulator[colorIdx + 1] =
+		(renderData.paletteAccumulator[colorIdx + 1] + color.g) / 2;
+	renderData.paletteAccumulator[colorIdx + 2] =
+		(renderData.paletteAccumulator[colorIdx + 2] + color.b) / 2;
 
 	const c = currentComponent.color
 	renderData.colorAccumulator[colorIdx] = (renderData.colorAccumulator[colorIdx] + c.r) / 2;

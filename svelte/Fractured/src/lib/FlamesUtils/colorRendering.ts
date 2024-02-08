@@ -13,7 +13,7 @@ function mixColor(pixels: Uint8ClampedArray, idx: number, c: Color) {
 function colorStructuralPaletteIndex(renderData: RenderData, p: ColorPalette) {
 	const heatmap = renderData.heatmap;
 	const pixels = renderData.pixels;
-	const paletteAccumulator = renderData.paletteAccumulator;
+	const paletteAccumulator = renderData.colorPaletteIndexAccumulator;
 	for (let i = 0; i < heatmap.length; i++) {
 		pixels[i * 4 + 3] = mix(pixels[i * 4 + 3], 255, 0.25);
 
@@ -28,7 +28,7 @@ function colorStructuralPaletteIndex(renderData: RenderData, p: ColorPalette) {
 function colorStructuralPalette(renderData: RenderData) {
 	const heatmap = renderData.heatmap;
 	const pixels = renderData.pixels;
-	const colorAccumulator = renderData.colorPaletteIndexAccumulator;
+	const colorAccumulator = renderData.paletteAccumulator;
 	for (let i = 0; i < heatmap.length; i++) {
 		pixels[i * 4 + 3] = mix(pixels[i * 4 + 3], 255, 0.25);
 		if (heatmap[i] < 1) continue;
