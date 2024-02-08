@@ -40,6 +40,7 @@ export type Flames = {
 };
 
 export type FlamesComponent = {
+	enabled: boolean;
 	color: Color;
 	colorPaletteIndex: number;
 	weight: number;
@@ -84,4 +85,13 @@ export function createFlamesFromJson(raw: string) {
 		weightedVariations.variation = getVariationFromname(weightedVariations.variation.name)!;
 
 	return flames;
+}
+
+export function renderModeToNumber(x: RenderMode): 0 | 1 | 2 | 3 {
+	switch (x) {
+		case "Default": return 0
+		case "Structural": return 1
+		case "Structural (Palette)": return 2
+		case "Structural (Palette index)": return 3
+	}
 }

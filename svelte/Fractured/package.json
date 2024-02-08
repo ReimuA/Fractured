@@ -34,6 +34,7 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"@webgpu/types": "^0.1.40"
+		"@webgpu/types": "^0.1.40",
+		"webgpu-utils": "^1.5.0"
 	}
 }

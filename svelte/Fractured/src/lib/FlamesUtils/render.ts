@@ -7,9 +7,9 @@ export type RenderData = {
 	pixels: Uint8ClampedArray;
 	heatmap: Uint32Array;
 	heatmapMax: number;
-	paletteAccumulator: Float64Array;
-	colorPaletteIndexAccumulator: Float64Array;
-	colorAccumulator: Float64Array;
+	paletteAccumulator: Float32Array;
+	colorPaletteIndexAccumulator: Float32Array;
+	colorAccumulator: Float32Array;
 };
 
 export function createRenderData(length: number): RenderData {
@@ -17,9 +17,9 @@ export function createRenderData(length: number): RenderData {
 		heatmap: new Uint32Array(length),
 		heatmapMax: 0,
 		pixels: new Uint8ClampedArray(length * 4),
-		colorAccumulator: new Float64Array(length * 3),
-		colorPaletteIndexAccumulator: new Float64Array(length * 3),
-		paletteAccumulator: new Float64Array(length)
+		colorAccumulator: new Float32Array(length * 3),
+		colorPaletteIndexAccumulator: new Float32Array(length * 3),
+		paletteAccumulator: new Float32Array(length)
 	};
 }
 

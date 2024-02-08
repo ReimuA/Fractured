@@ -1,7 +1,7 @@
 @group(0) @binding(0) var<storage, read_write> heatmap: array<u32>;
 @group(0) @binding(1) var<storage, read_write> pixels: array<u32>;
 @group(0) @binding(2) var<storage, read_write> output: array<u32>;
-@group(0) @binding(3) var<uniform> heatmapMax: f32;
+@group(0) @binding(3) var<storage, read_write> heatmapMax: u32;
 
 @group(1) @binding(0) var<uniform> gamma: f32;
 @group(1) @binding(1) var<uniform> logDensity: u32;
@@ -10,7 +10,7 @@
 fn gammaCorrection(col: vec4<u32>, hvalue: f32) -> u32 {
     var fres = vec4<f32>(col);
     var fAlpha = 1.;
-    var logmax = log2(heatmapMax) / log2(10.);
+    var logmax = log2(f32(heatmapMax)) / log2(10.);
 
     if (logDensity != 0 && hvalue != 0.) {
         fAlpha = clamp((log2(10. * hvalue) / log2(10.)) / logmax, 0, 1);
@@ -43,11 +43,12 @@ fn main(
 
     var res = vec4<u32>(0);
     let pixel = pixels[x + y * rowsize];
+    let hvalue = heatmap[x + y * rowsize];
 
     res.x += (pixel >> 24) & 0xFF;
     res.y += (pixel >> 16) & 0xFF;
     res.z += (pixel >> 8) & 0xFF;
     res.w += (pixel) & 0xFF;
     
-    output[x + y * rowsize] = gammaCorrection(res, f32(pixel));
+    output[x + y * rowsize] = gammaCorrection(res, f32(hvalue));
 }

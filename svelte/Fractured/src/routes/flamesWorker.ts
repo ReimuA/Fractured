@@ -3,12 +3,15 @@ import { updateFlamesColor } from '$lib/FlamesUtils/colorRendering';
 import {
 	createFlamesFromJson,
 	defaultRenderMode,
-	type Flames
+	renderModeToNumber,
+	type Flames,
+	type FlamesComponent
 } from '../lib/FlamesUtils/Flames';
 import aashader from '../lib/FlamesUtils/shaders/aa.comp.wgsl?raw'
 import blurshader from '../lib/FlamesUtils/shaders/blur.comp.wgsl?raw'
+import colorShader from '../lib/FlamesUtils/shaders/coloring.comp.wgsl?raw'
 import gammaShader from '../lib/FlamesUtils/shaders/gamma.comp.wgsl?raw'
-import { applyAA3x, applyNoAA, downsampleHeatmapCell3x } from '../lib/FlamesUtils/antialiasing';
+import flamesShader from '../lib/FlamesUtils/shaders/flames.comp.wgsl?raw'
 import type { XY } from '../lib/FlamesUtils/mathu';
 import {
 	createRenderData,
@@ -18,7 +21,6 @@ import {
 } from '../lib/FlamesUtils/render';
 import type { FlamesWorkerMessage } from './messageType';
 import { createRenderDataBinding, type RenderDataBinding } from '$lib/FlamesUtils/webgpu/renderDataBinding';
-import { dev } from '$app/environment';
 import { createFlamesBinding, type FlamesBinding } from '$lib/FlamesUtils/webgpu/flamesbinding';
 import { updateGPUBuffer } from '$lib/FlamesUtils/webgpu/renderpass';
 
@@ -46,30 +48,34 @@ let flamesBinding!: FlamesBinding
 
 let device: GPUDevice;
 let blurPipeline!: GPUComputePipeline
+let flamesPipeline!: GPUComputePipeline
+let colorPipeline!: GPUComputePipeline
 let gammaPipeline!: GPUComputePipeline
 let aaPipeline!: GPUComputePipeline
 let pipelineLayout!: GPUPipelineLayout
 
 
-function addPipeline(pass: GPUComputePassEncoder, pipeline: GPUComputePipeline) {
+function addPipeline(pass: GPUComputePassEncoder, pipeline: GPUComputePipeline, sizeX: number = 1920, sizeY: number = 1080) {
 	pass.setPipeline(pipeline);
 	pass.setBindGroup(0, rDataBinding.bindgroup);
 	pass.setBindGroup(1, flamesBinding.bindgroup);
-	pass.dispatchWorkgroups(1920 / 8, 1080 / 8);
+	pass.dispatchWorkgroups(sizeX / 8, sizeY / 8);
 }
 
 async function frameWebGpu(renderData: RenderData, ctx: OffscreenCanvasRenderingContext2D) {
 	updateGPUBuffer(device, renderData, flames!, rDataBinding, flamesBinding)
-	
+
 	let outputbuffer = rDataBinding.buffers.finalImage
 	let encoder = device.createCommandEncoder({ label: 'Compute encoder' });
 
-	const passbegin = Date.now();
 	let pass = encoder.beginComputePass();
+
+	//addPipeline(pass, flamesPipeline, 8, 8);
+	addPipeline(pass, colorPipeline);
 
 	if (flames?.antialiasing)
 		addPipeline(pass, aaPipeline)
-	else 
+	else
 		addPipeline(pass, gammaPipeline)
 
 	if (flames?.densityEstimation) {
@@ -84,10 +90,8 @@ async function frameWebGpu(renderData: RenderData, ctx: OffscreenCanvasRendering
 	device.queue.submit([encoder.finish()]);
 
 	await outputReadBuffer.mapAsync(GPUMapMode.READ);
-	console.log("Pass time : " + (Date.now() - passbegin))
 
 	const imageData = new Uint8ClampedArray(outputReadBuffer.getMappedRange());
-
 	const image = new ImageData(imageData, 1920, 1080);
 	ctx.putImageData(image, 0, 0);
 	outputReadBuffer.unmap();
@@ -100,11 +104,11 @@ async function updateCanvas(ctx: OffscreenCanvasRenderingContext2D) {
 
 	if (flames.spaceWarp.rotationalSymmetry > 1)
 		rotation = (rotation + (2 * Math.PI) / flames.spaceWarp.rotationalSymmetry) % (2 * Math.PI);
-
-	updateFlamesColor(flames, flames.antialiasing ? renderData3x : renderData);
 	
 	let rData = flames.antialiasing ? renderData3x : renderData;
+	//updateFlamesColor(flames, rData);
 	await frameWebGpu(rData, ctx)
+	console.log("iteration " + (25000 * nbIteration));
 }
 
 async function init(newFlames: Flames, canvas: OffscreenCanvas) {
@@ -117,7 +121,7 @@ async function init(newFlames: Flames, canvas: OffscreenCanvas) {
 
 	const adapter = await navigator.gpu.requestAdapter();
 	device = await adapter!.requestDevice();
-
+	console.log(device.limits)
 	rDataBinding = createRenderDataBinding(device)
 	flamesBinding = createFlamesBinding(device)
 
@@ -129,6 +133,22 @@ async function init(newFlames: Flames, canvas: OffscreenCanvas) {
 
 
 	pipelineLayout = device.createPipelineLayout({ bindGroupLayouts: [rDataBinding.bindgroupLayout, flamesBinding.bindgroupLayout] });
+
+	flamesPipeline = device.createComputePipeline({
+		layout: pipelineLayout,
+		compute: {
+			module: device.createShaderModule({ code: flamesShader }),
+			entryPoint: 'main'
+		}
+	});
+
+	colorPipeline = device.createComputePipeline({
+		layout: pipelineLayout,
+		compute: {
+			module: device.createShaderModule({ code: colorShader }),
+			entryPoint: 'main'
+		}
+	});
 
 	aaPipeline = device.createComputePipeline({
 		layout: pipelineLayout,

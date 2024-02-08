@@ -1,7 +1,7 @@
 @group(0) @binding(0) var<storage, read_write> heatmap: array<u32>;
 @group(0) @binding(1) var<storage, read_write> pixels: array<u32>;
 @group(0) @binding(2) var<storage, read_write> image: array<u32>;
-@group(0) @binding(3) var<uniform> heatmapMax: f32;
+@group(0) @binding(3) var<storage, read_write> heatmapMax: f32;
 @group(0) @binding(4) var<storage, read_write> blurredImage: array<u32>;
 
 struct DensityEstimation {
@@ -10,10 +10,64 @@ struct DensityEstimation {
     maxsigma: f32,
 }
 
-@group(1) @binding(0) var<uniform> gamma: f32;
-@group(1) @binding(1) var<uniform> logDensity: u32;
-@group(1) @binding(2) var<uniform> densityEstimation: DensityEstimation;
-@group(1) @binding(3) var<uniform> antialiasing: u32;
+struct Rgb {
+    r: f32,
+    g: f32,
+    b: f32,
+}
+
+// Cosine gradient procedural palette
+struct ColorPalette {
+    a: vec3<f32>,
+    b: vec3<f32>,
+    c: vec3<f32>,
+    d: vec3<f32>,
+}
+
+// Rotation and translation matrices
+struct IFSTransform {
+    a: f32,
+    b: f32,
+    c: f32,
+	d: f32,
+    e: f32,
+    f: f32,
+}
+
+struct WeightedVariation {
+    variation: u32,
+    @size(12) weight: f32,
+}
+
+struct FlamesComponent {
+	  enabled: u32,
+    colorPaletteIdx: f32,
+    @size(8) weight: f32,
+    color: Rgb,
+    @align(16) transform: IFSTransform,
+    @align(16) variations: array<WeightedVariation, 16>,
+}
+
+struct SpaceWarp {
+    zoom: u32,
+    rotationalSymmetry: u32,
+    mirrorX: u32,
+    mirrorY: u32,
+}
+
+struct Flames {
+    resolution: vec2<u32>,
+    gammaCorrection: f32,
+    antialiasing: u32,
+    renderMode: u32,
+    @align(16) palette: ColorPalette,
+    @align(16) spaceWarp: SpaceWarp,
+    @align(16) densityEstimation: DensityEstimation,
+    @align(16) finalComponent: FlamesComponent,
+    components: array<FlamesComponent, 16>,
+};
+
+@group(1) @binding(4) var<uniform> flames: Flames;
 
 var<private> gaussKern = array<f32, 729>();
 
@@ -88,17 +142,16 @@ fn main(
     @builtin(local_invocation_index) local_invocation_index: u32,
     @builtin(num_workgroups) num_workgroups: vec3<u32>
 ) {
-    
     let x = global_invocation_id.x;
     let y = global_invocation_id.y;
     var hvalue = heatmap[x + y * 1920u];
-    if antialiasing != 0 {
+    if flames.antialiasing != 0 {
         hvalue = downsampleHeatmap(x, y, 1920u * 3u);
     }
-    
+
     let logmax = log2(heatmapMax) / log2(10.);
     let logcurrent = log2(f32(hvalue + 1)) / log2(10.);
-    let sigma = mix(densityEstimation.minsigma, densityEstimation.maxsigma, f32(hvalue) / heatmapMax);
+    let sigma = mix(flames.densityEstimation.minsigma, flames.densityEstimation.maxsigma, f32(hvalue) / heatmapMax);
 
     // Short circuit sigma value leading to the default gaussian kernel.
     if sigma < 1e-2 {
@@ -106,7 +159,7 @@ fn main(
         return;
     }
 
-    let len = createKernel(densityEstimation.maxsigma);
+    let len = createKernel(flames.densityEstimation.maxsigma);
 
     blur(i32(x), i32(y), len);
 }  

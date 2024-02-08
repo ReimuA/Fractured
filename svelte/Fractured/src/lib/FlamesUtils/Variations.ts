@@ -297,3 +297,7 @@ export type WeightedVariation = {
 	weight: number;
 	variation: Variation;
 };
+
+export function variationToNumber(variation: Variation): number {
+	return allVariations.findIndex(x => x.name === variation.name);
+}
