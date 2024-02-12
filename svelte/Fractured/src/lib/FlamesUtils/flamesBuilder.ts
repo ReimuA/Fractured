@@ -166,7 +166,6 @@ export class FlamesBuilder {
 		if (variationsPools.length === 0) variationsPools = allVariations;
 
 		return {
-			GPUCompute: true,
 			gammaCorrection: this.gammaCorrection,
 			densityEstimation: this.densityEstimation,
 			resolution: this.resolution,
