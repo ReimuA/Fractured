@@ -1,4 +1,4 @@
-import { type XY, rotate2d } from './mathu';
+import { type XY, rotate2d, type Color, mix } from './mathu';
 import { type Flames, applyFlames, type FlamesComponent } from './Flames';
 import { randomWeigthedSelection } from './random';
 import { colorFromPalette } from './palette';
@@ -8,8 +8,8 @@ export type RenderData = {
 	heatmap: Uint32Array;
 	heatmapMax: number;
 	colorPaletteIndexAccumulator: Float32Array;
-	paletteAccumulator: Float32Array;
-	colorAccumulator: Float32Array;
+	paletteAccumulator: Uint32Array;
+	colorAccumulator: Uint32Array;
 };
 
 export function createRenderData(length: number): RenderData {
@@ -17,8 +17,8 @@ export function createRenderData(length: number): RenderData {
 		heatmap: new Uint32Array(length),
 		heatmapMax: 0,
 		pixels: new Uint8ClampedArray(length * 4),
-		colorAccumulator: new Float32Array(length * 3),
-		paletteAccumulator: new Float32Array(length * 3),
+		colorAccumulator: new Uint32Array(length),
+		paletteAccumulator: new Uint32Array(length),
 		colorPaletteIndexAccumulator: new Float32Array(length)
 	};
 }
@@ -61,6 +61,25 @@ function worldCoordinatesToPixels(p: XY, res: XY, flames: Flames, rotation: numb
 	return { x: Math.round(rPixel.x), y: Math.round(rPixel.y) };
 }
 
+function updateUInt32Accumulator(accumulator: Uint32Array, idx: number, c: Color) {
+	const currentColor = {
+		r: (accumulator[idx] >> 16) & 0xFF,
+		g: (accumulator[idx] >> 8) & 0xFF,
+		b: (accumulator[idx]) & 0xFF,
+	}
+
+	const r = (currentColor.r + c.r * 255) / 2// mix(currentColor.r, c.r, 0.25);
+	const g = (currentColor.g + c.g * 255) / 2// mix(currentColor.g, c.g, 0.25);
+	const b = (currentColor.b + c.b * 255) / 2// mix(currentColor.b, c.b, 0.25);
+
+	const newColor = (r << 16) | (g << 8) | b;
+
+
+	accumulator[idx] = newColor
+
+	return newColor
+}
+
 function updateRenderdata(
 	flames: Flames,
 	renderData: RenderData,
@@ -97,20 +116,9 @@ function updateRenderdata(
 	if (renderData.heatmapMax < bucketValue)
 		renderData.heatmapMax = bucketValue;
 
-	const colorIdx = idx * 3;
 	const color = colorFromPalette(flames.namedPalette.palette, colorPaletteIdx);
-	renderData.paletteAccumulator[colorIdx] = (renderData.paletteAccumulator[colorIdx] + color.r) / 2;
-	renderData.paletteAccumulator[colorIdx + 1] =
-		(renderData.paletteAccumulator[colorIdx + 1] + color.g) / 2;
-	renderData.paletteAccumulator[colorIdx + 2] =
-		(renderData.paletteAccumulator[colorIdx + 2] + color.b) / 2;
-
-	const c = currentComponent.color
-	renderData.colorAccumulator[colorIdx] = (renderData.colorAccumulator[colorIdx] + c.r) / 2;
-	renderData.colorAccumulator[colorIdx + 1] =
-		(renderData.colorAccumulator[colorIdx + 1] + c.g) / 2;
-	renderData.colorAccumulator[colorIdx + 2] =
-		(renderData.colorAccumulator[colorIdx + 2] + c.b) / 2;
+	updateUInt32Accumulator(renderData.paletteAccumulator, idx, color)
+	updateUInt32Accumulator(renderData.colorAccumulator, idx, currentComponent.color)
 }
 
 function applyZoom(flames: Flames, p: XY) {

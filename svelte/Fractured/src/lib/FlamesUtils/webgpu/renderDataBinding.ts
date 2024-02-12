@@ -8,7 +8,6 @@ export type RenderDataBinding = {
         finalImage: GPUBuffer
         blurredImage: GPUBuffer
         paletteIndexAccumulator: GPUBuffer
-        // Both accumulator here should use u32
         colorAccumulator: GPUBuffer
         colorPaletteAccumulator: GPUBuffer
     }

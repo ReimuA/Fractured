@@ -141,7 +141,7 @@ fn coloring(idx: u32) -> u32 {
         c = structural(colorAccumulator[idx]);
     }
     if renderMode == STRUCTURAL_PALETTE {
-        c = structural(colorAccumulator[idx]);
+        c = structural(paletteAccumulator[idx]);
     }
 
     let previousColor = pixels[idx];

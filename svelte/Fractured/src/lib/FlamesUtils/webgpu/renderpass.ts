@@ -1,6 +1,5 @@
 import { defaultRenderMode, renderModeToNumber, type Flames, type FlamesComponent } from "../Flames";
 import { variationToNumber } from "../Variations";
-import { reduceColorArray } from "../arrayUtils";
 import type { RenderData } from "../render";
 import type { FlamesBinding } from "./flamesbinding";
 import type { RenderDataBinding } from "./renderDataBinding";
@@ -66,11 +65,11 @@ export function updateGPUBuffer(device: GPUDevice, renderData: RenderData, flame
 	}
 
 	if (flames.renderMode == "Structural") {
-		device.queue.writeBuffer(renderDataBinding.buffers.colorAccumulator, 0, reduceColorArray(renderData.colorAccumulator))
+		device.queue.writeBuffer(renderDataBinding.buffers.colorAccumulator, 0, renderData.colorAccumulator)
 	}
 
 	if (flames.renderMode == "Structural (Palette)") {
-		device.queue.writeBuffer(renderDataBinding.buffers.colorAccumulator, 0, reduceColorArray(renderData.paletteAccumulator))
+		device.queue.writeBuffer(renderDataBinding.buffers.colorPaletteAccumulator, 0, renderData.paletteAccumulator)
 	}
 
 	device.queue.writeBuffer(renderDataBinding.buffers.heatmap, 0, renderData.heatmap)
