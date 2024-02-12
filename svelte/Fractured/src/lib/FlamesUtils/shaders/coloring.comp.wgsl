@@ -94,10 +94,6 @@ fn palette(t: f32) -> vec3<f32> {
         c01(p.a.y + p.b.y * cos(6.28318 * (p.c.y * t + p.d.y))),
         c01(p.a.z + p.b.z * cos(6.28318 * (p.c.z * t + p.d.z))),
     );
-
-   // var c255 = vec3<u32>(c * 255.);
-
-    //return (0xFF << 24) | ((c255.z & 0xFF) << 16) | ((c255.y & 0xFF) << 8) | ((c255.x & 0xFF));
 }
 
 fn defaultColoring(idx: u32) -> vec3<f32> {
@@ -124,27 +120,27 @@ fn structural(color: u32) -> vec3<f32> {
     );
 }
 
-fn coloring(idx: u32) -> u32 {
-    if (heatmap[idx] < 1) {
+fn coloring(pIdx: u32, hIdx: u32) -> u32 {
+    if (heatmap[hIdx] < 1) {
         return 0;
     }
 
     let renderMode = flames.renderMode;
     var c: vec3<f32>;
     if renderMode == DEFAULT {
-        c = defaultColoring(idx) * 255.;
+        c = defaultColoring(hIdx) * 255.;
     }
     if renderMode == STRUCTURAL_PALETTE_INDEX {
-        c = palette(paletteIndexAccumulator[idx])  * 255.;
+        c = palette(paletteIndexAccumulator[hIdx])  * 255.;
     }
     if renderMode == STRUCTURAL {
-        c = structural(colorAccumulator[idx]);
+        c = structural(colorAccumulator[hIdx]);
     }
     if renderMode == STRUCTURAL_PALETTE {
-        c = structural(paletteAccumulator[idx]);
+        c = structural(paletteAccumulator[hIdx]);
     }
 
-    let previousColor = pixels[idx];
+    let previousColor = pixels[pIdx];
     let c2 = vec3<f32>(
         f32((previousColor) & 0xFF),
         f32((previousColor >> 8) & 0xFF),
@@ -171,20 +167,24 @@ fn main(
 
     if flames.antialiasing == 0 {
         let idx = x + y * flames.resolution.x;
-        pixels[idx] = coloring(idx);
+        pixels[idx] = coloring(idx, idx);
         return;
     }
 
-    let rowsize = flames.resolution.x * 3;
-    let idx = (x + y * rowsize) * 3;
+    const hOffset = 1920u * 1080u;
+    let rowsize = flames.resolution.x * 3u;
 
-    pixels[idx] = coloring(idx);
-    pixels[idx + 1] = coloring(idx + 1);
-    pixels[idx + 2] = coloring(idx + 2);
-    pixels[idx + rowsize + 0] = coloring(idx + rowsize + 0);
-    pixels[idx + rowsize + 1] = coloring(idx + rowsize + 1);
-    pixels[idx + rowsize + 2] = coloring(idx + rowsize + 2);
-    pixels[idx + 2 * rowsize + 0] = coloring(idx + 2 * rowsize + 0);
-    pixels[idx + 2 * rowsize + 1] = coloring(idx + 2 * rowsize + 1);
-    pixels[idx + 2 * rowsize + 2] = coloring(idx + 2 * rowsize + 2);
+    let pIdx = (x + y * rowsize) * 3u;
+    let hIdx = (x + y * rowsize) * 3u + hOffset;
+
+
+    pixels[pIdx] = coloring(pIdx, hIdx);
+    pixels[pIdx + 1] = coloring(pIdx + 1, hIdx + 1);
+    pixels[pIdx + 2] = coloring(pIdx + 2, hIdx + 2);
+    pixels[pIdx + rowsize + 0] = coloring(pIdx + rowsize + 0, hIdx + rowsize + 0);
+    pixels[pIdx + rowsize + 1] = coloring(pIdx + rowsize + 1, hIdx + rowsize + 1);
+    pixels[pIdx + rowsize + 2] = coloring(pIdx + rowsize + 2, hIdx + rowsize + 2);
+    pixels[pIdx + 2 * rowsize + 0] = coloring(pIdx + 2 * rowsize + 0, hIdx + 2 * rowsize + 0);
+    pixels[pIdx + 2 * rowsize + 1] = coloring(pIdx + 2 * rowsize + 1, hIdx + 2 * rowsize + 1);
+    pixels[pIdx + 2 * rowsize + 2] = coloring(pIdx + 2 * rowsize + 2, hIdx + 2 * rowsize + 2);
 }  

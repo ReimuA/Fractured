@@ -7,7 +7,7 @@ import {
 	type SpaceWarp
 } from './Flames';
 import { createTransform, type IFSTransform } from './IFSTransform';
-import { allVariations, getVariationFromname, type Variation, type WeightedVariation } from './Variations';
+import { allVariations, getVariationFromname, linearVariation, sphericalVariation, swirlVariation, type Variation, type WeightedVariation } from './Variations';
 import type { XY, iRange } from './mathu';
 import { namedPalettesList, type NamedColorPalette } from './palette';
 import { splitmix32 } from './random';
@@ -158,6 +158,7 @@ export class FlamesBuilder {
 	}
 
 	private buildInternal(): Flames {
+		this.withVariations([linearVariation.name, swirlVariation.name])
 		let variationsPools = this.variationsPools
 			.map((e) => getVariationFromname(e))
 			.filter((e): e is Variation => e != null);
@@ -165,6 +166,7 @@ export class FlamesBuilder {
 		if (variationsPools.length === 0) variationsPools = allVariations;
 
 		return {
+			GPUCompute: true,
 			gammaCorrection: this.gammaCorrection,
 			densityEstimation: this.densityEstimation,
 			resolution: this.resolution,

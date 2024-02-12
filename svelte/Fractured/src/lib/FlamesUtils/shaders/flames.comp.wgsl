@@ -68,10 +68,11 @@ struct Flames {
 };
 
 @group(1) @binding(4) var<uniform> flames: Flames;
+@group(1) @binding(5) var<uniform> timeElapsed: u32;
 
 const maxVariationPerComponent = 16;
 const maxComponentPerFlames = 16;
-const iterationPerInvocation = 500;
+const iterationPerInvocation = 1000;
 
 // Local heatmap cached value, to avoid using atomic operation until the end.
 var<private> localHeatmapMax = 0u;
@@ -111,7 +112,7 @@ fn applyVariation(tp: vec2<f32>, variation: WeightedVariation, transform: IFSTra
         case 0: {
             result = tp;
         }
-        case 2: {
+        case 3: {
             result = swirlVariation(tp);
         }
         default: {
@@ -159,6 +160,7 @@ fn applyComponent(p: vec2<f32>, component: FlamesComponent) -> vec2<f32> {
 
 fn applyFlames(p: vec2<f32>, componentIdx: u32) -> vec2<f32> {
     let newP = applyComponent(p, flames.components[componentIdx]);
+    return newP;
     return applyComponent(p, flames.finalComponent);
 }
 
@@ -176,38 +178,37 @@ fn worldCoordinatesToPixels(p: vec2<f32>, resolution: vec2<u32>) -> vec2<u32> {
 fn updateRenderData(pixel: vec2<u32>, componentIdx: u32) {
     let component = flames.components[componentIdx];
     let colorPaletteIdx = component.colorPaletteIdx;
-    var f = 1u;
-    if (flames.antialiasing != 0) {
-        f = 3u;
-    }
+    let idx = pixel.y * flames.resolution.x + pixel.x;
+    // renderData.paletteAccumulator[idx] = (renderData.paletteAccumulator[idx] + colorPaletteIdx) / 2;
+    var bucketValue = atomicAdd(&heatmap[idx], 1) + 1;
 
-    let idx = pixel.y * flames.resolution.x * f + pixel.x;
+    if localHeatmapMax < bucketValue {
+        localHeatmapMax = bucketValue;
+    }
+}
+
+fn updateRenderData3x(pixel: vec2<u32>, componentIdx: u32) {
+    let component = flames.components[componentIdx];
+    let colorPaletteIdx = component.colorPaletteIdx;
+    const hOffset = 1920u * 1080u;
+
+    let idx = pixel.y * flames.resolution.x * 3u + pixel.x + hOffset;
     // renderData.paletteAccumulator[idx] = (renderData.paletteAccumulator[idx] + colorPaletteIdx) / 2;
     var bucketValue = atomicAdd(&heatmap[idx], 1) + 1;
 
     if flames.antialiasing != 0 {
         let bucketX = (pixel.x - pixel.x % 3) / 3;
         let bucketY = (pixel.y - pixel.y % 3) / 3;
-        let hidx = 3 * bucketX + 3 * bucketY * flames.resolution.x * 3;
+        let hidx = 3 * bucketX + 3 * bucketY * flames.resolution.x * 3 + hOffset;
 
         bucketValue = (atomicLoad(&heatmap[hidx]) + atomicLoad(&heatmap[hidx + 1]) + atomicLoad(&heatmap[hidx + 2]) + atomicLoad(&heatmap[hidx + flames.resolution.x * 3]) + atomicLoad(&heatmap[hidx + flames.resolution.x * 3 + 1]) + atomicLoad(&heatmap[hidx + flames.resolution.x * 3 + 2]) + atomicLoad(&heatmap[hidx + flames.resolution.x * 3 * 2]) + atomicLoad(&heatmap[hidx + flames.resolution.x * 3 * 2 + 1]) + atomicLoad(&heatmap[hidx + flames.resolution.x * 3 * 2 + 2])) / 9;
+    
+        if localHeatmapMax < bucketValue {
+            localHeatmapMax = bucketValue;
+        }
     }
-
-    if localHeatmapMax < bucketValue {
-        localHeatmapMax = bucketValue;
-    }
-/* 
-    let colorIdx = idx * 3;
-    let color = colorFromPalette(flames.namedPalette.palette, colorPaletteIdx);
-    colorPaletteIndexAccumulator[colorIdx] = (colorPaletteIndexAccumulator[colorIdx] + color.r) / 2;
-    colorPaletteIndexAccumulator[colorIdx + 1] = (colorPaletteIndexAccumulator[colorIdx + 1] + color.g) / 2;
-    colorPaletteIndexAccumulator[colorIdx + 2] = (colorPaletteIndexAccumulator[colorIdx + 2] + color.b) / 2;
-
-    let c = component.color;
-    colorAccumulator[colorIdx] = (colorAccumulator[colorIdx] + c.r) / 2;
-    colorAccumulator[colorIdx + 1] = (colorAccumulator[colorIdx + 1] + c.g) / 2;
-    colorAccumulator[colorIdx + 2] = (colorAccumulator[colorIdx + 2] + c.b) / 2; */
 }
+
 
 @compute @workgroup_size(8, 8)
 fn main(
@@ -217,7 +218,7 @@ fn main(
     @builtin(local_invocation_index) local_invocation_index: u32,
     @builtin(num_workgroups) num_workgroups: vec3<u32>
 ) {
-    initRandom((global_invocation_id.x << 16) | global_invocation_id.y);
+    initRandom(timeElapsed * ((global_invocation_id.x << 16) | global_invocation_id.y));
 
     let res3x = 3 * flames.resolution;
     var p = vec2(0.);
@@ -227,21 +228,20 @@ fn main(
 
         p = applyFlames(p, componentIdx);
 
-        p *= flames.spaceWarp.zoom;
+        // p *= flames.spaceWarp.zoom;
         // p = applyMirror();
 
         let pixel3x = worldCoordinatesToPixels(p, res3x);
         let pixel = worldCoordinatesToPixels(p, flames.resolution);
 
-        if i /* + totalIteration */ > 20 && pixel3x.x > 0 && pixel3x.x < res3x.x && pixel3x.y > 0 && pixel3x.y < res3x.y {
-            updateRenderData(pixel3x, componentIdx);
+        if i > 20 && pixel3x.x > 0 && pixel3x.x < res3x.x && pixel3x.y > 0 && pixel3x.y < res3x.y {
+           updateRenderData3x(pixel3x, componentIdx);
         }
 
-        /*   if i + totalIteration > 20 && pixel.x > 0 && pixel.x < flames.resolution.x && pixel.y > 0 && pixel.y < flames.resolution.y {
+        if i > 20 && pixel.x > 0 && pixel.x < flames.resolution.x && pixel.y > 0 && pixel.y < flames.resolution.y {
             updateRenderData(pixel, componentIdx);
-        } */
+        }
     }
-
 
     atomicMax(&heatmapMax, localHeatmapMax);
 }  

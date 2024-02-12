@@ -72,7 +72,7 @@ export function updateGPUBuffer(device: GPUDevice, renderData: RenderData, flame
 		device.queue.writeBuffer(renderDataBinding.buffers.colorPaletteAccumulator, 0, renderData.paletteAccumulator)
 	}
 
-	device.queue.writeBuffer(renderDataBinding.buffers.heatmap, 0, renderData.heatmap)
+	device.queue.writeBuffer(flamesBinding.buffers.timeElapsed, 0, new Uint32Array([Date.now()]))
 	device.queue.writeBuffer(renderDataBinding.buffers.heatmapMax, 0, new Uint32Array([renderData.heatmapMax]))
 	device.queue.writeBuffer(flamesBinding.buffers.gamma, 0, new Float32Array([flames!.gammaCorrection]))
 	device.queue.writeBuffer(flamesBinding.buffers.logDensity, 0, new Float32Array([Number(flames!.renderMode != defaultRenderMode)]))

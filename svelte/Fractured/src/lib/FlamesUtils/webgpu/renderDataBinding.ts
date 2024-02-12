@@ -36,24 +36,28 @@ export function createRenderDataBinding(device: GPUDevice): RenderDataBinding {
         usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
     });
 
+    // Due to webgpu's gpu buffer limitation, it is not possible to have more than 8 storage buffer per shader.
+    // To avoid this issue, the heat and all accumulator contains both the super sample and the default.
+    // Hence we have the resolution * bytesSize * (9 + 1)
+
     const heatmap = device.createBuffer({
-        size: 1920 * 1080 * 9 * 4,
+        size: 1920 * 1080 * 4 * 10 ,
         usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
     });
 
 
     const paletteIndexAccumulator = device.createBuffer({
-        size: 1920 * 1080 * 4 * 9,
+        size: 1920 * 1080 * 4 * 10,
         usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
     })
 
     const colorAccumulator = device.createBuffer({
-        size: 1920 * 1080 * 4 * 9,
+        size: 1920 * 1080 * 4 * 10,
         usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
     })
 
     const colorPaletteAccumulator = device.createBuffer({
-        size: 1920 * 1080 * 4 * 9,
+        size: 1920 * 1080 * 4 * 10,
         usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
     })
 

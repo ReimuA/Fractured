@@ -68,9 +68,9 @@ function updateUInt32Accumulator(accumulator: Uint32Array, idx: number, c: Color
 		b: (accumulator[idx]) & 0xFF,
 	}
 
-	const r = (currentColor.r + c.r * 255) / 2// mix(currentColor.r, c.r, 0.25);
-	const g = (currentColor.g + c.g * 255) / 2// mix(currentColor.g, c.g, 0.25);
-	const b = (currentColor.b + c.b * 255) / 2// mix(currentColor.b, c.b, 0.25);
+	const r = (currentColor.r + c.r * 255) / 2;
+	const g = (currentColor.g + c.g * 255) / 2;
+	const b = (currentColor.b + c.b * 255) / 2;
 
 	const newColor = (r << 16) | (g << 8) | b;
 

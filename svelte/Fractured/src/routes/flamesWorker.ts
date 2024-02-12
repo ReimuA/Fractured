@@ -65,7 +65,7 @@ async function frameWebGpu(renderData: RenderData, ctx: OffscreenCanvasRendering
 
 	let pass = encoder.beginComputePass();
 
-	//addPipeline(pass, flamesPipeline, 8, 8);
+	addPipeline(pass, flamesPipeline, 64, 64);
 	addPipeline(pass, colorPipeline);
 
 	if (flames?.antialiasing)
@@ -91,18 +91,28 @@ async function frameWebGpu(renderData: RenderData, ctx: OffscreenCanvasRendering
 	ctx.putImageData(image, 0, 0);
 	outputReadBuffer.unmap();
 }
+/* 
+function resetGPUData() {
+	device.queue.writeBuffer(renderDataBinding.buffers.heatmapMax, 0, new Uint32Array([renderData.heatmapMax]))
 
+}
+ */
 async function updateCanvas(ctx: OffscreenCanvasRenderingContext2D) {
 	if (!renderData3x || !renderData || !canvasContent || !flames) return;
 
-	p = iterateRenderData(flames, renderData, renderData3x, p, rotation, 25000, 25000 * nbIteration++);
+	if (!flames.GPUCompute) {
+		console.log("iteration " + (25000 * nbIteration));
+		p = iterateRenderData(flames, renderData, renderData3x, p, rotation, 25000, 25000 * nbIteration++);
+
+	}
 
 	if (flames.spaceWarp.rotationalSymmetry > 1)
 		rotation = (rotation + (2 * Math.PI) / flames.spaceWarp.rotationalSymmetry) % (2 * Math.PI);
 	
 	let rData = flames.antialiasing ? renderData3x : renderData;
+	const time = Date.now()
 	await frameWebGpu(rData, ctx)
-	console.log("iteration " + (25000 * nbIteration));
+	console.log('Frame cost : ' + (Date.now() - time) + ', Total iteration :' + ((nbIteration++) * 1000 * 64 * 64))
 }
 
 async function init(newFlames: Flames, canvas: OffscreenCanvas) {
@@ -195,6 +205,7 @@ function reset(newFlames: Flames) {
 function softreset(newFlames: Flames) {
 	rotation = 0;
 	flames = newFlames;
+
 	p = { x: 0, y: 0 };
 	if (renderData3x) resetRenderData(renderData3x);
 	if (renderData) resetRenderData(renderData);
@@ -202,6 +213,7 @@ function softreset(newFlames: Flames) {
 
 function update(newFlames: Flames) {
 	flames = newFlames;
+
 }
 
 onmessage = async ({ data }: MessageEvent<FlamesWorkerMessage>) => {
