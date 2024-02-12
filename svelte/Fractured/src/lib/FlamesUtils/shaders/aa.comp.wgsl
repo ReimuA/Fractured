@@ -39,7 +39,7 @@ fn downsampleHeatmap(x: u32, y: u32, rowsize: u32) -> u32 {
 
     let cIdx = 3 * x + 3 * y * rowsize + hOffset;
 
-    return (heatmap[cIdx] + heatmap[cIdx + 1] + heatmap[cIdx + 2] + heatmap[cIdx + rowsize + 0] + heatmap[cIdx + rowsize + 1] + heatmap[cIdx + rowsize + 2] + heatmap[cIdx + 2 * rowsize + 0] + heatmap[cIdx + 2 * rowsize + 1] + pixels[cIdx + 2 * rowsize + 2]) / 9;
+    return (heatmap[cIdx] + heatmap[cIdx + 1] + heatmap[cIdx + 2] + heatmap[cIdx + rowsize + 0] + heatmap[cIdx + rowsize + 1] + heatmap[cIdx + rowsize + 2] + heatmap[cIdx + 2 * rowsize + 0] + heatmap[cIdx + 2 * rowsize + 1] + heatmap[cIdx + 2 * rowsize + 2]) / 9;
 }
 
 // return a rgba color, 8 bit per channel.
