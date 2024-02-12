@@ -109,7 +109,6 @@ fn blur(x: i32, y: i32, len: i32) {
     var b = 0.;
     var ml = len / 2;
 
-
     for (var i = 0; i < len; i++) {
         for (var j = 0; j < len; j++) {
             let current: f32 = gaussKern[i + j * len];
@@ -151,7 +150,8 @@ fn main(
 
     let logmax = log2(heatmapMax) / log2(10.);
     let logcurrent = log2(f32(hvalue + 1)) / log2(10.);
-    let sigma = mix(flames.densityEstimation.minsigma, flames.densityEstimation.maxsigma, f32(hvalue) / heatmapMax);
+    let t = 1 - smoothstep(0., 1., f32(hvalue) / heatmapMax); 
+    let sigma = mix(flames.densityEstimation.minsigma, flames.densityEstimation.maxsigma, t);
 
     // Short circuit sigma value leading to the default gaussian kernel.
     if sigma < 1e-2 {
