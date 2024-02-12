@@ -4,6 +4,10 @@
 @group(0) @binding(3) var<storage, read_write> heatmapMax: atomic<u32>;
 @group(0) @binding(4) var<storage, read_write> blurredImage: array<u32>;
 
+@group(0) @binding(5) var<storage, read_write> paletteIndexAccumulator: array<f32>;
+@group(0) @binding(6) var<storage, read_write> colorAccumulator: array<u32>;
+@group(0) @binding(7) var<storage, read_write> paletteAccumulator: array<atomic<u32>>;
+
 struct DensityEstimation {
     enabled: f32,
     minsigma: f32,
@@ -97,6 +101,10 @@ fn smf32() -> f32 {
     return abs(f32(smu32())) / abs(f32(4294967296.0));
 }
 
+fn c01(x: f32) -> f32 {
+    return clamp(x, 0, 1);
+}
+
 fn swirlVariation(tp: vec2<f32>) -> vec2<f32> {
     let r = length(tp);
     let r2 = r * r;
@@ -120,6 +128,15 @@ fn applyVariation(tp: vec2<f32>, variation: WeightedVariation, transform: IFSTra
         }
     }
     return result;
+}
+
+fn palette(t: f32) -> vec3<f32> {
+    let p = flames.palette;
+    return vec3<f32>(
+        c01(p.a.x + p.b.x * cos(6.28318 * (p.c.x * t + p.d.x))),
+        c01(p.a.y + p.b.y * cos(6.28318 * (p.c.y * t + p.d.y))),
+        c01(p.a.z + p.b.z * cos(6.28318 * (p.c.z * t + p.d.z))),
+    );
 }
 
 fn randomComponentIdx() -> u32 {
@@ -179,8 +196,11 @@ fn updateRenderData(pixel: vec2<u32>, componentIdx: u32) {
     let component = flames.components[componentIdx];
     let colorPaletteIdx = component.colorPaletteIdx;
     let idx = pixel.y * flames.resolution.x + pixel.x;
-    // renderData.paletteAccumulator[idx] = (renderData.paletteAccumulator[idx] + colorPaletteIdx) / 2;
     var bucketValue = atomicAdd(&heatmap[idx], 1) + 1;
+    var color = palette(colorPaletteIdx);
+    var c255 = vec3<u32>(color * 255);
+
+    atomicStore(&paletteAccumulator[idx], (0xFF << 24) | (u32(c255.z & 0xFF) << 16) | (u32(c255.y & 0xFF) << 8) | (u32(c255.x & 0xFF)));
 
     if localHeatmapMax < bucketValue {
         localHeatmapMax = bucketValue;
@@ -193,8 +213,10 @@ fn updateRenderData3x(pixel: vec2<u32>, componentIdx: u32) {
     const hOffset = 1920u * 1080u;
 
     let idx = pixel.y * flames.resolution.x * 3u + pixel.x + hOffset;
-    // renderData.paletteAccumulator[idx] = (renderData.paletteAccumulator[idx] + colorPaletteIdx) / 2;
     var bucketValue = atomicAdd(&heatmap[idx], 1) + 1;
+    var color = palette(colorPaletteIdx);
+    var c255 = vec3<u32>(color * 255);
+    atomicStore(&paletteAccumulator[idx], (0xFF << 24) | (u32(c255.z & 0xFF) << 16) | (u32(c255.y & 0xFF) << 8) | (u32(c255.x & 0xFF)));
 
     if flames.antialiasing != 0 {
         let bucketX = (pixel.x - pixel.x % 3) / 3;

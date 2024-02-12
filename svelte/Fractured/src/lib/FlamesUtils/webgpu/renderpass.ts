@@ -59,7 +59,7 @@ export function updateGPUBuffer(device: GPUDevice, renderData: RenderData, flame
 	device.queue.writeBuffer(flamesBinding.buffers.flames, 0, flamesBinding.structuredView.arrayBuffer)
 
 	//device.queue.writeBuffer(renderDataBinding.buffers.pixels, 0, renderData.pixels);
-
+/* 
 	if (flames.renderMode === "Structural (Palette index)") {
 		device.queue.writeBuffer(renderDataBinding.buffers.paletteIndexAccumulator, 0, renderData.colorPaletteIndexAccumulator);
 	}
@@ -70,8 +70,7 @@ export function updateGPUBuffer(device: GPUDevice, renderData: RenderData, flame
 
 	if (flames.renderMode == "Structural (Palette)") {
 		device.queue.writeBuffer(renderDataBinding.buffers.colorPaletteAccumulator, 0, renderData.paletteAccumulator)
-	}
-
+	} */
 	device.queue.writeBuffer(flamesBinding.buffers.timeElapsed, 0, new Uint32Array([Date.now()]))
 	device.queue.writeBuffer(renderDataBinding.buffers.heatmapMax, 0, new Uint32Array([renderData.heatmapMax]))
 	device.queue.writeBuffer(flamesBinding.buffers.gamma, 0, new Float32Array([flames!.gammaCorrection]))
