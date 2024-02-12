@@ -1,18 +1,13 @@
-import { localBlur } from '$lib/FlamesUtils/blur';
-import { updateFlamesColor } from '$lib/FlamesUtils/colorRendering';
 import {
 	createFlamesFromJson,
-	defaultRenderMode,
-	renderModeToNumber,
 	type Flames,
-	type FlamesComponent
-} from '../lib/FlamesUtils/Flames';
-import aashader from '../lib/FlamesUtils/shaders/aa.comp.wgsl?raw'
-import blurshader from '../lib/FlamesUtils/shaders/blur.comp.wgsl?raw'
-import colorShader from '../lib/FlamesUtils/shaders/coloring.comp.wgsl?raw'
-import gammaShader from '../lib/FlamesUtils/shaders/gamma.comp.wgsl?raw'
-import flamesShader from '../lib/FlamesUtils/shaders/flames.comp.wgsl?raw'
-import type { XY } from '../lib/FlamesUtils/mathu';
+} from '$lib/FlamesUtils/Flames';
+import aashader from '$lib/FlamesUtils/shaders/aa.comp.wgsl?raw'
+import blurshader from '$lib/FlamesUtils/shaders/blur.comp.wgsl?raw'
+import colorShader from '$lib/FlamesUtils/shaders/coloring.comp.wgsl?raw'
+import gammaShader from '$lib/FlamesUtils/shaders/gamma.comp.wgsl?raw'
+import flamesShader from '$lib/FlamesUtils/shaders/flames.comp.wgsl?raw'
+import type { XY } from '$lib/FlamesUtils/mathu';
 import {
 	createRenderData,
 	iterateRenderData,
@@ -106,7 +101,6 @@ async function updateCanvas(ctx: OffscreenCanvasRenderingContext2D) {
 		rotation = (rotation + (2 * Math.PI) / flames.spaceWarp.rotationalSymmetry) % (2 * Math.PI);
 	
 	let rData = flames.antialiasing ? renderData3x : renderData;
-	//updateFlamesColor(flames, rData);
 	await frameWebGpu(rData, ctx)
 	console.log("iteration " + (25000 * nbIteration));
 }
