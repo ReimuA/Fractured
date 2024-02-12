@@ -128,7 +128,8 @@ fn blur(x: i32, y: i32, len: i32) {
 }
 
 fn downsampleHeatmap(x: u32, y: u32, rowsize: u32) -> u32 {
-    let cIdx = 3 * x + 3 * y * rowsize;
+    const hOffset = 1920u * 1080u;
+    let cIdx = 3 * x + 3 * y * rowsize + hOffset;
 
     return (heatmap[cIdx] + heatmap[cIdx + 1] + heatmap[cIdx + 2] + heatmap[cIdx + rowsize + 0] + heatmap[cIdx + rowsize + 1] + heatmap[cIdx + rowsize + 2] + heatmap[cIdx + 2 * rowsize + 0] + heatmap[cIdx + 2 * rowsize + 1] + heatmap[cIdx + 2 * rowsize + 2]) / 9;
 }
