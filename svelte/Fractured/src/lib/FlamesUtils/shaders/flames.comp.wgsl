@@ -194,7 +194,7 @@ fn psi() -> f32 {
 }
 
 fn sinusoidalVariation(p: vec2<f32>) -> vec2<f32> {
-		return sin(p);
+    return sin(p);
 }
 
 fn sphericalVariation(tp: vec2<f32>) -> vec2<f32> {
@@ -310,6 +310,35 @@ fn juliaVariation(tp: vec2<f32>) -> vec2<f32> {
     );
 }
 
+fn bentVariation(p: vec2<f32>) -> vec2<f32> {
+    if (p.x >= 0 && p.y >= 0) {
+        return p;
+    }
+    if (p.x < 0 && p.y >= 0) {
+        return vec2<f32>(2 * p.x, p.y);
+    }
+    if (p.x >= 0 && p.y < 0)  {
+        return vec2<f32>(p.x, p.y / 2);
+    }
+    return vec2<f32>(2 * p.x, p.y / 2);
+}
+
+fn wavesVariation(p: vec2<f32>, transform: IFSTransform) -> vec2<f32> {
+    return vec2<f32>(
+        p.x * transform.b * sin(p.y / (transform.c * transform.c)),
+        p.y + transform.e * sin(p.x / (transform.f * transform.f))
+    );
+}
+
+fn fisheyeVariation(p: vec2<f32>) -> vec2<f32> {
+    let r = length(p);
+    let f = 2. / (r + 1.);
+    return vec2<f32>(
+        f * p.x,
+        f * p.y
+    );
+}
+
 fn applyVariation(tp: vec2<f32>, variation: WeightedVariation, transform: IFSTransform) -> vec2<f32> {
     var result = vec2(0.);
 
@@ -355,6 +384,15 @@ fn applyVariation(tp: vec2<f32>, variation: WeightedVariation, transform: IFSTra
         }
         case 13: {
             result = juliaVariation(tp);
+        }
+        case 14: {
+            result = bentVariation(tp);
+        }
+        case 15: {
+            result = wavesVariation(tp, transform);
+        }
+        case 16: {
+            result = fisheyeVariation(tp);
         }
         default: {
             result = tp; 
