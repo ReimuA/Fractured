@@ -193,6 +193,15 @@ fn psi() -> f32 {
     return smf32();
 }
 
+fn sinusoidalVariation(p: vec2<f32>) -> vec2<f32> {
+		return sin(p);
+}
+
+fn sphericalVariation(tp: vec2<f32>) -> vec2<f32> {
+    let r = length(tp);
+    let r2 = r * r;
+    return vec2<f32>(tp.x / r2, tp.y / r2);
+}
 
 fn swirlVariation(tp: vec2<f32>) -> vec2<f32> {
     let r = length(tp);
@@ -220,6 +229,12 @@ fn applyVariation(tp: vec2<f32>, variation: WeightedVariation, transform: IFSTra
     switch (variation.variation) {
         case 0: {
             result = tp;
+        }
+        case 1: {
+            result = sinusoidalVariation(tp);
+        }
+        case 2: {
+            result = sphericalVariation(tp);
         }
         case 3: {
             result = swirlVariation(tp);
