@@ -7,7 +7,8 @@
 @group(1) @binding(1) var<uniform> logDensity: u32;
 
 fn downsamplePixels(x: u32, y: u32, rowsize: u32) -> vec4<u32> {
-    let cIdx = 3 * x + 3 * y * rowsize;
+    const hOffset = 1920u * 1080u;
+    let cIdx = 3 * x + 3 * y * rowsize + hOffset;
 
     let c1 = pixels[cIdx];
     let c2 = pixels[cIdx + 1];

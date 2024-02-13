@@ -26,10 +26,7 @@ const createBindGroupLayout = (device: GPUDevice) => device.createBindGroupLayou
 export function createRenderDataBinding(device: GPUDevice): RenderDataBinding {
     const bindgroupLayout = createBindGroupLayout(device)
 
-    const pixels = device.createBuffer({
-        size: 1920 * 1080 * 4 * 9,
-        usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
-    });
+    
 
     const heatmapMax = device.createBuffer({
         size: 4,
@@ -37,8 +34,13 @@ export function createRenderDataBinding(device: GPUDevice): RenderDataBinding {
     });
 
     // Due to webgpu's gpu buffer limitation, it is not possible to have more than 8 storage buffer per shader.
-    // To avoid this issue, the heat and all accumulator contains both the super sample and the default.
+    // To avoid this issue, the heatmap, pixels and all accumulator contains both the super sample and the default.
     // Hence we have the resolution * bytesSize * (9 + 1)
+    const pixels = device.createBuffer({
+        size: 1920 * 1080 * 4 * 10,
+        usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
+    });
+
 
     const heatmap = device.createBuffer({
         size: 1920 * 1080 * 4 * 10 ,

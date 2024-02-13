@@ -174,7 +174,7 @@ fn main(
     const hOffset = 1920u * 1080u;
     let rowsize = flames.resolution.x * 3u;
 
-    let pIdx = (x + y * rowsize) * 3u;
+    let pIdx = (x + y * rowsize) * 3u + hOffset;
     let hIdx = (x + y * rowsize) * 3u + hOffset;
 
 
