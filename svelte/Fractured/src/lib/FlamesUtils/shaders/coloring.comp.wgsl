@@ -3,8 +3,8 @@
 @group(0) @binding(2) var<storage, read_write> image: array<u32>;
 @group(0) @binding(3) var<storage, read_write> heatmapMax: u32;
 @group(0) @binding(4) var<storage, read_write> blurredImage: array<u32>;
-@group(0) @binding(5) var<storage, read_write> paletteIndexAccumulator: array<f32>;
 
+@group(0) @binding(5) var<storage, read_write> paletteIndexAccumulator: array<u32>;
 @group(0) @binding(6) var<storage, read_write> colorAccumulator: array<u32>;
 @group(0) @binding(7) var<storage, read_write> paletteAccumulator: array<u32>;
 
@@ -131,7 +131,7 @@ fn coloring(pIdx: u32, hIdx: u32) -> u32 {
         c = defaultColoring(hIdx) * 255.;
     }
     if renderMode == STRUCTURAL_PALETTE_INDEX {
-        c = palette(paletteIndexAccumulator[hIdx])  * 255.;
+        c = palette(f32(paletteIndexAccumulator[hIdx]) / 1e4)  * 255.;
     }
     if renderMode == STRUCTURAL {
         c = structural(colorAccumulator[hIdx]);

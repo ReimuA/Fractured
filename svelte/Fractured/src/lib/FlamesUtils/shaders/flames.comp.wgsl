@@ -4,7 +4,7 @@
 @group(0) @binding(3) var<storage, read_write> heatmapMax: atomic<u32>;
 @group(0) @binding(4) var<storage, read_write> blurredImage: array<u32>;
 
-@group(0) @binding(5) var<storage, read_write> paletteIndexAccumulator: array<f32>;
+@group(0) @binding(5) var<storage, read_write> paletteIndexAccumulator: array<atomic<u32>>;
 @group(0) @binding(6) var<storage, read_write> colorAccumulator: array<atomic<u32>>;
 @group(0) @binding(7) var<storage, read_write> paletteAccumulator: array<atomic<u32>>;
 
@@ -105,7 +105,9 @@ fn c01(x: f32) -> f32 {
     return clamp(x, 0, 1);
 }
 
-fn updatePaletteAccumulator(index: u32, newColor: vec3<u32>) {
+fn updatePaletteAccumulator(index: u32, colorPaletteIdx: f32) {
+    var paletteColor = palette(colorPaletteIdx);
+    var c255 = vec3<u32>(paletteColor * 255);
     var colorU32 = atomicLoad(&paletteAccumulator[index]);
 
     var color = vec3<u32>(
@@ -114,7 +116,7 @@ fn updatePaletteAccumulator(index: u32, newColor: vec3<u32>) {
         (colorU32 >> 16) & 0xFF
     );
 
-    color += newColor;
+    color += c255;
     color /= 2;
     colorU32 = (0xFF << 24) | (u32(color.z & 0xFF) << 16) | (u32(color.y & 0xFF) << 8) | (u32(color.x & 0xFF));
     atomicStore(&paletteAccumulator[index], colorU32);
@@ -133,6 +135,14 @@ fn updateColorAccumulator(index: u32, newColor: vec3<f32>) {
     color /= 2;
     colorU32 = (0xFF << 24) | (u32(color.z & 0xFF) << 16) | (u32(color.y & 0xFF) << 8) | (u32(color.x & 0xFF));
     atomicStore(&colorAccumulator[index], colorU32);
+}
+
+// Since atomic<f32> isn't allowed, we increase the range of the accumulator from 0-1 to 0-1e4 to keep some precision as a u32.
+fn updatePaletteIndexAccumulator(index: u32, paletteIndex: f32) {
+    var palletteIndexU32 = u32(paletteIndex * 1e4);
+
+    var newValue = (atomicLoad(&paletteIndexAccumulator[index]) + palletteIndexU32) / 2;
+    atomicStore(&paletteIndexAccumulator[index], newValue);
 }
 
 fn swirlVariation(tp: vec2<f32>) -> vec2<f32> {
@@ -227,11 +237,10 @@ fn updateRenderData(pixel: vec2<u32>, componentIdx: u32) {
     let colorPaletteIdx = component.colorPaletteIdx;
     let idx = pixel.y * flames.resolution.x + pixel.x;
     var bucketValue = atomicAdd(&heatmap[idx], 1) + 1;
-    var color = palette(colorPaletteIdx);
-    var c255 = vec3<u32>(color * 255);
-
-    updatePaletteAccumulator(idx, c255);
+    
+    updatePaletteAccumulator(idx, colorPaletteIdx);
     updateColorAccumulator(idx, vec3<f32>(component.color.r, component.color.g, component.color.b));
+    updatePaletteIndexAccumulator(idx, colorPaletteIdx);
 
     if localHeatmapMax < bucketValue {
         localHeatmapMax = bucketValue;
@@ -245,10 +254,11 @@ fn updateRenderData3x(pixel: vec2<u32>, componentIdx: u32) {
 
     let idx = pixel.y * flames.resolution.x * 3u + pixel.x + hOffset;
     var bucketValue = atomicAdd(&heatmap[idx], 1) + 1;
-    var color = palette(colorPaletteIdx);
-    var c255 = vec3<u32>(color * 255);
-    updatePaletteAccumulator(idx, c255);
+
+    updatePaletteAccumulator(idx, colorPaletteIdx);
     updateColorAccumulator(idx, vec3<f32>(component.color.r, component.color.g, component.color.b));
+    updatePaletteIndexAccumulator(idx, colorPaletteIdx);
+   
     if flames.antialiasing != 0 {
         let bucketX = (pixel.x - pixel.x % 3) / 3;
         let bucketY = (pixel.y - pixel.y % 3) / 3;
