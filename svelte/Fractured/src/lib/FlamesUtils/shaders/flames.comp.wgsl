@@ -78,6 +78,8 @@ const maxVariationPerComponent = 16;
 const maxComponentPerFlames = 16;
 const iterationPerInvocation = 1000;
 
+const pi = 3.1415926;
+
 // Local heatmap cached value, to avoid using atomic operation until the end.
 var<private> localHeatmapMax = 0u;
 
@@ -103,6 +105,19 @@ fn smf32() -> f32 {
 
 fn c01(x: f32) -> f32 {
     return clamp(x, 0, 1);
+}
+
+fn rotate2d(p: vec2<f32>, offset: vec2<f32>, angle: f32) -> vec2<f32> {
+	let x = p.x - offset.x;
+	let y = p.y - offset.y;
+
+	let s = sin(angle);
+	let c = cos(angle);
+
+	return vec2<f32>(
+		x * c - s * y + offset.x,
+		x * s + c * y + offset.y
+    );
 }
 
 fn updatePaletteAccumulator(index: u32, colorPaletteIdx: f32) {
@@ -163,7 +178,7 @@ fn omega() -> f32 {
         return 0.;
     }
 
-    return 3.1415926;
+    return pi;
 }
 
 fn lambda() -> f32 {
@@ -271,14 +286,19 @@ fn applyFlames(p: vec2<f32>, componentIdx: u32) -> vec2<f32> {
 }
 
 
-// TODO: rotation
-fn worldCoordinatesToPixels(p: vec2<f32>, resolution: vec2<u32>) -> vec2<u32> {
+fn worldCoordinatesToPixels(p: vec2<f32>, resolution: vec2<u32>, rotation: f32) -> vec2<u32> {
     let pixel = vec2<f32>(
         (p.x + 2. * (f32(resolution.x) / f32(resolution.y))) * (f32(resolution.y) / 4.),
         (p.y + 2.) * (f32(resolution.y) / 4.)
     );
 
-    return vec2<u32>(round(pixel));
+    if (flames.spaceWarp.rotationalSymmetry == 1) {
+		return vec2<u32>(round(pixel));
+    }
+
+	let rPixel = rotate2d(pixel, vec2<f32>(resolution) / 2., rotation);
+
+    return vec2<u32>(round(rPixel));
 }
 
 fn updateRenderData(pixel: vec2<u32>, componentIdx: u32) {
@@ -291,7 +311,7 @@ fn updateRenderData(pixel: vec2<u32>, componentIdx: u32) {
     updateColorAccumulator(idx, vec3<f32>(component.color.r, component.color.g, component.color.b));
     updatePaletteIndexAccumulator(idx, colorPaletteIdx);
 
-    if localHeatmapMax < bucketValue {
+    if flames.antialiasing == 0 && localHeatmapMax < bucketValue {
         localHeatmapMax = bucketValue;
     }
 }
@@ -332,6 +352,15 @@ fn main(
 ) {
     initRandom(timeElapsed * ((global_invocation_id.x << 16) | global_invocation_id.y));
 
+    var rotation = 1.;
+
+    // With current implementation, only up to 64 rotation can be enabled
+    if (flames.spaceWarp.rotationalSymmetry != 1) {
+        let localId = f32(8 * local_invocation_id.x + local_invocation_id.y + 1);
+        rotation = localId * (2. * pi) / f32(flames.spaceWarp.rotationalSymmetry);
+        rotation = rotation % (2. * pi);
+    }
+
     let res3x = 3 * flames.resolution;
     var p = vec2(0.);
 
@@ -343,8 +372,8 @@ fn main(
         // p *= flames.spaceWarp.zoom;
         // p = applyMirror();
 
-        let pixel3x = worldCoordinatesToPixels(p, res3x);
-        let pixel = worldCoordinatesToPixels(p, flames.resolution);
+        let pixel3x = worldCoordinatesToPixels(p, res3x, rotation);
+        let pixel = worldCoordinatesToPixels(p, flames.resolution, rotation);
 
         if i > 20 && pixel3x.x > 0 && pixel3x.x < res3x.x && pixel3x.y > 0 && pixel3x.y < res3x.y {
            updateRenderData3x(pixel3x, componentIdx);
