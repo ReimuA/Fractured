@@ -145,12 +145,58 @@ fn updatePaletteIndexAccumulator(index: u32, paletteIndex: f32) {
     atomicStore(&paletteIndexAccumulator[index], newValue);
 }
 
+// See https://flam3.com/flame_draves.pdf - Appendix: Catalog of Variations
+fn theta(p: vec2<f32>) -> f32 {
+    return atan2(p.y, p.x);
+}
+
+fn phi(p: vec2<f32>) -> f32 {
+    return atan2(p.x, p.y);
+}
+
+fn r(p: vec2<f32>) -> f32 {
+    return length(p);
+}
+
+fn omega() -> f32 {
+     if (smf32() < 0.5) {
+        return 0.;
+    }
+
+    return 3.1415926;
+}
+
+fn lambda() -> f32 {
+    if (smf32() < 0.5) {
+        return -1.;
+    }
+
+    return 1.;
+}
+
+fn psi() -> f32 {
+    return smf32();
+}
+
+
 fn swirlVariation(tp: vec2<f32>) -> vec2<f32> {
     let r = length(tp);
     let r2 = r * r;
     let cos = cos(r2);
     let sin = sin(r2);
     return vec2<f32>(tp.x * sin - tp.y * cos, tp.x * cos + tp.y * sin);
+}
+
+fn juliaVariation(tp: vec2<f32>) -> vec2<f32> {
+    let r = r(tp);
+    let theta = theta(tp);
+    let omega = omega();
+    let rSqrt = sqrt(r);
+
+    return vec2(
+        rSqrt * cos(theta / 2. + omega),
+        rSqrt * sin(theta / 2. + omega)
+    );
 }
 
 fn applyVariation(tp: vec2<f32>, variation: WeightedVariation, transform: IFSTransform) -> vec2<f32> {
@@ -162,6 +208,9 @@ fn applyVariation(tp: vec2<f32>, variation: WeightedVariation, transform: IFSTra
         }
         case 3: {
             result = swirlVariation(tp);
+        }
+        case 13: {
+            result = juliaVariation(tp);
         }
         default: {
             result = tp; 
