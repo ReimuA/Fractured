@@ -265,6 +265,39 @@ fn spiralVariation(p: vec2<f32>) -> vec2<f32> {
     );
 }
 
+
+fn hyperbolicVariation(p: vec2<f32>) -> vec2<f32> {
+    let r = length(p);
+    let theta = theta(p);
+    return vec2<f32>(
+        sin(theta) / r,
+        r * cos(theta)
+    );
+}
+
+fn diamondVariation(p: vec2<f32>) -> vec2<f32> {
+    let r = length(p);
+    let theta = theta(p);
+    return vec2<f32>(
+        sin(theta) * cos(r),
+        sin(r) * cos(theta)
+    );
+}
+
+fn exVariation(p: vec2<f32>) -> vec2<f32> {
+    let r = length(p);
+    let theta = theta(p);
+    let p0 = sin(theta + r);
+    let p1 = cos(theta - r);
+    let p03 = p0 * p0 * p0;
+    let p13 = p1 * p1 * p1;
+
+    return vec2<f32>(
+        r * (p03 + p13),
+        r * (p03 - p13)
+    );
+}
+
 fn juliaVariation(tp: vec2<f32>) -> vec2<f32> {
     let r = r(tp);
     let theta = theta(tp);
@@ -310,6 +343,15 @@ fn applyVariation(tp: vec2<f32>, variation: WeightedVariation, transform: IFSTra
         }
         case 9: {
             result = spiralVariation(tp);
+        }
+        case 10: {
+            result = hyperbolicVariation(tp);
+        }
+        case 11: {
+            result = diamondVariation(tp);
+        }
+        case 12: {
+            result = exVariation(tp);
         }
         case 13: {
             result = juliaVariation(tp);
