@@ -1,3 +1,4 @@
+import { makeStructuredView } from "webgpu-utils";
 import { defaultRenderMode, renderModeToNumber, type Flames, type FlamesComponent } from "../Flames";
 import { variationToNumber } from "../Variations";
 import type { RenderData } from "../render";
@@ -30,7 +31,8 @@ function mapFlamesComponentToView(component: FlamesComponent) {
 }
 
 export function updateGPUBuffer(device: GPUDevice, renderData: RenderData, flames: Flames, renderDataBinding: RenderDataBinding, flamesBinding: FlamesBinding) {
-	flamesBinding.structuredView.set({
+	const structuredView = makeStructuredView(flamesBinding.flamesVariableDefinition)
+	structuredView.set({
 		resolution: [1920, 1080],
 		palette: {
 			a: [flames.namedPalette.palette.a.x, flames.namedPalette.palette.a.y, flames.namedPalette.palette.a.z ],
@@ -56,7 +58,7 @@ export function updateGPUBuffer(device: GPUDevice, renderData: RenderData, flame
 		components: flames.components.map(mapFlamesComponentToView)
 	})
 
-	device.queue.writeBuffer(flamesBinding.buffers.flames, 0, flamesBinding.structuredView.arrayBuffer)
+	device.queue.writeBuffer(flamesBinding.buffers.flames, 0, structuredView.arrayBuffer)
 
 	//device.queue.writeBuffer(renderDataBinding.buffers.pixels, 0, renderData.pixels);
 /* 

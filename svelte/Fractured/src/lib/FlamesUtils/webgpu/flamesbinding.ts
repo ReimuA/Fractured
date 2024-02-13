@@ -1,10 +1,10 @@
-import { makeShaderDataDefinitions, makeStructuredView, type StructuredView, } from "webgpu-utils"
+import { makeShaderDataDefinitions, makeStructuredView, type StructuredView, type VariableDefinition, } from "webgpu-utils"
 import blurshader from '$lib/FlamesUtils/shaders/blur.comp.wgsl?raw'
 
 export type FlamesBinding = {
     bindgroup: GPUBindGroup
     bindgroupLayout: GPUBindGroupLayout
-    structuredView: StructuredView
+    flamesVariableDefinition: VariableDefinition
     buffers: {
         gamma: GPUBuffer // Boolean
         logDensity: GPUBuffer // Boolean
@@ -82,7 +82,7 @@ export function createFlamesBinding(device: GPUDevice): FlamesBinding {
     })
 
     const timeElapsed = device.createBuffer({
-        size: structuredView.arrayBuffer.byteLength,
+        size: 4,
         usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
     })
 
@@ -101,7 +101,7 @@ export function createFlamesBinding(device: GPUDevice): FlamesBinding {
     return {
         bindgroup,
         bindgroupLayout,
-        structuredView,
+        flamesVariableDefinition: typeDefinition.uniforms.flames,
         buffers: {
             gamma,
             logDensity,
