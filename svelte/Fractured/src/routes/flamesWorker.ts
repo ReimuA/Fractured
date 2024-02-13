@@ -7,6 +7,7 @@ import blurshader from '$lib/FlamesUtils/shaders/blur.comp.wgsl?raw'
 import colorShader from '$lib/FlamesUtils/shaders/coloring.comp.wgsl?raw'
 import gammaShader from '$lib/FlamesUtils/shaders/gamma.comp.wgsl?raw'
 import flamesShader from '$lib/FlamesUtils/shaders/flames.comp.wgsl?raw'
+import resetShader from '$lib/FlamesUtils/shaders/reset.comp.wgsl?raw'
 import type { XY } from '$lib/FlamesUtils/mathu';
 import {
 	createRenderData,
@@ -18,6 +19,7 @@ import type { FlamesWorkerMessage } from './messageType';
 import { createRenderDataBinding, type RenderDataBinding } from '$lib/FlamesUtils/webgpu/renderDataBinding';
 import { createFlamesBinding, type FlamesBinding } from '$lib/FlamesUtils/webgpu/flamesbinding';
 import { updateGPUBuffer } from '$lib/FlamesUtils/webgpu/renderpass';
+import { createPipeline } from '$lib/FlamesUtils/webgpu/pipeline';
 
 let flames: Flames | undefined;
 let p: XY = { x: 0, y: 0 };
@@ -48,6 +50,7 @@ let colorPipeline!: GPUComputePipeline
 let gammaPipeline!: GPUComputePipeline
 let aaPipeline!: GPUComputePipeline
 let pipelineLayout!: GPUPipelineLayout
+let resetPipeline!: GPUComputePipeline
 
 
 function addPipeline(pass: GPUComputePassEncoder, pipeline: GPUComputePipeline, sizeX: number = 1920, sizeY: number = 1080) {
@@ -91,21 +94,26 @@ async function frameWebGpu(renderData: RenderData, ctx: OffscreenCanvasRendering
 	ctx.putImageData(image, 0, 0);
 	outputReadBuffer.unmap();
 }
-/* 
-function resetGPUData() {
-	device.queue.writeBuffer(renderDataBinding.buffers.heatmapMax, 0, new Uint32Array([renderData.heatmapMax]))
 
+function resetFrame() {
+	let encoder = device.createCommandEncoder({ label: 'Reset render data encoder' });
+	let pass = encoder.beginComputePass();
+
+	addPipeline(pass, resetPipeline);
+
+	pass.end();
+	device.queue.submit([encoder.finish()]);
 }
- */
+
 async function updateCanvas(ctx: OffscreenCanvasRenderingContext2D) {
 	if (!renderData3x || !renderData || !canvasContent || !flames) return;
-
+/* 
 	if (!flames.GPUCompute) {
 		console.log("iteration " + (25000 * nbIteration));
 		p = iterateRenderData(flames, renderData, renderData3x, p, rotation, 25000, 25000 * nbIteration++);
 
 	}
-
+ */
 	if (flames.spaceWarp.rotationalSymmetry > 1)
 		rotation = (rotation + (2 * Math.PI) / flames.spaceWarp.rotationalSymmetry) % (2 * Math.PI);
 	
@@ -125,7 +133,6 @@ async function init(newFlames: Flames, canvas: OffscreenCanvas) {
 
 	const adapter = await navigator.gpu.requestAdapter();
 	device = await adapter!.requestDevice();
-	console.log(device.limits)
 	rDataBinding = createRenderDataBinding(device)
 	flamesBinding = createFlamesBinding(device)
 
@@ -138,45 +145,12 @@ async function init(newFlames: Flames, canvas: OffscreenCanvas) {
 
 	pipelineLayout = device.createPipelineLayout({ bindGroupLayouts: [rDataBinding.bindgroupLayout, flamesBinding.bindgroupLayout] });
 
-	flamesPipeline = device.createComputePipeline({
-		layout: pipelineLayout,
-		compute: {
-			module: device.createShaderModule({ code: flamesShader }),
-			entryPoint: 'main'
-		}
-	});
-
-	colorPipeline = device.createComputePipeline({
-		layout: pipelineLayout,
-		compute: {
-			module: device.createShaderModule({ code: colorShader }),
-			entryPoint: 'main'
-		}
-	});
-
-	aaPipeline = device.createComputePipeline({
-		layout: pipelineLayout,
-		compute: {
-			module: device.createShaderModule({ code: aashader }),
-			entryPoint: 'main'
-		}
-	});
-
-	gammaPipeline = device.createComputePipeline({
-		layout: pipelineLayout,
-		compute: {
-			module: device.createShaderModule({ code: gammaShader }),
-			entryPoint: 'main'
-		}
-	})
-
-	blurPipeline = device.createComputePipeline({
-		layout: pipelineLayout,
-		compute: {
-			module: device.createShaderModule({ code: blurshader }),
-			entryPoint: 'main'
-		}
-	});
+	flamesPipeline = createPipeline(device, pipelineLayout, flamesShader);
+	colorPipeline = createPipeline(device, pipelineLayout, colorShader);
+	aaPipeline = createPipeline(device, pipelineLayout,  aashader);
+	gammaPipeline = createPipeline(device, pipelineLayout, gammaShader)
+	blurPipeline = createPipeline(device, pipelineLayout, blurshader);
+	resetPipeline = createPipeline(device, pipelineLayout, resetShader);
 
 	canvasResolution = { x: canvas.width, y: canvas.height };
 
@@ -200,6 +174,7 @@ function reset(newFlames: Flames) {
 	flames = newFlames;
 	if (renderData3x) resetRenderData(renderData3x);
 	if (renderData) resetRenderData(renderData);
+	if (resetPipeline) resetFrame();
 }
 
 function softreset(newFlames: Flames) {
@@ -209,11 +184,11 @@ function softreset(newFlames: Flames) {
 	p = { x: 0, y: 0 };
 	if (renderData3x) resetRenderData(renderData3x);
 	if (renderData) resetRenderData(renderData);
+	if (resetPipeline) resetFrame();
 }
 
 function update(newFlames: Flames) {
 	flames = newFlames;
-
 }
 
 onmessage = async ({ data }: MessageEvent<FlamesWorkerMessage>) => {

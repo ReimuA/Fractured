@@ -26,8 +26,6 @@ const createBindGroupLayout = (device: GPUDevice) => device.createBindGroupLayou
 export function createRenderDataBinding(device: GPUDevice): RenderDataBinding {
     const bindgroupLayout = createBindGroupLayout(device)
 
-    
-
     const heatmapMax = device.createBuffer({
         size: 4,
         usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
@@ -46,7 +44,6 @@ export function createRenderDataBinding(device: GPUDevice): RenderDataBinding {
         size: 1920 * 1080 * 4 * 10 ,
         usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
     });
-
 
     const paletteIndexAccumulator = device.createBuffer({
         size: 1920 * 1080 * 4 * 10,
