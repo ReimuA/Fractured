@@ -193,6 +193,10 @@ fn psi() -> f32 {
     return smf32();
 }
 
+fn modn(n: f32, m: f32) -> f32 {
+	return ((n % m) + m) % m;
+}
+
 fn sinusoidalVariation(p: vec2<f32>) -> vec2<f32> {
     return sin(p);
 }
@@ -339,6 +343,49 @@ fn fisheyeVariation(p: vec2<f32>) -> vec2<f32> {
     );
 }
 
+fn exponentialVariation(p: vec2<f32>) -> vec2<f32> {
+    let f = exp(p.x - 1);
+    return vec2<f32>(
+        f * cos(pi * p.y),
+        f * sin(pi * p.y)
+    );
+}
+
+fn powerVariation(p: vec2<f32>) -> vec2<f32> {
+    let r = length(p);
+    let theta = theta(p);
+    let f = pow(r, sin(theta));
+
+    return vec2<f32>(
+        f * cos(theta),
+        f * sin(theta)
+    );
+}
+
+
+fn fanVariation(p: vec2<f32>, transform: IFSTransform) -> vec2<f32> {
+    let r = length(p);
+    let theta = theta(p);
+    let t = pi * transform.c * transform.c;
+    let f = transform.f;
+
+    if (modn(theta + f, t) > t / 2) {
+        return vec2<f32>(
+            cos(theta - t / 2),
+            sin(theta - t / 2)
+        );
+    }
+
+    return vec2<f32>(
+        r * cos(theta + t / 2),
+        r * sin(theta + t / 2)
+    );
+}
+
+fn squareVariation() -> vec2<f32> {
+    return vec2<f32>(psi() - 0.5, psi() - 0.5);
+}
+
 fn applyVariation(tp: vec2<f32>, variation: WeightedVariation, transform: IFSTransform) -> vec2<f32> {
     var result = vec2(0.);
 
@@ -393,6 +440,18 @@ fn applyVariation(tp: vec2<f32>, variation: WeightedVariation, transform: IFSTra
         }
         case 16: {
             result = fisheyeVariation(tp);
+        }
+        case 17: {
+            result = exponentialVariation(tp);
+        }
+        case 18: {
+            result = powerVariation(tp);
+        }
+        case 19: {
+            result = fanVariation(tp, transform);
+        }
+        case 20: {
+            result = squareVariation();
         }
         default: {
             result = tp; 
