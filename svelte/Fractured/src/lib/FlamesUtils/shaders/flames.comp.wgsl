@@ -211,6 +211,60 @@ fn swirlVariation(tp: vec2<f32>) -> vec2<f32> {
     return vec2<f32>(tp.x * sin - tp.y * cos, tp.x * cos + tp.y * sin);
 }
 
+fn horseshoeVariation(p: vec2<f32>) -> vec2<f32> {
+		let r = length(p);
+		let invR = 1. / r;
+		return vec2<f32>(
+			invR * (p.x + p.y) * (p.x - p.y),
+			invR * 2. * p.x * p.y
+    );
+}
+
+fn polarVariation(p: vec2<f32>) -> vec2<f32> {
+    return vec2<f32>(
+        theta(p) / pi,
+        length(p) - 1.
+    );
+}
+
+fn handkerchieVariation(p: vec2<f32>) -> vec2<f32> {
+    let r = length(p);
+    let theta = theta(p);
+    return vec2<f32>(
+        r * sin(theta + r),
+        r * cos(theta - r)
+    );
+}
+
+fn heartVariation(p: vec2<f32>) -> vec2<f32> {
+    let r = length(p);
+    let theta = theta(p);
+    return vec2<f32>(
+        r * sin(theta * r),
+        r * -cos(theta * r)
+    );
+}
+
+fn discVariation(p: vec2<f32>) -> vec2<f32> {
+    let r = length(p);
+    let theta = theta(p);
+    let f = theta / pi;
+    return vec2<f32>(
+        f * sin(pi * r),
+        f * cos(pi * r)
+    );
+}
+
+fn spiralVariation(p: vec2<f32>) -> vec2<f32> {
+    let r = length(p);
+    let theta = theta(p);
+    let invR = 1. / r;
+    return vec2<f32>(
+            invR * (cos(theta) + sin(r)),
+            invR * (sin(theta) - cos(r))
+    );
+}
+
 fn juliaVariation(tp: vec2<f32>) -> vec2<f32> {
     let r = r(tp);
     let theta = theta(tp);
@@ -238,6 +292,24 @@ fn applyVariation(tp: vec2<f32>, variation: WeightedVariation, transform: IFSTra
         }
         case 3: {
             result = swirlVariation(tp);
+        }
+        case 4: {
+            result = horseshoeVariation(tp);
+        }
+        case 5: {
+            result = polarVariation(tp);
+        }
+        case 6: {
+            result = handkerchieVariation(tp);
+        }
+        case 7: {
+            result = heartVariation(tp);
+        }
+        case 8: {
+            result = discVariation(tp);
+        }
+        case 9: {
+            result = spiralVariation(tp);
         }
         case 13: {
             result = juliaVariation(tp);
