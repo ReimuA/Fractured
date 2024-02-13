@@ -285,6 +285,42 @@ fn applyFlames(p: vec2<f32>, componentIdx: u32) -> vec2<f32> {
     return applyComponent(p, flames.finalComponent);
 }
 
+fn applyMirror(p: vec2<f32>, localIteration: u32) -> vec2<f32> {
+    let mX = flames.spaceWarp.mirrorX;
+	let mY = flames.spaceWarp.mirrorY;
+
+	if (mX == 0 && mY == 0) {
+        return p;
+    }
+
+    if (mY == 0 && mX == 1) {
+        if (localIteration % 2 == 0) {
+            return vec2<f32>(p.x, p.y);
+        }
+        return vec2<f32>(p.x, -p.y);
+    }
+
+    if (mY == 1 && mX == 0) {
+         if (localIteration % 2 == 0) {
+            return vec2<f32>(p.x, p.y);
+        }
+        return vec2<f32>(-p.x, p.y);
+    }
+
+    if (localIteration % 4 == 0) {
+        return vec2<f32>(-p.x, p.y);
+    }
+
+    if (localIteration % 3 == 0) {
+        return vec2<f32>(-p.x, -p.y);
+    }
+
+    if (localIteration % 2 == 0) {
+        return vec2<f32>(p.x, -p.y);
+    }
+
+    return p;
+}
 
 fn worldCoordinatesToPixels(p: vec2<f32>, resolution: vec2<u32>, rotation: f32) -> vec2<u32> {
     let pixel = vec2<f32>(
@@ -364,13 +400,13 @@ fn main(
     let res3x = 3 * flames.resolution;
     var p = vec2(0.);
 
-    for (var i = 0; i < iterationPerInvocation; i++) {
+    for (var i = 0u; i < iterationPerInvocation; i++) {
         var componentIdx = randomComponentIdx();
 
         p = applyFlames(p, componentIdx);
 
         // p *= flames.spaceWarp.zoom;
-        // p = applyMirror();
+        p = applyMirror(p, i);
 
         let pixel3x = worldCoordinatesToPixels(p, res3x, rotation);
         let pixel = worldCoordinatesToPixels(p, flames.resolution, rotation);
