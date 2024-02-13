@@ -49,7 +49,7 @@ struct FlamesComponent {
 }
 
 struct SpaceWarp {
-    zoom: u32,
+    zoom: f32,
     rotationalSymmetry: u32,
     mirrorX: u32,
     mirrorY: u32,

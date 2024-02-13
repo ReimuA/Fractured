@@ -405,7 +405,7 @@ fn main(
 
         p = applyFlames(p, componentIdx);
 
-        // p *= flames.spaceWarp.zoom;
+        p *= flames.spaceWarp.zoom;
         p = applyMirror(p, i);
 
         let pixel3x = worldCoordinatesToPixels(p, res3x, rotation);
