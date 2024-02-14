@@ -20,7 +20,7 @@ export class FlamesBuilder {
 	public densityEstimation: DensityEstimation | null = null;
 	public renderMode: RenderMode = defaultRenderMode;
 	public colorPalette: NamedColorPalette = namedPalettesList[0];
-	public spaceWarp: SpaceWarp = { rotationalSymmetry: 1, mirrorX: false, mirrorY: false, zoom: 1 };
+	public spaceWarp: SpaceWarp = { rotationalSymmetry: 3, mirrorX: false, mirrorY: false, zoom: 1 };
 
 	// Field for random generation
 	private seed = 0
