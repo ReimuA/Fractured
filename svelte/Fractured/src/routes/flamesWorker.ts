@@ -1,12 +1,14 @@
-import { localBlur } from '$lib/FlamesUtils/blur';
-import { updateFlamesColor } from '$lib/FlamesUtils/colorRendering';
 import {
 	createFlamesFromJson,
-	defaultRenderMode,
-	type Flames
-} from '../lib/FlamesUtils/Flames';
-import { applyAA3x, applyNoAA } from '../lib/FlamesUtils/antialiasing';
-import { c01, type XY } from '../lib/FlamesUtils/mathu';
+	type Flames,
+} from '$lib/FlamesUtils/Flames';
+import aashader from '$lib/FlamesUtils/shaders/aa.comp.wgsl?raw'
+import blurshader from '$lib/FlamesUtils/shaders/blur.comp.wgsl?raw'
+import colorShader from '$lib/FlamesUtils/shaders/coloring.comp.wgsl?raw'
+import gammaShader from '$lib/FlamesUtils/shaders/gamma.comp.wgsl?raw'
+import flamesShader from '$lib/FlamesUtils/shaders/flames.comp.wgsl?raw'
+import resetShader from '$lib/FlamesUtils/shaders/reset.comp.wgsl?raw'
+import type { XY } from '$lib/FlamesUtils/mathu';
 import {
 	createRenderData,
 	iterateRenderData,
@@ -14,6 +16,10 @@ import {
 	type RenderData
 } from '../lib/FlamesUtils/render';
 import type { FlamesWorkerMessage } from './messageType';
+import { createRenderDataBinding, type RenderDataBinding } from '$lib/FlamesUtils/webgpu/renderDataBinding';
+import { createFlamesBinding, type FlamesBinding } from '$lib/FlamesUtils/webgpu/flamesbinding';
+import { updateGPUBuffer } from '$lib/FlamesUtils/webgpu/renderpass';
+import { createPipeline } from '$lib/FlamesUtils/webgpu/pipeline';
 
 let flames: Flames | undefined;
 let p: XY = { x: 0, y: 0 };
@@ -32,59 +38,119 @@ let renderData3x: RenderData | undefined;
 
 let canvasContent: Uint8ClampedArray | undefined;
 
-function updateCanvas(ctx: OffscreenCanvasRenderingContext2D) {
-	if (!renderData3x || !renderData || !canvasContent || !flames) return;
+let outputReadBuffer!: GPUBuffer
 
-	p = iterateRenderData(flames, renderData, renderData3x, p, rotation, 5000, 5000 * nbIteration++);
-	if (flames.spaceWarp.rotationalSymmetry > 1)
-		rotation = (rotation + (2 * Math.PI) / flames.spaceWarp.rotationalSymmetry) % (2 * Math.PI);
+let rDataBinding!: RenderDataBinding
+let flamesBinding!: FlamesBinding
 
-	updateFlamesColor(flames, flames.antialiasing ? renderData3x : renderData);
+let device: GPUDevice;
+let blurPipeline!: GPUComputePipeline
+let flamesPipeline!: GPUComputePipeline
+let colorPipeline!: GPUComputePipeline
+let gammaPipeline!: GPUComputePipeline
+let aaPipeline!: GPUComputePipeline
+let pipelineLayout!: GPUPipelineLayout
+let resetPipeline!: GPUComputePipeline
 
-	let pixelsBuffer = flames.antialiasing ? renderData3x.pixels : renderData.pixels
 
-	if (flames.densityEstimation && !flames.antialiasing) {
-		const maxSigma = flames.densityEstimation.maxSigma
-		const minSigma = flames.densityEstimation.minSigma
-
-		const jpp = new Uint8ClampedArray(renderData.pixels.length)
-		
-		for (let i = 0; i < renderData.heatmap.length; i++) {
-			const pixelsIdx = i * 4
-			const max = Math.log10(renderData.heatmapMax / 100)
-			const current = Math.log10(renderData.heatmap[i]) 
-			const sigma = maxSigma - c01((current / max)) *  (maxSigma - minSigma)
-			/* jpp[pixelsIdx] = 255 * sigma / maxSigma
-			jpp[pixelsIdx + 1] = 255 * sigma / maxSigma
-			jpp[pixelsIdx + 3] = 255 */
-			localBlur(pixelsIdx, flames.resolution, renderData.pixels, jpp, sigma)
-		}
-
-		pixelsBuffer = jpp
-	}
-
-	if (flames.antialiasing)
-		applyAA3x(
-			canvasResolution,
-			renderData3x.pixels,
-			canvasContent,
-			renderData3x.heatmap,
-			flames.renderMode !== defaultRenderMode,
-			flames.gammaCorrection
-		);
-	else
-		applyNoAA(canvasResolution, pixelsBuffer, renderData.heatmap, renderData.heatmapMax, canvasContent, flames.renderMode !== defaultRenderMode, flames.gammaCorrection);
-
-	ctx.putImageData(new ImageData(canvasContent, canvasResolution.x, canvasResolution.y), 0, 0);
+function addPipeline(pass: GPUComputePassEncoder, pipeline: GPUComputePipeline, sizeX: number = 1920, sizeY: number = 1080) {
+	pass.setPipeline(pipeline);
+	pass.setBindGroup(0, rDataBinding.bindgroup);
+	pass.setBindGroup(1, flamesBinding.bindgroup);
+	pass.dispatchWorkgroups(sizeX / 8, sizeY / 8);
 }
 
-function init(newFlames: Flames, canvas: OffscreenCanvas) {
+async function frameWebGpu(renderData: RenderData, ctx: OffscreenCanvasRenderingContext2D) {
+	updateGPUBuffer(device, renderData, flames!, rDataBinding, flamesBinding)
+
+	let outputbuffer = rDataBinding.buffers.finalImage
+	let encoder = device.createCommandEncoder({ label: 'Compute encoder' });
+
+	let pass = encoder.beginComputePass();
+
+	addPipeline(pass, flamesPipeline, 64, 64);
+	addPipeline(pass, colorPipeline);
+
+	if (flames?.antialiasing)
+		addPipeline(pass, aaPipeline)
+	else
+		addPipeline(pass, gammaPipeline)
+
+	if (flames?.densityEstimation) {
+		addPipeline(pass, blurPipeline)
+		outputbuffer = rDataBinding.buffers.blurredImage
+	}
+
+	pass.end();
+
+	encoder.copyBufferToBuffer(outputbuffer, 0, outputReadBuffer, 0, outputReadBuffer.size);
+
+	device.queue.submit([encoder.finish()]);
+
+	await outputReadBuffer.mapAsync(GPUMapMode.READ);
+
+	const imageData = new Uint8ClampedArray(outputReadBuffer.getMappedRange());
+	const image = new ImageData(imageData, 1920, 1080);
+	ctx.putImageData(image, 0, 0);
+	outputReadBuffer.unmap();
+}
+
+function resetFrame() {
+	let encoder = device.createCommandEncoder({ label: 'Reset render data encoder' });
+	let pass = encoder.beginComputePass();
+
+	addPipeline(pass, resetPipeline);
+
+	pass.end();
+	device.queue.submit([encoder.finish()]);
+}
+
+async function updateCanvas(ctx: OffscreenCanvasRenderingContext2D) {
+	if (!renderData3x || !renderData || !canvasContent || !flames) return;
+/* 
+	if (!flames.GPUCompute) {
+		console.log("iteration " + (25000 * nbIteration));
+		p = iterateRenderData(flames, renderData, renderData3x, p, rotation, 25000, 25000 * nbIteration++);
+
+	}
+ */
+	if (flames.spaceWarp.rotationalSymmetry > 1)
+		rotation = (rotation + (2 * Math.PI) / flames.spaceWarp.rotationalSymmetry) % (2 * Math.PI);
+	
+	let rData = flames.antialiasing ? renderData3x : renderData;
+	const time = Date.now()
+	await frameWebGpu(rData, ctx)
+	console.log('Frame cost : ' + (Date.now() - time) + ', Total iteration :' + ((nbIteration++) * 1000 * 64 * 64))
+}
+
+async function init(newFlames: Flames, canvas: OffscreenCanvas) {
 	const ctx = canvas.getContext('2d');
 
 	if (ctx === null) {
 		console.error('Failure to initialize the flames worker due to invaldie canvas context');
 		return;
 	}
+
+	const adapter = await navigator.gpu.requestAdapter();
+	device = await adapter!.requestDevice();
+	rDataBinding = createRenderDataBinding(device)
+	flamesBinding = createFlamesBinding(device)
+
+
+	outputReadBuffer = device.createBuffer({
+		size: 1920 * 1080 * 4,
+		usage: GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST
+	});
+
+
+	pipelineLayout = device.createPipelineLayout({ bindGroupLayouts: [rDataBinding.bindgroupLayout, flamesBinding.bindgroupLayout] });
+
+	flamesPipeline = createPipeline(device, pipelineLayout, flamesShader);
+	colorPipeline = createPipeline(device, pipelineLayout, colorShader);
+	aaPipeline = createPipeline(device, pipelineLayout,  aashader);
+	gammaPipeline = createPipeline(device, pipelineLayout, gammaShader)
+	blurPipeline = createPipeline(device, pipelineLayout, blurshader);
+	resetPipeline = createPipeline(device, pipelineLayout, resetShader);
 
 	canvasResolution = { x: canvas.width, y: canvas.height };
 
@@ -95,9 +161,9 @@ function init(newFlames: Flames, canvas: OffscreenCanvas) {
 
 	requestAnimationFrame(flamesIteration);
 
-	function flamesIteration() {
+	async function flamesIteration() {
 		if (flames !== undefined && ctx) {
-			updateCanvas(ctx);
+			await updateCanvas(ctx);
 		}
 		setTimeout(() => requestAnimationFrame(flamesIteration), 1000 / 60);
 	}
@@ -108,25 +174,28 @@ function reset(newFlames: Flames) {
 	flames = newFlames;
 	if (renderData3x) resetRenderData(renderData3x);
 	if (renderData) resetRenderData(renderData);
+	if (resetPipeline) resetFrame();
 }
 
 function softreset(newFlames: Flames) {
 	rotation = 0;
 	flames = newFlames;
+
 	p = { x: 0, y: 0 };
 	if (renderData3x) resetRenderData(renderData3x);
 	if (renderData) resetRenderData(renderData);
+	if (resetPipeline) resetFrame();
 }
 
 function update(newFlames: Flames) {
 	flames = newFlames;
 }
 
-onmessage = ({ data }: MessageEvent<FlamesWorkerMessage>) => {
+onmessage = async ({ data }: MessageEvent<FlamesWorkerMessage>) => {
 	const flames = createFlamesFromJson(data.rawFlames);
 	switch (data.resetType) {
 		case 'init':
-			if (data.canvasContext) init(flames, data.canvasContext);
+			if (data.canvasContext) await init(flames, data.canvasContext);
 			break;
 		case 'full':
 			reset(flames);

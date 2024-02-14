@@ -13,7 +13,7 @@
 		let dEstimation: DensityEstimation | null = null
 
 		if (densityEstimation) {
-			dEstimation = {minSigma: 0, maxSigma: 3}
+			dEstimation = {minSigma, maxSigma}
 		}
 
 		flamesStore.update((value) => {

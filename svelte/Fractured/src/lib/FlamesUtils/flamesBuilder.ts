@@ -130,6 +130,7 @@ export class FlamesBuilder {
 		const variations = this.createRandomVariations(variationsCount, variationsPools);
 
 		return {
+			enabled: true,
 			color: {
 				r: this.prng(),
 				g: this.prng(),
