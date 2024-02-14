@@ -6,7 +6,7 @@
 	let densityEstimation = false;
 	let antialiased = false;
 	let minSigma = 0
-	let maxSigma = 3
+	let maxSigma = .7
     
 
 	function updateDensityEstimation() {
