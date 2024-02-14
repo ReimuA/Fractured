@@ -1,5 +1,42 @@
 {
-  "devDependencies": {
-    "tailwindcss": "^3.3.3"
-  }
+	"name": "fractured",
+	"version": "0.0.1",
+	"private": true,
+	"scripts": {
+		"dev": "vite dev",
+		"build": "vite build",
+		"preview": "vite preview",
+		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+		"test": "vitest",
+		"gh-pages": "npm run build && npx gh-pages -d build",
+		"lint": "prettier --plugin-search-dir . --check . && eslint .",
+		"format": "prettier --plugin-search-dir . --write ."
+	},
+	"devDependencies": {
+		"@sveltejs/adapter-auto": "^3.1.1",
+		"@sveltejs/kit": "^2.5.0",
+		"@typescript-eslint/eslint-plugin": "^7.0.1",
+		"@typescript-eslint/parser": "^7.0.1",
+		"autoprefixer": "^10.4.14",
+		"eslint": "^8.28.0",
+		"eslint-config-prettier": "^9.1.0",
+		"eslint-plugin-svelte": "^2.30.0",
+		"postcss": "^8.4.27",
+		"prettier": "^3.2.5",
+		"prettier-plugin-svelte": "^3.2.1",
+		"svelte": "^4.0.5",
+		"svelte-check": "^3.4.3",
+		"tailwindcss": "^3.3.3",
+		"tslib": "^2.4.1",
+		"typescript": "^5.0.0",
+		"vite": "^5.1.1",
+		"vitest": "^1.2.2"
+	},
+	"type": "module",
+	"dependencies": {
+		"@sveltejs/adapter-static": "^3.0.1",
+		"@webgpu/types": "^0.1.40",
+		"webgpu-utils": "^1.5.0"
+	}
 }
