@@ -1,5 +1,5 @@
 import { makeStructuredView } from "webgpu-utils";
-import { defaultRenderMode, renderModeToNumber, type Flames, type FlamesComponent } from "../Flames";
+import { heatmapRenderMode, renderModeToNumber, type Flames, type FlamesComponent } from "../Flames";
 import { variationToNumber } from "../Variations";
 import type { RenderData } from "../render";
 import type { FlamesBinding } from "./flamesbinding";
@@ -76,7 +76,7 @@ export function updateGPUBuffer(device: GPUDevice, renderData: RenderData, flame
 	device.queue.writeBuffer(flamesBinding.buffers.timeElapsed, 0, new Uint32Array([Date.now()]))
 	device.queue.writeBuffer(renderDataBinding.buffers.heatmapMax, 0, new Uint32Array([renderData.heatmapMax]))
 	device.queue.writeBuffer(flamesBinding.buffers.gamma, 0, new Float32Array([flames!.gammaCorrection]))
-	device.queue.writeBuffer(flamesBinding.buffers.logDensity, 0, new Float32Array([Number(flames!.renderMode != defaultRenderMode)]))
+	device.queue.writeBuffer(flamesBinding.buffers.logDensity, 0, new Float32Array([Number(flames!.renderMode != heatmapRenderMode)]))
 	device.queue.writeBuffer(flamesBinding.buffers.densityEstimation, 0, new Float32Array([flames?.densityEstimation ? 1 : 0, flames?.densityEstimation?.minSigma ?? 0, flames?.densityEstimation?.maxSigma ?? 0]))
 	device.queue.writeBuffer(flamesBinding.buffers.antialiasing, 0, new Float32Array([flames.antialiasing ? 1 : 0]))
 }

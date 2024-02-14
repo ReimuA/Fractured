@@ -1,5 +1,5 @@
 import {
-	defaultRenderMode,
+	heatmapRenderMode,
 	type DensityEstimation,
 	type Flames,
 	type FlamesComponent,
@@ -18,7 +18,7 @@ export class FlamesBuilder {
 	public antialiasing = false;
 	public gammaCorrection = 0.454545;
 	public densityEstimation: DensityEstimation | null = null;
-	public renderMode: RenderMode = defaultRenderMode;
+	public renderMode: RenderMode = heatmapRenderMode;
 	public colorPalette: NamedColorPalette = namedPalettesList[0];
 	public spaceWarp: SpaceWarp = { rotationalSymmetry: 3, mirrorX: false, mirrorY: false, zoom: 1 };
 

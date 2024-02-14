@@ -73,7 +73,7 @@ struct Flames {
 
 @group(1) @binding(4) var<uniform> flames: Flames;
 
-const DEFAULT = 0u;
+const HEATMAP = 0u;
 const STRUCTURAL = 1u;
 const STRUCTURAL_PALETTE = 2u;
 const STRUCTURAL_PALETTE_INDEX = 3u;
@@ -96,7 +96,7 @@ fn palette(t: f32) -> vec3<f32> {
     );
 }
 
-fn defaultColoring(idx: u32) -> vec3<f32> {
+fn heatmapColoring(idx: u32) -> vec3<f32> {
     let hValue = heatmap[idx];
     if hValue == 0 {
         return vec3(0);
@@ -127,8 +127,8 @@ fn coloring(pIdx: u32, hIdx: u32) -> u32 {
 
     let renderMode = flames.renderMode;
     var c: vec3<f32>;
-    if renderMode == DEFAULT {
-        c = defaultColoring(hIdx) * 255.;
+    if renderMode == HEATMAP {
+        c = heatmapColoring(hIdx) * 255.;
     }
     if renderMode == STRUCTURAL_PALETTE_INDEX {
         c = palette(f32(paletteIndexAccumulator[hIdx]) / 1e4)  * 255.;

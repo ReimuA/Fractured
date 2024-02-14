@@ -10,13 +10,13 @@ export type SpaceWarp = {
 	mirrorY: boolean;
 };
 
-export type RenderMode = 'Default' | 'Structural' | 'Structural (Palette)' | 'Structural (Palette index)';
-export const defaultRenderMode: RenderMode = 'Default';
+export type RenderMode = 'Heatmap' | 'Structural' | 'Structural (Palette)' | 'Structural (Palette index)';
+export const heatmapRenderMode: RenderMode = 'Heatmap';
 export const structuralRenderMode: RenderMode = 'Structural';
 export const structularPaletteRenderMode: RenderMode = 'Structural (Palette)';
 export const structuralPaletteIndexRenderMode: RenderMode = 'Structural (Palette index)';
 export const renderModeList = [
-	defaultRenderMode,
+	heatmapRenderMode,
 	structuralRenderMode,
 	structularPaletteRenderMode,
 	structuralPaletteIndexRenderMode
@@ -89,7 +89,7 @@ export function createFlamesFromJson(raw: string) {
 
 export function renderModeToNumber(x: RenderMode): 0 | 1 | 2 | 3 {
 	switch (x) {
-		case "Default": return 0
+		case "Heatmap": return 0
 		case "Structural": return 1
 		case "Structural (Palette)": return 2
 		case "Structural (Palette index)": return 3
