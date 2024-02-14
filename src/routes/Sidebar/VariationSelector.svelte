@@ -1,13 +1,18 @@
 <script lang="ts">
 	import { allVariations } from '$lib/FlamesUtils/Variations';
+	import { xyLength } from '$lib/FlamesUtils/mathu';
 	import { flamesBuilderStore, flamesStore } from '../stores';
 
-	let variations = allVariations.map((v, idx) => {
+	let variations = allVariations.map((v) => {
 		return {
 			variation: v,
-			selected: idx === 0 || Math.random() < 0.2
+			selected: Math.random() < 0.2
 		};
 	});
+
+	if (!variations.some(x => x.selected))
+		variations[0].selected = true;
+
 	updateVariationPools();
 
 	function updateVariationPools() {
