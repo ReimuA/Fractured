@@ -5,9 +5,9 @@ import {
 	type FlamesComponent,
 	type RenderMode,
 	type SpaceWarp
-} from './Flames';
+} from './flames';
 import { createTransform, type IFSTransform } from './IFSTransform';
-import { allVariations, getVariationFromname, type Variation, type WeightedVariation } from './Variations';
+import { allVariations, getVariationFromname, type Variation, type WeightedVariation } from './variations';
 import type { XY, iRange } from './mathu';
 import { namedPalettesList, type NamedColorPalette } from './palette';
 import { splitmix32 } from './random';

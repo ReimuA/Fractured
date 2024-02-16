@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { allVariations } from '$lib/FlamesUtils/Variations';
+	import { allVariations } from '$lib/FlamesUtils/variations';
 	import { flamesBuilderStore, flamesStore } from '../stores';
 
 	let variations = allVariations.map((v) => {

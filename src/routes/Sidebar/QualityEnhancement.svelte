@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { DensityEstimation } from "$lib/FlamesUtils/Flames";
+	import type { DensityEstimation } from "$lib/FlamesUtils/flames";
 	import { flamesStore } from "../stores";
 
 	let gammaCorrection: number = 0.454545

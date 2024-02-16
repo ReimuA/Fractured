@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { renderModeList } from '$lib/FlamesUtils/Flames';
+	import { renderModeList } from '$lib/FlamesUtils/flames';
 	import { namedPalettesList } from '$lib/FlamesUtils/palette';
 	import { writable } from 'svelte/store';
 	import { flamesBuilderStore, flamesStore } from '../stores';

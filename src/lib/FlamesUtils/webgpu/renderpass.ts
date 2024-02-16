@@ -1,5 +1,5 @@
 import { makeStructuredView } from "webgpu-utils";
-import { heatmapRenderMode, renderModeToNumber, type Flames, type FlamesComponent } from "../Flames";
+import { heatmapRenderMode, renderModeToNumber, type Flames, type FlamesComponent } from "../flames";
 import type { FlamesBinding } from "./flamesbinding";
 import type { RenderDataBinding } from "./renderDataBinding";
 

@@ -1,6 +1,6 @@
 import { writable } from 'svelte/store';
 import { FlamesBuilder } from '$lib/FlamesUtils/flamesBuilder';
-import type { Flames } from '$lib/FlamesUtils/Flames';
+import type { Flames } from '$lib/FlamesUtils/flames';
 
 export type flamesStoreValue = {
 	flames: Flames;

@@ -1,5 +1,5 @@
 import type { IFSTransform } from './IFSTransform';
-import { getVariationFromname, type WeightedVariation } from './Variations';
+import { getVariationFromname, type WeightedVariation } from './variations';
 import type { Color, XY } from './mathu';
 import type { NamedColorPalette } from './palette';
 

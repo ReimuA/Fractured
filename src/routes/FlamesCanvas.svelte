@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { canvasRef, flamesStore } from './stores';
-	import {type Flames } from '$lib/FlamesUtils/Flames';
+	import {type Flames } from '$lib/FlamesUtils/flames';
 	import aashader from '$lib/FlamesUtils/shaders/aa.comp.wgsl?raw';
 	import blurshader from '$lib/FlamesUtils/shaders/blur.comp.wgsl?raw';
 	import colorShader from '$lib/FlamesUtils/shaders/coloring.comp.wgsl?raw';
