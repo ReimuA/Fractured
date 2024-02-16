@@ -1,7 +1,6 @@
 import { makeStructuredView } from "webgpu-utils";
 import { heatmapRenderMode, renderModeToNumber, type Flames, type FlamesComponent } from "../Flames";
 import { variationToNumber } from "../Variations";
-import type { RenderData } from "../render";
 import type { FlamesBinding } from "./flamesbinding";
 import type { RenderDataBinding } from "./renderDataBinding";
 
@@ -30,7 +29,7 @@ function mapFlamesComponentToView(component: FlamesComponent) {
 	}
 }
 
-export function updateGPUBuffer(device: GPUDevice, renderData: RenderData, flames: Flames, renderDataBinding: RenderDataBinding, flamesBinding: FlamesBinding) {
+export function updateGPUBuffer(device: GPUDevice, flames: Flames, renderDataBinding: RenderDataBinding, flamesBinding: FlamesBinding) {
 	const structuredView = makeStructuredView(flamesBinding.flamesVariableDefinition)
 	structuredView.set({
 		resolution: [1920, 1080],
@@ -59,22 +58,8 @@ export function updateGPUBuffer(device: GPUDevice, renderData: RenderData, flame
 	})
 
 	device.queue.writeBuffer(flamesBinding.buffers.flames, 0, structuredView.arrayBuffer)
-
-	//device.queue.writeBuffer(renderDataBinding.buffers.pixels, 0, renderData.pixels);
-/* 
-	if (flames.renderMode === "Structural (Palette index)") {
-		device.queue.writeBuffer(renderDataBinding.buffers.paletteIndexAccumulator, 0, renderData.colorPaletteIndexAccumulator);
-	}
-
-	if (flames.renderMode == "Structural") {
-		device.queue.writeBuffer(renderDataBinding.buffers.colorAccumulator, 0, renderData.colorAccumulator)
-	}
-
-	if (flames.renderMode == "Structural (Palette)") {
-		device.queue.writeBuffer(renderDataBinding.buffers.colorPaletteAccumulator, 0, renderData.paletteAccumulator)
-	} */
 	device.queue.writeBuffer(flamesBinding.buffers.timeElapsed, 0, new Uint32Array([Date.now()]))
-	device.queue.writeBuffer(renderDataBinding.buffers.heatmapMax, 0, new Uint32Array([renderData.heatmapMax]))
+	device.queue.writeBuffer(renderDataBinding.buffers.heatmapMax, 0, new Uint32Array([0]))
 	device.queue.writeBuffer(flamesBinding.buffers.gamma, 0, new Float32Array([flames!.gammaCorrection]))
 	device.queue.writeBuffer(flamesBinding.buffers.logDensity, 0, new Float32Array([Number(flames!.renderMode != heatmapRenderMode)]))
 	device.queue.writeBuffer(flamesBinding.buffers.densityEstimation, 0, new Float32Array([flames?.densityEstimation ? 1 : 0, flames?.densityEstimation?.minSigma ?? 0, flames?.densityEstimation?.maxSigma ?? 0]))

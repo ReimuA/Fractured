@@ -9,12 +9,6 @@ import gammaShader from '$lib/FlamesUtils/shaders/gamma.comp.wgsl?raw'
 import flamesShader from '$lib/FlamesUtils/shaders/flames.comp.wgsl?raw'
 import resetShader from '$lib/FlamesUtils/shaders/reset.comp.wgsl?raw'
 import type { XY } from '$lib/FlamesUtils/mathu';
-import {
-	createRenderData,
-	iterateRenderData,
-	resetRenderData,
-	type RenderData
-} from '../lib/FlamesUtils/render';
 import type { FlamesWorkerMessage } from './messageType';
 import { createRenderDataBinding, type RenderDataBinding } from '$lib/FlamesUtils/webgpu/renderDataBinding';
 import { createFlamesBinding, type FlamesBinding } from '$lib/FlamesUtils/webgpu/flamesbinding';
@@ -22,19 +16,7 @@ import { updateGPUBuffer } from '$lib/FlamesUtils/webgpu/renderpass';
 import { createPipeline } from '$lib/FlamesUtils/webgpu/pipeline';
 
 let flames: Flames | undefined;
-let p: XY = { x: 0, y: 0 };
 let canvasResolution: XY = { x: 0, y: 0 };
-let nbIteration = 0;
-let rotation = 0;
-
-// In order to switch in and out of anti aliasing, we compute both the normal sample and the super sample at the same time.
-// The performance cost of this is mostly trivial since the heavy calculation happen when trying to render, rather than plotting the data.
-// The memory cost is also trivial as we had a mere 11.11% memory usage because we will plot the super sample data anyway, which is 9 times larger (3 * 3)
-// than the default one.
-//
-// Finally : The advantage of this is to remove the heavy weight of rendering the supersample every time, because we can just render the default sample and thus increase the performance.
-let renderData: RenderData | undefined;
-let renderData3x: RenderData | undefined;
 
 let canvasContent: Uint8ClampedArray | undefined;
 
@@ -60,8 +42,8 @@ function addPipeline(pass: GPUComputePassEncoder, pipeline: GPUComputePipeline, 
 	pass.dispatchWorkgroups(sizeX / 8, sizeY / 8);
 }
 
-async function frameWebGpu(renderData: RenderData, ctx: OffscreenCanvasRenderingContext2D) {
-	updateGPUBuffer(device, renderData, flames!, rDataBinding, flamesBinding)
+async function frameWebGpu(ctx: OffscreenCanvasRenderingContext2D) {
+	updateGPUBuffer(device, flames!, rDataBinding, flamesBinding)
 
 	let outputbuffer = rDataBinding.buffers.finalImage
 	let encoder = device.createCommandEncoder({ label: 'Compute encoder' });
@@ -106,21 +88,9 @@ function resetFrame() {
 }
 
 async function updateCanvas(ctx: OffscreenCanvasRenderingContext2D) {
-	if (!renderData3x || !renderData || !canvasContent || !flames) return;
-/* 
-	if (!flames.GPUCompute) {
-		console.log("iteration " + (25000 * nbIteration));
-		p = iterateRenderData(flames, renderData, renderData3x, p, rotation, 25000, 25000 * nbIteration++);
+	if (!canvasContent || !flames) return;
 
-	}
- */
-	if (flames.spaceWarp.rotationalSymmetry > 1)
-		rotation = (rotation + (2 * Math.PI) / flames.spaceWarp.rotationalSymmetry) % (2 * Math.PI);
-	
-	let rData = flames.antialiasing ? renderData3x : renderData;
-	const time = Date.now()
-	await frameWebGpu(rData, ctx)
-	console.log('Frame cost : ' + (Date.now() - time) + ', Total iteration :' + ((nbIteration++) * 1000 * 64 * 64))
+	await frameWebGpu(ctx)
 }
 
 async function init(newFlames: Flames, canvas: OffscreenCanvas) {
@@ -156,8 +126,6 @@ async function init(newFlames: Flames, canvas: OffscreenCanvas) {
 
 	flames = newFlames;
 	canvasContent ??= new Uint8ClampedArray(canvasResolution.x * canvasResolution.y * 4);
-	renderData ??= createRenderData(flames.resolution.x * flames.resolution.y);
-	renderData3x ??= createRenderData(flames.resolution.x * flames.resolution.y * 3 * 3);
 
 	requestAnimationFrame(flamesIteration);
 
@@ -170,20 +138,13 @@ async function init(newFlames: Flames, canvas: OffscreenCanvas) {
 }
 
 function reset(newFlames: Flames) {
-	p = { x: 0, y: 0 };
 	flames = newFlames;
-	if (renderData3x) resetRenderData(renderData3x);
-	if (renderData) resetRenderData(renderData);
 	if (resetPipeline) resetFrame();
 }
 
 function softreset(newFlames: Flames) {
-	rotation = 0;
 	flames = newFlames;
 
-	p = { x: 0, y: 0 };
-	if (renderData3x) resetRenderData(renderData3x);
-	if (renderData) resetRenderData(renderData);
 	if (resetPipeline) resetFrame();
 }
 
