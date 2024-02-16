@@ -117,7 +117,7 @@ fn structural(color: u32) -> vec3<f32> {
         f32(r),
         f32(g),
         f32(b)
-    );
+    ).zyx;
 }
 
 fn coloring(pIdx: u32, hIdx: u32) -> u32 {
