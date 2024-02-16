@@ -1,6 +1,5 @@
 import { makeStructuredView } from "webgpu-utils";
 import { heatmapRenderMode, renderModeToNumber, type Flames, type FlamesComponent } from "../Flames";
-import { variationToNumber } from "../Variations";
 import type { FlamesBinding } from "./flamesbinding";
 import type { RenderDataBinding } from "./renderDataBinding";
 
@@ -24,7 +23,7 @@ function mapFlamesComponentToView(component: FlamesComponent) {
 		},
 		variations: component.weightedVariations.map(x => ({
 			weight: [x.weight],
-			variation: [variationToNumber(x.variation)]
+			variation: [x.variation.id]
 		}))
 	}
 }

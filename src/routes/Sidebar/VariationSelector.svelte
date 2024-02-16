@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { allVariations } from '$lib/FlamesUtils/Variations';
-	import { xyLength } from '$lib/FlamesUtils/mathu';
 	import { flamesBuilderStore, flamesStore } from '../stores';
 
 	let variations = allVariations.map((v) => {
