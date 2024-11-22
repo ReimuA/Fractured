@@ -38,6 +38,7 @@
         })}
         type="number"
         min={0.1}
+        step={0.1}
         class="round-r-4 text-white bg-slate-900  w-16 pl-1 mt-4 border-slate-300 border-2 rounded"
     />
 </label>
