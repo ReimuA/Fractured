@@ -30,7 +30,7 @@
 <div>
 	<h2>Download</h2>
 	<div class="flex flex-col gap-2 pl-6">
-		<a href={metadataHref} download={metadataName}>Metadata</a>
-		<a class="hover:cursor-pointer" on:click={() => downloadImage()}>Image</a>
+		<a class="w-min" href={metadataHref} download={metadataName}>Metadata</a>
+		<button class="text-white w-min" on:click={() => downloadImage()}>Image</button>
 	</div>
 </div>

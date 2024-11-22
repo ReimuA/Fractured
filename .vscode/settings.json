@@ -1,7 +1,12 @@
 {
-    "[javascript]": {
-      "editor.defaultFormatter": "esbenp.prettier-vscode"
-    },
-    "mochaExplorer.files": "test/**/*.ts",
-    "mochaExplorer.require": ["ts-node/register"]
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "css.customData": [
+    ".vscode/tailwind.json"
+  ],
+  "mochaExplorer.files": "test/**/*.ts",
+  "mochaExplorer.require": [
+    "ts-node/register"
+  ]
 }
