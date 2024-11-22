@@ -1,8 +1,3 @@
-<script lang="ts">
-	import github from '$lib/images/github.svg';
-	import questionmark from '$lib/images/questionmark.svg';
-</script>
-
 <div class="absolute bottom-0 right-0 flex gap-4 mb-4 mr-4">
 	<a href="https://reimua.github.io/FractalGallery/" target="_blank" class="fa-solid fa-images text-4xl text-white">
 	</a>
@@ -13,10 +8,5 @@
 </div>
 
 <style lang="postcss">
-	:global(html) {
-	}
-
-	.filter-white {
-		filter: invert(95%) sepia(100%) saturate(0%) hue-rotate(291deg) brightness(102%) contrast(103%);
-	}
+	:global(html) {}
 </style>
