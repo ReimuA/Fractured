@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { canvasRef, flamesStore } from './stores';
-	import {type Flames } from '$lib/FlamesUtils/flames';
+	import { type Flames } from '$lib/FlamesUtils/flames';
 	import aashader from '$lib/FlamesUtils/shaders/aa.comp.wgsl?raw';
 	import blurshader from '$lib/FlamesUtils/shaders/blur.comp.wgsl?raw';
 	import colorShader from '$lib/FlamesUtils/shaders/coloring.comp.wgsl?raw';
@@ -168,8 +168,8 @@
 		});
 
 		$canvasRef = canvas;
-		init($flamesStore.flames, canvas)
-});
+		init($flamesStore.flames, canvas);
+	});
 </script>
 
 <canvas
@@ -177,7 +177,7 @@
 	width="1920"
 	height="1080"
 	class="h-screen w-screen bg-black absolute top-0 left-0 -z-10"
-/>
+></canvas>
 
 <style lang="postcss">
 	:global(html) {
