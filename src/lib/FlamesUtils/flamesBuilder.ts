@@ -7,7 +7,12 @@ import {
 	type SpaceWarp
 } from './flames';
 import { createTransform, type IFSTransform } from './IFSTransform';
-import { allVariations, getVariationFromname, type Variation, type WeightedVariation } from './variations';
+import {
+	allVariations,
+	getVariationFromname,
+	type Variation,
+	type WeightedVariation
+} from './variations';
 import type { XY, iRange } from './mathu';
 import { namedPalettesList, type NamedColorPalette } from './palette';
 import { splitmix32 } from './random';
@@ -19,12 +24,12 @@ export class FlamesBuilder {
 	public gammaCorrection = 0.454545;
 	public densityEstimation: DensityEstimation | null = null;
 	public renderMode: RenderMode = heatmapRenderMode;
-	public colorPalette: NamedColorPalette = namedPalettesList[0];
+	public colorPalette: NamedColorPalette = namedPalettesList[1];
 	public spaceWarp: SpaceWarp = { rotationalSymmetry: 3, mirrorX: false, mirrorY: false, zoom: 1 };
 
 	// Field for random generation
-	private seed = 0
-	private prng = splitmix32(0)
+	private seed = 0;
+	private prng = splitmix32(0);
 	public componentsNumberRange: iRange = { min: 4, max: 4 };
 	public variationsNumberRange: iRange = { min: 4, max: 14 };
 	public variationsPools: string[] = [];
@@ -80,15 +85,15 @@ export class FlamesBuilder {
 	}
 
 	inferParameterFromFlames(flames: Flames) {
-		this.resolution = flames.resolution
-		this.antialiasing = flames.antialiasing
+		this.resolution = flames.resolution;
+		this.antialiasing = flames.antialiasing;
 		this.gammaCorrection = flames.gammaCorrection;
-		this.densityEstimation = flames.densityEstimation
-		this.renderMode =flames.renderMode
-		this.colorPalette = flames.namedPalette
-		this.spaceWarp = flames.spaceWarp
+		this.densityEstimation = flames.densityEstimation;
+		this.renderMode = flames.renderMode;
+		this.colorPalette = flames.namedPalette;
+		this.spaceWarp = flames.spaceWarp;
 
-		return this
+		return this;
 	}
 
 	private iRandom(range: iRange): number {
@@ -98,28 +103,25 @@ export class FlamesBuilder {
 
 	private createRandomTransform(): IFSTransform {
 		const r = () => this.prng() * 3 - 3 / 2;
-	
+
 		return createTransform(r(), r(), r(), r(), r(), r());
 	}
 
-	private createRandomVariations(
-		nb: number,
-		variationsPools: Variation[]
-	): WeightedVariation[] {
+	private createRandomVariations(nb: number, variationsPools: Variation[]): WeightedVariation[] {
 		const variations: WeightedVariation[] = [];
-	
+
 		for (let i = 0; i < nb; i++) {
 			const weight = this.prng();
 			const randomVariation = variationsPools[Math.floor(this.prng() * variationsPools.length)];
-	
+
 			if (!variations.some((e) => e.variation.name === randomVariation.name))
 				variations.push({ weight, variation: randomVariation });
 		}
-	
+
 		const totalWeight = variations.reduce((total, v) => total + v.weight, 0);
-	
+
 		for (const v of variations) v.weight /= totalWeight;
-	
+
 		return variations;
 	}
 
@@ -134,7 +136,7 @@ export class FlamesBuilder {
 			color: {
 				r: this.prng(),
 				g: this.prng(),
-				b: this.prng(),
+				b: this.prng()
 			},
 			colorPaletteIndex: this.prng(),
 			weight,
@@ -180,13 +182,13 @@ export class FlamesBuilder {
 	// Use the same seed as the previous build
 	// Succesive call to purebuild always use the same seed
 	pureBuild(): Flames {
-		this.prng = splitmix32(this.seed)
-		return this.buildInternal()
+		this.prng = splitmix32(this.seed);
+		return this.buildInternal();
 	}
 
 	build(): Flames {
-		this.seed = Math.random() * (1e7) 
-		this.prng = splitmix32(this.seed)
-		return this.buildInternal()
+		this.seed = Math.random() * 1e7;
+		this.prng = splitmix32(this.seed);
+		return this.buildInternal();
 	}
 }
