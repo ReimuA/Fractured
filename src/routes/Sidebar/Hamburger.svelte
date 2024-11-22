@@ -3,7 +3,8 @@
 </script>
 
 <button
-	class="absolute top-0 left-0 pl-2 pt-4 text-white hover:text-gray-700 cursor-pointer mr-4 border-none focus:outline-none"
+	aria-label="Side panel On/Off"
+	class="absolute top-0 left-0 pl-2 pt-4 hover:text-gray-700 cursor-pointer mr-4 border-none focus:outline-none"
 	class:open
 	on:click={() => (open = !open)}
 >

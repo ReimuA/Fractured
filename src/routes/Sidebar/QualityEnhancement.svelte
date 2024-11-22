@@ -61,7 +61,7 @@
 		</label>
 		<div class="flex flex-col gap-2 pl-6">
 			<div class="flex">
-				<span class="text-white w-24">Min sigma</span>
+				<span class="w-24">Min sigma</span>
 				<input
 					bind:value={minSigma}
 					on:change={updateDensityEstimation}
@@ -72,7 +72,7 @@
 				/>
 			</div>
 			<div class="flex">
-				<span class="text-white w-24">Max sigma</span>
+				<span class="w-24">Max sigma</span>
 				<input
 					bind:value={maxSigma}
 					on:change={updateDensityEstimation}
