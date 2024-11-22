@@ -1,9 +1,8 @@
 <script lang="ts">
-	import { canvasRef,  flamesStore } from "../stores";
+	import { canvasRef, flamesStore } from '../stores';
 
-
-    let metadataHref = ''
-	let metadataName = 'flames.metadata.json'
+	let metadataHref = '';
+	let metadataName = 'flames.metadata.json';
 
 	// Canvas ref from FlamesCanvas.svelte
 	let flamesCanvas: HTMLCanvasElement | undefined;
@@ -11,7 +10,7 @@
 	canvasRef.subscribe((canvas) => (flamesCanvas = canvas));
 
 	flamesStore.subscribe((value) => {
-		updateMetadataLink(value.flames)
+		updateMetadataLink(value.flames);
 	});
 
 	function updateMetadataLink(obj: Object) {
@@ -28,8 +27,10 @@
 	}
 </script>
 
-<p class="pt-12 pl-6 text-white">Download</p>
-<nav class="pl-12 pt-2 text-l">
-    <a href={metadataHref} class=" text-white block" download={metadataName} >Metadata</a>
-    <button class="text-white block" on:click={() => downloadImage()}>Image</button>
-</nav>
+<div>
+	<h2>Download</h2>
+	<div class="flex flex-col gap-2 pl-6">
+		<a href={metadataHref} download={metadataName}>Metadata</a>
+		<a class="hover:cursor-pointer" on:click={() => downloadImage()}>Image</a>
+	</div>
+</div>

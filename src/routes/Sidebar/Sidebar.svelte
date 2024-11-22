@@ -7,19 +7,19 @@
 	import Downloadlink from './Downloadlink.svelte';
 
 	export let open = false;
-
 </script>
 
 <aside
 	class="absolute top-0 w-72 h-full bg-slate-700/25 shadow-lg scroll-smooth overflow-y-auto"
 	class:open
 >
-
-	<Downloadlink/>
-	<QualityEnhancement />
-	<SpaceWarping />
-	<ColorationOptions />
-	<VariationSelector />
+	<div class="flex flex-col gap-4 pl-6 pt-12">
+		<Downloadlink />
+		<QualityEnhancement />
+		<SpaceWarping />
+		<ColorationOptions />
+		<VariationSelector />
+	</div>
 </aside>
 
 <style lang="postcss">

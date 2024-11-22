@@ -22,3 +22,17 @@
 ::-webkit-scrollbar-thumb:hover {
 	background: #555;
 }
+
+@layer base {
+	h2 {
+		@apply text-white font-bold;
+	}
+
+	span, a {
+		@apply text-white;
+	}
+
+	select, input {
+		@apply bg-slate-900 px-1 text-white border-slate-300 border-2 rounded;
+	}
+}

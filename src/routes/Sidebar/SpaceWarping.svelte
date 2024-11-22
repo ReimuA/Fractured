@@ -10,54 +10,43 @@
 	});
 
 	localStore.subscribe((store) => {
-		const flames = $flamesStore.flames
+		const flames = $flamesStore.flames;
 		flames.spaceWarp = {
-				mirrorX: store.mirrorX,
-				mirrorY: store.mirrorY,
-				rotationalSymmetry: store.rotationalSymmetry,
-				zoom: store.zoom
-			}
+			mirrorX: store.mirrorX,
+			mirrorY: store.mirrorY,
+			rotationalSymmetry: store.rotationalSymmetry,
+			zoom: store.zoom
+		};
 
 		$flamesStore = {
 			resetType: 'soft',
-			flames: flames,
+			flames: flames
 		};
 	});
 </script>
 
-<p class="pt-12 pl-6 text-white">Zoom</p>
-<input
-	type="number"
-	bind:value={$localStore.zoom}
-	min="0"
-	class="round-r-4 bg-slate-900 ml-12 p-1 mt-2 text-white border-slate-300 border-2 rounded w-48"
-/>
+<div class="flex flex-col gap-2">
+	<h2>Space warping</h2>
+	<div class="pl-6 flex flex-col gap-2">
+		<div class="flex">
+			<span class="w-28">Zoom</span>
+			<input type="number" bind:value={$localStore.zoom} min="0" class="w-16" />
+		</div>
+		<div class="flex">
+			<span class="w-28">Space warping</span>
+			<input type="number" bind:value={$localStore.rotationalSymmetry} min="1" class="w-16" />
+		</div>
+		<label class="block">
+			<input type="checkbox" bind:checked={$localStore.mirrorX} />
+			<span>Mirror X Axis</span>
+		</label>
 
-<p class="pt-4 pl-6 text-white">Space warping</p>
-<input
-	type="number"
-	bind:value={$localStore.rotationalSymmetry}
-	min="1"
-	class="round-r-4 bg-slate-900 ml-12 p-1 mt-2 text-white border-slate-300 border-2 rounded w-48"
-/>
-
-<label class="block">
-	<input
-		type="checkbox"
-		bind:checked={$localStore.mirrorX}
-		class="round-r-4 bg-slate-900 ml-12 p-1 mt-4 border-slate-300 border-2 rounded"
-	/>
-	<span class="text-white">Mirror X Axis</span>
-</label>
-
-<label class="block">
-	<input
-		type="checkbox"
-		bind:checked={$localStore.mirrorY}
-		class="round-r-4 bg-slate-900 ml-12 p-1 mt-4 border-slate-300 border-2 rounded"
-	/>
-	<span class="text-white">Mirror Y Axis</span>
-</label>
+		<label class="block">
+			<input type="checkbox" bind:checked={$localStore.mirrorY} />
+			<span>Mirror Y Axis</span>
+		</label>
+	</div>
+</div>
 
 <style lang="postcss">
 	:global(html) {
