@@ -3,18 +3,12 @@
 	import questionmark from '$lib/images/questionmark.svg';
 </script>
 
-<div class="absolute bottom-0 right-0 flex">
-	<a href="https://flam3.com/flame_draves.pdf">
-		<img
-			src={questionmark}
-			width="48"
-			height="48"
-			alt="Flames documentation"
-			class="filter-white m-2 mt-3"
-		/>
+<div class="absolute bottom-0 right-0 flex gap-4 mb-4 mr-4">
+	<a href="https://reimua.github.io/FractalGallery/" target="_blank" class="fa-solid fa-images text-4xl text-white">
 	</a>
-	<a href="https://github.com/ReimuA/Fractured">
-		<img src={github} width="64" height="64" alt="GitHub" class="filter-white m-2" />
+	<a href="https://flam3.com/flame_draves.pdf" target="_blank" class="fa-solid fa-question text-4xl text-white">
+	</a>
+	<a href="https://github.com/ReimuA/Fractured" target="_blank" class="fa-brands fa-github text-4xl text-white">
 	</a>
 </div>
 
